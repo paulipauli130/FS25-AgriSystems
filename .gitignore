@@ -1,0 +1,38 @@
+﻿# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Editors
+.vs/
+.idea/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+*.orig
+
+# Logs
+*.log
+
+# Farming Simulator local data
+Test_Saves/
+**/Test_Saves/
+FarmingSimulator2025/
+
+# Build output
+/build/
+/dist/
+/out/
+
+# Archive packages (use GitHub Releases)
+*.zip
+*.7z
+*.rar
+
+# OS metadata
+.DS_Store
