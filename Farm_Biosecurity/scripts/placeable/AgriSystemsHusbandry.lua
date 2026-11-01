@@ -185,10 +185,18 @@ function Spec:onHourChanged(hour)
  local data=store:getHusbandryState(spec.husbandryId)
  if data==nil then return end
  for groupId,record in pairs(data.groups or {}) do
-  local disease=AgriSystemsFarmBiosecurity.DiseaseModel.advance(record.disease,1)
+  local disease=record.disease
   local quarantine=record.quarantine
-  if quarantine~=nil then quarantine=AgriSystemsFarmBiosecurity.Quarantine.advance(quarantine,spec.clockHours) end
-  store:setGroup(spec.husbandryId,groupId,disease,quarantine)
+  local changed=false
+  if disease.status~="susceptible" and disease.status~="recovered" then
+   disease=AgriSystemsFarmBiosecurity.DiseaseModel.advance(disease,1)
+   changed=true
+  end
+  if quarantine~=nil and quarantine.active and quarantine.releaseRequested then
+   quarantine=AgriSystemsFarmBiosecurity.Quarantine.advance(quarantine,spec.clockHours)
+   changed=true
+  end
+  if changed then store:setGroup(spec.husbandryId,groupId,disease,quarantine) end
  end
 end
 
