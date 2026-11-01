@@ -56,8 +56,6 @@ function Spec.registerEventListeners(placeableType)
  SpecializationUtil.registerEventListener(placeableType,"onHourChanged",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onWriteStream",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onReadStream",Spec)
- SpecializationUtil.registerEventListener(placeableType,"onWriteStream",Spec)
- SpecializationUtil.registerEventListener(placeableType,"onReadStream",Spec)
 end
 
 local function makeCohortId(subType)
