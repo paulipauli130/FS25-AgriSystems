@@ -135,3 +135,69 @@ For Spray & Hygiene, field identity should be resolved through the FieldManager/
 - Do not assume FS22 code works unchanged in FS25.
 - Record exact function signatures, units, coordinate conventions, lifecycle, and server/client behavior before implementation.
 - Keep unresolved items explicitly marked as unresolved.
+
+
+## Deeper FS25 source inspection – sprayer lifecycle, fields, and animal husbandry
+
+> Evidence note: The following source-level cross-checks use the public community mirror `MyGameSteamOfficial/fs25-lua-api`, which exposes selected FS25 game Lua files. This is not a GIANTS-published source repository. Treat it as secondary source evidence and re-check against the installed game build before release. The mirror's index is incomplete: absence of a class/file from this repository does not prove that the class does not exist in the game.
+
+### Base FS25 Sprayer – source-level findings
+
+The mirrored FS25 `vehicles/specializations/Sprayer.lua` confirms these exact callbacks:
+
+- `Sprayer:onStartWorkAreaProcessing(dt)`
+- `Sprayer:onEndWorkAreaProcessing(dt, hasProcessed)`
+- `Sprayer:processSprayerArea(workArea, dt)`
+- `Sprayer:onFillUnitFillLevelChanged(fillUnitIndex, fillLevelDelta, fillType, toolType, fillPositionData, appliedDelta)`
+- `Sprayer:onStateChange(state, data)`
+
+The specialization registers both work-area callbacks and the fill-unit callback as event listeners.
+
+At `onStartWorkAreaProcessing(dt)`, the base sprayer reads its configured fill-unit index and fill type, calculates `usage` using `getSprayerUsage(fillType, dt)`, checks its own tank, and otherwise scans `spec.fillTypeSources` for active compatible source vehicles and fill-unit indices. It also handles externally supplied product separately. It writes the selected `sprayVehicle`, `sprayVehicleFillUnitIndex`, `sprayFillType`, `sprayFillLevel`, `usage`, and `usagePerMin` into `spec.workAreaParameters`, then resets per-area counters and sets `isActive = false` before actual area processing.
+
+The base `processSprayerArea(workArea, dt)` returns without applying when available spray fill level is zero. Otherwise it obtains the work-area start/width/height world positions and calls `FSDensityMapUtil.updateSprayArea(...)`. Only after that operation does it set `workAreaParameters.isActive = true` and accumulate changed/total/stat area values. This makes `isActive` a much stronger signal than merely checking whether the implement is switched on.
+
+At `onEndWorkAreaProcessing(dt, hasProcessed)`, the server checks `workAreaParameters.isActive`. If active, it deducts `usage` from the selected source vehicle/fill unit (unless the source is external), updates farm spray statistics, and updates the last worked area. A mod must not independently deduct the same usage or it will double-consume product.
+
+The native usage formula in the mirrored source is:
+
+```lua
+scale * litersPerSecond * self.speedLimit * workWidth * dt * 0.001
+```
+
+Here `scale` comes from the configured fill-type/usage scale, `litersPerSecond` from the registered spray type (default 1), `workWidth` from the configured usage width or work-area width, and `dt` is milliseconds. The output is a volume amount in the fill-unit's liters convention. `usagePerMin` is derived as `usage / dt * 1000 * 60`. This is the native nominal-consumption calculation, not a measured pressure or flow sensor.
+
+**Implementation consequence:** the safest first integration is a server-side observer of completed work-area processing, reading the recorded state only where callback ordering is verified. If changing actual spray rate is desired, a narrowly scoped specialization overwrite of `getSprayerUsage` may be more coherent than a second fill-level deduction, but it affects native consumption and must preserve Precision Farming/ExtendedSprayer overrides. That extension decision still requires an in-game compatibility test. For the first version, model wear/clogging as a quality/coverage penalty rather than altering native fill consumption.
+
+**External-fill caveat:** `sprayVehicle` may be nil when product is supplied externally (for example, purchased fertilizer). Native processing can still apply product and count usage without deducting a normal fill unit. Telemetry must treat `sprayVehicle == nil` as a valid external-source case, not a failed sprayer.
+
+### FieldManager lookup – correction to earlier assumption
+
+The inspected mirrored FS25 `field/FieldManager.lua` contains the field collection and farmland-to-field mapping, but a search of the complete mirrored file did **not** find a method named `getFieldAtWorldPosition` or `getFieldById`. The mirror may be incomplete and the public GDN pages surfaced so far do not confirm that method. Therefore:
+
+- `g_fieldManager:getFieldAtWorldPosition(x, z)` remains **unverified community-mod evidence**, not an established FS25 public API.
+- Do not make it a hard dependency in the first implementation.
+- A robust first release can use verified farmland ID/owner lookup for ownership association and treat crop-field ID as optional until the exact installed-game lookup is established. If field identity is needed, use a compatibility adapter that returns “unknown” rather than guessing.
+- The source's `farmlandIdFieldMapping` maps farmland IDs to field objects during map loading; it is not shown to be a general world-position field query.
+
+### FS25 husbandry specialization – source-level findings
+
+The mirrored FS25 `PlaceableHusbandryAnimals.lua` confirms:
+
+- `onLoad(savegame)` creates `spec.clusterSystem = AnimalClusterSystem.new(self.isServer, self)` and subscribes to `AnimalClusterUpdateEvent`.
+- The placeable exposes `getClusters()`, `getCluster(index)`, `getClusterById(id)`, and `getClusterSystem()`.
+- New clusters are queued with `clusterSystem:addPendingAddCluster(cluster)`; the husbandry is activated with `raiseActive()`.
+- `updatedClusters(husbandry)` verifies the update belongs to this placeable, retrieves the cluster list, raises `onHusbandryAnimalsUpdate`, publishes `MessageType.HUSBANDRY_ANIMALS_CHANGED`, and schedules visual updates.
+- The placeable's `onUpdate(dt)` calls `clusterSystem:update(dt)` only when `self.isServer`.
+- `onReadStream(streamId, connection)` and `onWriteStream(streamId, connection)` delegate initial synchronization to the cluster system.
+- `saveToXMLFile(xmlFile, key, usedModNames)` and `loadFromXMLFile(xmlFile, key)` delegate persistence to the cluster system under `key .. ".clusters"`.
+- Periodic reproduction creates new cluster objects and queues them through `addPendingAddCluster`.
+- Riding a single animal from a multi-animal cluster reduces the source cluster count and clones a cluster for the rideable vehicle. Thus clusters can be split by gameplay actions.
+
+**Identity conclusion:** husbandry object + cluster ID is a useful current lookup address, but should not yet be treated as a permanent disease identity. The source mirror does not include the implementation of `AnimalClusterSystem` or the cluster class, so it does not establish ID generation, survival across save/load, uniqueness scope, ID reuse, or every merge/removal path. For an initial disease model, store state against a husbandry-scoped cluster ID with explicit reconciliation rules, and keep a mod-owned persistent record ID separate from the engine cluster ID. If a cluster is split or replaced, state inheritance must be an explicit policy rather than assumed from the engine.
+
+### Version and source limitations
+
+- The public source mirror is not the official GDN and its index does not include all FS25 classes. It is valuable for concrete implementation paths, but not enough to claim every file reflects the latest live game patch.
+- The official GDN is the primary API contract. The installed game's own `dataS` scripts are the final source of truth for a given game build.
+- The official FS25 API page currently surfaced in this research identifies Script/Engine v1.20.0.0, while the game's public changelog lists later patch updates. Before release, record the exact local game build and re-check source-sensitive hooks against that build.
