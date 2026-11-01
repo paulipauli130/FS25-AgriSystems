@@ -47,3 +47,33 @@ This document records source-level findings and runtime verification requirement
 
 ## Research status
 Source-level research and design specifications are complete. Runtime validation is pending and must be recorded against the exact installed FS25 patch and GIANTS TestRunner version.
+
+
+## Additional public GDN verification — Script v1.20.0.0
+
+The public FS25 LUADOC confirms the following implementation details:
+
+### Specialization names and type injection
+- `SpecializationManager:addSpecialization(name, className, filename, customEnvironment)` stores the exact supplied `name` as the manager key. It does not prepend the mod name automatically.
+- `TypeManager:addSpecialization(typeName, specName)` looks up that exact name through its specialization manager and records the same name in `specializationNames` and `specializationsByName`.
+- `TypeManager.validateTypes()` queues validation tasks; the current implementation injects the specialization after those tasks are queued and before the async queue executes them. This ordering still requires runtime confirmation with the installed patch.
+- `TypeManager.finalizeTypes()` later registers specialization functions, overwritten functions and event listeners from the finalized type entries.
+
+### Placeable identity and serialization
+- `Placeable:getUniqueId()` returns the persistent placeable unique ID.
+- `PlaceableSystem:addPlaceable()` assigns a unique ID if one is missing, then indexes the placeable by that ID.
+- `Placeable:saveToXMLFile()` writes the unique ID and then calls each specialization's `saveToXMLFile` with a key already suffixed by that specialization's registered name.
+- `Placeable.postInit()` registers each placeable specialization's savegame XML paths under `placeables.placeable(?).<specializationName>`.
+- `Placeable:postReadStream()` dispatches `onReadStream` callbacks after `finalizePlacement()`; `postWriteStream()` dispatches `onWriteStream`.
+- The base `Placeable:getNeedHourChanged()` returns false. A specialization that needs hourly callbacks must override it to return true; the base subscribes to the hour-changed message only when this method is true.
+
+### Implications for AgriSystems
+- The registration scripts use the plain names `agriSystemsSprayer` and `agriSystemsHusbandry`, matching the manager API.
+- Per-specialization savegame schema, load and save keys use those exact specialization names; no extra nested namespace is added.
+- Farm Biosecurity overrides `getNeedHourChanged` so its hourly progression callback is actually scheduled by the base Placeable.
+
+### Public documentation links
+- SpecializationManager: https://gdn.giants-software.com/documentation_scripting_fs25.php?category=77&class=613&version=script
+- TypeManager: https://gdn.giants-software.com/documentation_scripting_fs25.php?category=77&class=615&version=script
+- Placeable: https://gdn.giants-software.com/documentation_scripting_fs25.php?category=66&class=591&version=script
+- Placeable specialization savegame schema example: https://gdn.giants-software.com/documentation_scripting_fs25.php?category=78&class=765&version=engine
