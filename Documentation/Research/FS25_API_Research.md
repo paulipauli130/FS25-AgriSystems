@@ -241,3 +241,121 @@ The following cannot be honestly closed from public documentation alone and need
 - Exact modSettings XML read/write helper and path behavior on dedicated servers.
 - Actual callback ordering when multiple specializations observe sprayer work-area processing, especially with Precision Farming, AI workers, externally supplied fertilizer and attached tanks.
 - Exact field lookup API and cluster-system internal ID lifecycle, since the public source mirror is incomplete.
+
+
+## Gameplay model research – agronomic and biosecurity evidence
+
+This section defines evidence-backed gameplay relationships. It deliberately does not prescribe false precision: the real-world sources identify influencing factors and direction of effect, but they do not provide one universal formula that can be transplanted into FS25.
+
+### Spray drift – factors and proposed model boundaries
+
+Government and extension guidance consistently identifies the following factors as relevant to off-target spray movement:
+
+- wind speed and direction at nozzle/release height;
+- atmospheric stability and gustiness, including increased risk during dead-calm inversion conditions;
+- droplet size / spray quality;
+- nozzle type and condition;
+- spray pressure;
+- boom height above target;
+- forward speed and boom stability;
+- temperature and relative humidity, through droplet evaporation;
+- crop canopy and target interception;
+- sensitive areas and downwind buffer zones.
+
+Sources: UK HSE spray drift guidance; Health Canada applicator summary; Ontario government guidance; Agriculture Victoria guidance.
+
+**Direction of effect for gameplay:**
+- Higher sustained wind generally increases downwind transport; gusty or rapidly changing direction increases unpredictability.
+- Dead calm must not be treated as automatically risk-free; inversion conditions can leave droplets suspended and allow later movement.
+- Smaller droplets are more drift-prone; larger/coarser droplets reduce drift.
+- Higher boom height increases time/distance available for transport; lowering the boom within correct overlap/coverage limits reduces drift.
+- High pressure often produces finer droplets for conventional hydraulic nozzles; pressure/nozzle relationships are nozzle-specific, so a single global pressure curve is not physically universal.
+- Higher travel speed can create turbulence, boom bounce and unstable height, increasing risk.
+- High temperature and low relative humidity increase evaporation and can make droplets smaller.
+- Damaged/dirty nozzles and poor calibration can create uneven output and unintended droplet distributions.
+- A crosswind is not intrinsically safe; the important question is whether wind carries spray toward a sensitive receptor.
+
+**Recommended FS25 abstraction:** calculate a bounded risk/transport score, not a CFD simulation. Keep separate components:
+1. drift propensity at the nozzle (droplet class, pressure/nozzle, height, temperature/humidity, maintenance);
+2. transport direction and distance (wind vector/speed, gust factor, time aloft);
+3. receptor exposure (downwind position, buffer distance, sensitive-area category);
+4. deposition/retention on the target (crop canopy and spray application quality).
+
+This separation makes tuning and debugging possible. The model should output explainable reasons (e.g. “fine droplets + high boom + downwind sensitive edge”), not only an opaque number. Keep a conservative default mode and allow drift to be disabled or tuned by server configuration.
+
+**Important physical limitation:** wind vector alone is insufficient to predict where every droplet lands. Real spray drift depends on droplet-size distribution, evaporation, atmospheric turbulence, nozzle characteristics, target interception and terrain. FS25 does not expose a physical droplet simulation for arbitrary mods in the reviewed API. The initial mod should therefore use a deterministic, calibrated gameplay approximation, clearly labelled as such.
+
+### Sprayer engineering – wear, blockage and calibration
+
+The sources establish that spray quality depends on nozzle choice, pressure, calibration, nozzle condition and operating settings. The reviewed FS25 base Sprayer provides nominal usage and work-area processing, not actual hydraulic pressure measurements or per-nozzle flow sensors.
+
+Recommended custom model:
+- Store nozzle condition and blockage as mod-owned equipment state, not as a fake native FS25 property.
+- Model a partially blocked nozzle as reduced/uneven flow and coverage, not simply “more liters used”.
+- Model worn nozzle output as deviation from its reference flow and spray pattern; avoid assuming all wear causes only increased flow or only reduced pressure.
+- Model pump/pressure as a simplified commanded/available pressure value if no reliable native pressure signal exists.
+- Calibration should compare expected total output against measured/simulated output over a fixed interval or test area.
+- Apply condition effects to coverage uniformity and efficacy. Keep the native game application and consumption path intact in the first release.
+- Make nozzle count/type mapping data-driven and optional. Do not assume all sprayers expose physical nozzle objects or one node per nozzle.
+
+The game should not require players to manually calibrate every time. Offer a simple calibration action and a configurable realism level. If nozzle metadata is unavailable, use a generic equipment profile with a warning rather than breaking support for the implement.
+
+### Sprayer cleaning – residues and contamination
+
+SDSU Extension's sprayer clean-out guidance emphasizes that residue can remain in the tank, hoses, boom, nozzle bodies, strainers, filters, screens and boom ends. It recommends emptying the tank, rinsing/agitating, flushing the boom and lines, cleaning filters/nozzles, and following the product label and machine manual. Some products require repeated rinses or specific tank-cleaning solutions.
+
+Recommended gameplay model:
+- Track residue separately for tank, plumbing/boom, filters and nozzle assemblies, but allow a simplified combined-residue mode for performance and usability.
+- A tank rinse alone must not instantly clear all system residue.
+- Cleaning effectiveness depends on rinse volume, agitation/time, flushing through the boom, filter/nozzle cleaning and whether a compatible cleaner is used.
+- Switching from one product to another should create a contamination risk proportional to remaining residue and product incompatibility.
+- A cleaning operation should consume water/cleaner and time, and create rinse waste that must be disposed of at an appropriate location in realistic mode.
+- Avoid real chemical compatibility claims for invented in-game product names. Use abstract compatibility classes such as compatible / caution / incompatible and keep them configurable.
+- Cleaning outside surfaces/tires can be a separate optional hygiene action; it should not be conflated with internal tank cleaning.
+
+### Field contamination – transfer model
+
+Plant disease and weed-seed transfer by equipment is a plausible gameplay mechanic, but it should be kept distinct from spray drift:
+- Spray drift is airborne off-target movement during/after application.
+- Field contamination is mechanical transfer via tires, implements, crop residues, soil, mud and weed seeds.
+- Record contamination by field or farmland only after the field identity strategy is validated. Until then, farmland-level state is safer than inventing a field ID.
+- Equipment contamination should be accumulated from relevant work/field contact, then reduced by cleaning at a wash point.
+- Avoid scanning every terrain pixel or every frame. Use event-driven work-area callbacks and coarse spatial sampling with server-side throttling.
+
+### Farm Biosecurity – transmission and control factors
+
+Government and animal-health guidance consistently supports the following biosecurity pathways and controls:
+- New or returning livestock can introduce disease; isolate/quarantine and monitor them before mixing with resident stock.
+- Sick animals should be separated; avoid shared feed/water/equipment and direct contact where possible.
+- People, vehicles, trailers, boots, clothing and shared equipment can carry contaminated mud, manure or organic material between sites.
+- Visitor access should be restricted, routed through designated entry/parking areas, and recorded where traceability is needed.
+- Clean first, then disinfect. Disinfectant choice, dilution and contact time matter; applying disinfectant over dirt is not equivalent to proper cleaning.
+- Buildings, pens, vehicles, livestock trailers, handling equipment, feed/water troughs and footwear can require cleaning/disinfection.
+- Internal farm biosecurity (separation, dedicated equipment, age groups, all-in/all-out where appropriate) is distinct from external biosecurity (controlling introduction from outside).
+- Vaccination can reduce risk/severity for specific diseases but is disease-specific and should not be represented as universal immunity.
+
+Sources: UK Government livestock disease prevention; Australian Department of Agriculture livestock producer guidance; WOAH foot-and-mouth disease recommendations; Canadian Food Inspection Agency farm biosecurity planning; Western Australia DPIRD biosecurity steps.
+
+**Recommended FS25 abstraction:** model a small number of disease profiles with configurable incubation, infectiousness, transmission routes, severity and recovery. Keep disease-specific parameters data-driven. Do not simulate real veterinary diagnosis or treatment. The game should communicate risk and management consequences, not claim clinical accuracy.
+
+### Biosecurity transmission graph
+
+A practical state model can be represented as:
+- **Sources:** infected or exposed animal groups, contaminated equipment/vehicles, contaminated visitor routes, contaminated pens/buildings.
+- **Contacts:** animal mixing/movement, shared equipment, shared feed/water, people/vehicle movement, manure/bedding handling.
+- **Controls:** quarantine, separation, visitor restrictions, dedicated equipment, cleaning, disinfection, vaccination where defined, and movement restrictions.
+- **Outcomes:** exposure, infection after incubation, recovery/death/removal as abstract game outcomes, and contamination decay/clearance after cleaning.
+
+Risk should depend on exposure intensity and hygiene state, not random disease generation without a pathway. Random events may introduce an initial external threat, but subsequent spread should be explainable by contacts and control failures.
+
+### Biosecurity score – design warning
+
+A single Biosecurity Score is useful as a player-facing summary, but should not be the source of truth. Store the underlying factors (quarantine compliance, cleaning, visitor controls, equipment hygiene, housing hygiene, animal health monitoring). Derive the score from these factors. This avoids a single arbitrary number masking the reason for risk and allows separate module tuning.
+
+### Scope control for first releases
+
+- Spray Drift: deterministic risk/transport approximation, clear visual or HUD feedback, sensitive-area/buffer handling, server-side calculation.
+- Sprayer Engineering: nozzle/equipment condition and coverage penalty; postpone hydraulic pressure simulation until a reliable implement profile/data source exists.
+- Sprayer Cleaning: tank/line/filter residue with a simple rinse/flush workflow first; expand to detailed components later.
+- Field Contamination: optional and coarse-grained; implement only after stable spatial field/farmland resolution.
+- Farm Biosecurity: cluster-level disease exposure with quarantine, equipment/vehicle/visitor hygiene and a derived Biosecurity Score. Do not attempt full veterinary epidemiology in the first version.
