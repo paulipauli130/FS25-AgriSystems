@@ -359,3 +359,36 @@ A single Biosecurity Score is useful as a player-facing summary, but should not 
 - Sprayer Cleaning: tank/line/filter residue with a simple rinse/flush workflow first; expand to detailed components later.
 - Field Contamination: optional and coarse-grained; implement only after stable spatial field/farmland resolution.
 - Farm Biosecurity: cluster-level disease exposure with quarantine, equipment/vehicle/visitor hygiene and a derived Biosecurity Score. Do not attempt full veterinary epidemiology in the first version.
+
+
+## Official GDN cross-check – FieldManager API surface
+
+The direct FS25 GDN page for `FieldManager` (Script v1.20.0.0) lists only these declared functions: `delete`, `initDataStructures`, `loadFromXMLFile`, `loadMapData`, `new`, `saveToXMLFile`, and `unloadMapData`. It does **not** list `getFieldAtWorldPosition` as a FieldManager method. The GDN code also shows `self:getFieldById(fieldId)` internally, but this is not listed as a declared FieldManager function on that page; it may be inherited or otherwise provided by the field/manager base system.
+
+A community FS25 soil mod changelog reports `g_fieldManager:getFieldAtWorldPosition(x, z)` as its primary field lookup and calls it a Tier 0 API. Its development documentation recommends that lookup, but the public game-source mirror inspected here does not contain a corresponding implementation, and the public source file for the mod's current branch did not expose the call in the expected core files. This is therefore a discrepancy between the official class reference and community implementation notes.
+
+**Updated decision:** do not assume that `getFieldAtWorldPosition` is a stable public method on every FS25 build. Before coding field-specific state, inspect the exact local game build for the method and confirm its return type and nil behavior. If it exists, wrap it in a single adapter and validate the returned field object/ID. If it does not, use farmland association for the first release or implement a separate geometry-based lookup only if map compatibility tests justify the cost. This is a known blocker for exact field-level contamination, not for the other Spray & Hygiene modules.
+
+## FS25 runtime and compatibility notes
+
+- The FS25 1.24 changelog reports that Lua `loadstring` was disabled for security reasons. The project must not use `loadstring` or dynamic compilation as a configuration or plugin mechanism.
+- Avoid depending on undocumented Lua standard-library behavior or game internals that change between patches. Use ordinary Lua tables, explicit numeric bounds, and documented engine APIs. Keep compatibility shims small and centralized.
+- A mod should declare multiplayer support only if all authoritative simulation is server-side and every client-visible state change is synchronized. A metadata flag alone does not make the mod multiplayer-safe.
+- Keep script loading deterministic in `modDesc.xml`: shared constants/utilities first, then state/data classes, then event classes, then managers/specializations, then optional UI. Avoid relying on incidental filesystem enumeration or file order.
+- Add explicit guards for optional game systems and mod integrations (Precision Farming, AI workers, external fill sources, map-specific field systems). Missing optional dependencies must degrade gracefully rather than prevent the mod from loading.
+- Never overwrite a global game class method unless the extension point is required and tested. Prefer specialization event listeners; if an overwrite is unavoidable, call the supplied `superFunc` exactly once and preserve its return values/state side effects.
+
+## Implementation readiness implications
+
+The following areas are now sufficiently understood to design their first implementation layer:
+- Server-authoritative event and persistence architecture.
+- Native sprayer work-area lifecycle, fill source resolution, and nominal usage formula.
+- Husbandry cluster lookup and delegated save/load/stream synchronization at the placeable level.
+- Real-world factors that should influence drift, cleaning, sprayer condition, and biosecurity gameplay.
+
+The following remain build-specific or source-incomplete and must be treated as explicit verification gates before the affected module is coded:
+- FS25 wind updater path, values, units, direction convention and multiplayer behavior.
+- Exact field-at-position lookup API and return type.
+- AnimalClusterSystem/cluster implementation: ID generation, persistence stability, merge/split/removal behavior.
+- Exact callback order for our own specialization relative to native Sprayer and optional third-party specializations.
+- Exact modSettings read/write path behavior on a dedicated server and how host settings are distributed to connected clients.
