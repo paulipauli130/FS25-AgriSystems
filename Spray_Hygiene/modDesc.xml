@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <modDesc descVersion="104">
     <author>Paul</author>
-    <version>0.5.0.0</version>
+    <version>0.6.0.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
     </title>
     <description>
         <en><![CDATA[
-Development build with sprayer condition, cleaning, spray drift and farmland contamination data models.
-Gameplay integration is not active yet.
+Development build with sprayer condition, cleaning, spray drift and farmland contamination models.
+Sprayer specialization and per-vehicle state persistence are in early development.
         ]]></en>
         <de><![CDATA[
 Entwicklungsversion mit Datenmodellen für Sprühgeräte-Zustand, Reinigung, Abdrift und Feldkontamination.
-Die Gameplay-Integration ist noch nicht aktiv.
+Spezialisierung und fahrzeugbezogene Speicherung befinden sich in früher Entwicklung.
         ]]></de>
     </description>
     <multiplayer supported="true"/>
@@ -25,6 +25,8 @@ Die Gameplay-Integration ist noch nicht aktiv.
         <sourceFile filename="scripts/core/SprayDrift.lua"/>
         <sourceFile filename="scripts/core/FieldContamination.lua"/>
         <sourceFile filename="scripts/core/StateStore.lua"/>
+        <sourceFile filename="scripts/vehicle/AgriSystemsSprayer.lua"/>
+        <sourceFile filename="scripts/register.lua"/>
         <sourceFile filename="scripts/AgriSystemsSprayHygiene.lua"/>
     </extraSourceFiles>
 </modDesc>

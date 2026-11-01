@@ -1,34 +1,26 @@
 # Changelog
 
-All notable changes to FS25 AgriSystems are documented here.
-
-The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). There are no public releases yet; entries under Unreleased describe repository development, not released gameplay features.
+All notable project changes are documented here.
 
 ## [Unreleased]
+- Continue FS25 runtime integration and validation.
 
+## [0.6.0.0] - 2026-11-01
 ### Added
-- Initial Spray & Hygiene mod manifest and bootstrap foundation.
-- Validated configuration defaults for all four planned modules.
-- Pure Lua sprayer-condition model: condition, wear, calibration, nozzle-group blockage and coverage factor.
-- Pure Lua cleaning/residue model for tank, lines and filters with abstract product-class carry-over.
-- Pure Lua spray-drift risk estimator with bounded inputs, risk bands and normalized explicit wind-to direction.
-- Pure Lua farmland-level contamination model with bounded class loads, machinery-contact transfer and field washing.
-- English and German localization starter files.
-- Manual condition, cleaning, drift and field-contamination test plans.
+- Initial Sprayer-only vehicle specialization registration.
+- Read-only observer for native spray work completion cycles.
+- Per-vehicle savegame XML schema and serialization for condition and cleaning model state.
+- Specialization registration lifecycle notes and runtime test gates.
 
-### Changed
-- Completed source-level FS25 API research and both independent mod technical specifications.
-- Updated project overview, architecture, roadmap and development setup to reflect implementation status.
+### Safety
+- Native spray application, fill consumption and work-area parameters remain untouched.
+- No equipment wear or crop effects are applied yet.
+- Runtime validation remains pending.
 
-### Not yet implemented or runtime-certified
-- Sprayer specialization registration and non-invasive processing observation.
-- Connecting condition degradation to successful native spraying.
-- Cleaning actions, water/resource costs and in-game UI.
-- Wind provider integration, calibrated spray drift and farmland contact adapter.
-- Farm Biosecurity gameplay.
-- Savegame persistence, network events and release packaging.
-- GIANTS TestRunner, single-player, multiplayer and dedicated-server validation.
+## [0.5.0.0] - 2026-11-01
+### Added
+- Server-gated engine-independent state container for sprayer and farmland state.
 
-## Releases
-
-No official releases yet.
+## [0.4.0.0] - 2026-11-01
+### Added
+- Farmland-level contamination model with bounded records and class-specific loads.
