@@ -5,15 +5,18 @@ All notable project changes are documented here.
 ## [Unreleased]
 - Continue engine integration, persistence, networking and runtime validation.
 
+## [Farm Biosecurity 0.2.0.0] - 2026-11-01
+### Added
+- Bounded server-gated group StateStore.
+- Transient engine-cluster-to-mod-group mapping, excluded from persistence.
+- Conservative disease-state split/merge helpers.
+- Quarantine inheritance across split/merge operations.
+
 ## [Farm Biosecurity 0.1.0.0] - 2026-11-01
 ### Added
 - Independent modDesc and bootstrap foundation.
-- Validated configuration with module toggles and normalized score weights.
-- Group-level disease progression and explicit contact-based exposure models.
-- Quarantine model with hygiene-compliance release gate.
-- Surface dirt-cleaning and disinfection model.
-- Derived weighted Biosecurity Score and component breakdown.
-- Manual gameplay model test plan.
+- Validated configuration, group disease progression and explicit contact-based exposure.
+- Quarantine, surface hygiene and derived Biosecurity Score models.
 
 ## [Spray & Hygiene 0.7.0.0] - 2026-11-01
 ### Added
