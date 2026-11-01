@@ -58,6 +58,21 @@ The FS25 API provides animal clusters, subtype/age information in husbandry upda
 
 The reviewed FS25 documentation does **not** establish a built-in disease, infection, vaccination, or quarantine system. Those mechanics must be custom. We have not yet verified the base FS25 husbandry specialization's full public API, stable cluster identifiers/lifecycle, animal movement between husbandries, or savegame persistence strategy. Those are required before deciding whether disease state belongs to a cluster, a husbandry, or a separate registry.
 
+## Farmland, work areas, persistence, and networking
+
+### Confirmed in the FS25 GDN
+
+- `FarmlandManager:getFarmlandIdAtWorldPosition(worldPosX, worldPosZ)` maps world X/Z coordinates to a farmland ID. Its documented return value is `0` when the position is not valid/buyable farmland. This can support associating a recorded spray-work-area position with a farmland, but the work-area parallelogram and field ownership must not be conflated with a crop field boundary.
+- FS25 specializations expose lifecycle callbacks such as `onLoad`, `onPostLoad`, `onReadStream`, `onWriteStream`, `onReadUpdateStream`, and `onWriteUpdateStream`. GDN examples explicitly describe `onWriteStream` as server-side on join and `onReadStream` as client-side on join.
+- FS25 placeable specializations can register savegame XML paths with `registerSavegameXMLPaths(schema, basePath)` and persist values with `saveToXMLFile(xmlFile, key, usedModNames)`. The GDN `PlaceableFarmhouse` is one documented example. Other specializations register update-stream callbacks separately, demonstrating that save persistence and live network synchronization are distinct concerns.
+- `FillUnit` registers the event `onFillUnitFillLevelChanged` as well as fill-type and filling-state events. This can be used as an event-driven signal for tank state changes rather than polling every frame, subject to confirming the exact event arguments and callback ordering before use.
+
+### Current conclusion
+
+The FS25 API provides a documented way to map world positions to farmland IDs, plus established specialization lifecycle hooks for savegame persistence and initial/live network synchronization. AgriSystems state should be authoritative on the server, saved persistently, and replicated only when clients need to display or react to it. We should not assume that writing a savegame value automatically synchronizes it to multiplayer clients.
+
+For Spray & Hygiene, farmland association is feasible from world coordinates. For Farm Biosecurity, a persistent server-side registry or placeable/cluster-associated data may be feasible, but the correct key and lifecycle depend on the still-open husbandry/cluster investigation.
+
 ## Research questions still open
 
 ### Sprayer engineering
@@ -83,11 +98,11 @@ The reviewed FS25 documentation does **not** establish a built-in disease, infec
 3. Inspect savegame serialization and network events before selecting a persistence model for quarantine/disease status.
 4. Determine what stock animal dirt/cleanliness state can be reused and what must remain custom disease/biosecurity state.
 
-### Other systems
+### Field and persistence integration
 
-- Field and work-area APIs for application detection.
-- Events, networking, and savegame persistence.
-- Feature-to-API feasibility matrix before finalizing mod folder structures.
+1. Inspect exact `FarmlandManager` and field-system APIs for field identity versus farmland ownership.
+2. Verify `onFillUnitFillLevelChanged` callback signature and when it fires relative to consumption/fill operations.
+3. Select the persistence host for each mod's custom state and document save/load behavior under dedicated server restart and client join.
 
 ## General research rules
 
