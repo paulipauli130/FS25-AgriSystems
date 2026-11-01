@@ -39,6 +39,14 @@ function Spec.registerSavegameXMLPaths(schema,basePath)
  schema:register(XMLValueType.FLOAT,base..".surface(?)#pendingEffectiveness","Pending disinfection effectiveness")
 end
 
+function Spec.registerOverwrittenFunctions(placeableType)
+ SpecializationUtil.registerOverwrittenFunction(placeableType,"getNeedHourChanged",Spec.getNeedHourChanged)
+end
+
+function Spec:getNeedHourChanged(superFunc)
+ return true
+end
+
 function Spec.registerEventListeners(placeableType)
  SpecializationUtil.registerEventListener(placeableType,"onLoad",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onFinalizePlacement",Spec)

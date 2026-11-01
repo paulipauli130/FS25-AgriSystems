@@ -1,14 +1,13 @@
 # Farm Biosecurity — Implementation Notes
 
-## Development build 0.4.0.0
+## Development build 0.4.1.0
 - Independent bootstrap, configuration and pure disease/quarantine/hygiene/score models.
 - Server-gated bounded StateStore.
 - PlaceableHusbandryAnimals-only specialization with persistent Placeable uniqueId.
 - One logical cohort per animal type + configured subtype ID per husbandry; same-subtype clusters are aggregated and engine cluster IDs are never persisted.
 - Per-placeable XML save/load for disease, quarantine, hygiene and elapsed in-game hours.
-- Server-side hourly disease/quarantine progression.
+- Server-side hourly disease/quarantine progression. The specialization explicitly overrides getNeedHourChanged to enable the base Placeable hourly callback subscription.
 - Initial server-to-client snapshot for up to 512 cohorts and 128 hygiene surfaces.
-- Client snapshot reader consumes the complete packet before applying it, preserving stream alignment even if the local placeable identity is unavailable.
 - Client snapshot application does not grant client authority.
 
 ## Important granularity decision
