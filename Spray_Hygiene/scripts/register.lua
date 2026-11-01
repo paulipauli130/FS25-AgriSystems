@@ -1,6 +1,6 @@
 local modName = g_currentModName
 local modDirectory = g_currentModDirectory
-local specializationName = modName .. ".agriSystemsSprayer"
+local specializationName = "agriSystemsSprayer"
 
 if g_specializationManager:getSpecializationByName(specializationName) == nil then
     local success = g_specializationManager:addSpecialization(

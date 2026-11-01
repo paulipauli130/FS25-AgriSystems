@@ -1,6 +1,6 @@
 local modName=g_currentModName
 local modDirectory=g_currentModDirectory
-local specializationName=modName..".agriSystemsHusbandry"
+local specializationName="agriSystemsHusbandry"
 
 if g_specializationManager:getSpecializationByName(specializationName)==nil then
  local success=g_specializationManager:addSpecialization(
