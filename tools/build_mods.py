@@ -74,7 +74,7 @@ def validate(mod_root: Path) -> str:
     version = desc.findtext("version")
     if not version:
         version = desc.findtext("./version")
-    icon_filename = desc.get("iconFilename")
+    icon_filename = desc.findtext("iconFilename")
     if icon_filename != "icon.dds":
         raise RuntimeError(f"modDesc must declare iconFilename=\"icon.dds\": {desc_path}")
     for node in desc.findall("./extraSourceFiles/sourceFile"):
@@ -158,7 +158,7 @@ def build(output: Path, clean: bool) -> list[Path]:
                 required.update(
                     f"{prefix}_{language}.xml" for language in ("en", "de")
                 )
-            required.add(descriptor.get("iconFilename"))
+            required.add(descriptor.findtext("iconFilename"))
             missing = sorted(path for path in required if path not in names)
             if missing:
                 raise RuntimeError(
