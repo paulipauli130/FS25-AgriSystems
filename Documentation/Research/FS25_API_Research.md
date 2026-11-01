@@ -497,3 +497,20 @@ Avoid a permanent per-frame `onUpdate` loop for drift or contamination. Use work
 ### Separate mod namespaces
 
 Both mods should use separate technical names and unique global namespaces. Common code can be duplicated into each package at build time, but the runtime must not assume the other mod is present. If both mods are installed, their shared helper code must not overwrite the same globals or register duplicate event classes. Prefix every event, specialization, settings file, log category and savegame XML root with its own mod identity.
+
+
+## Script-only integration – livestock husbandry placeable types
+
+The same generic FS25 `TypeManager` lifecycle is used for placeable types. The GDN documents `TypeManager:addSpecialization(typeName, specName)` and `validateTypes()`; the base FS25 husbandry specialization exposes `onHusbandryAnimalsUpdate(clusters)`, `getClusters()`, and `getClusterById(id)` through the husbandry placeable.
+
+**Recommended Farm Biosecurity integration:**
+1. Register a dedicated placeable specialization with the mod's namespace.
+2. Hook the generic type validation path for the placeable type manager only.
+3. Add the biosecurity specialization only to placeable types that already contain `PlaceableHusbandryAnimals`.
+4. Subscribe to the husbandry's `onHusbandryAnimalsUpdate` event and reconcile the current cluster collection when it fires.
+5. Use the placeable object as the husbandry scope and current cluster IDs as lookup keys, but keep a mod-owned persistent record key separate because the underlying cluster ID lifecycle is not yet proven stable.
+6. Keep all disease progression, exposure, and quarantine state server-authoritative.
+
+Do not attach the livestock disease specialization to every placeable. Do not create one update loop per animal. Update when cluster membership changes, on relevant simulation time intervals, and on contact events. A cluster represents a group and may contain multiple animals; this is suitable for scalable disease simulation but cannot represent different health status for individual animals inside one cluster unless the engine cluster is split or the mod tracks individual-level overlays itself. Individual-level simulation is therefore out of scope for the first release.
+
+**Open technical check:** verify the exact runtime global and lifecycle for the placeable type manager in the user's FS25 1.25 build, plus whether all husbandry types use the base specialization class directly or some map/mod husbandries implement alternate animal systems.
