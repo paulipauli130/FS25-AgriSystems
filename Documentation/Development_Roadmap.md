@@ -1,8 +1,8 @@
 # Development Roadmap
 
-## Current status — implementation foundation started
+## Current status — first gameplay data models committed
 
-Research and design are complete at source-review level. The first Spray & Hygiene bootstrap/configuration files are now committed. This is infrastructure only: no gameplay specialization or gameplay effect is implemented, and the mod has not yet been loaded in the game or run through GIANTS TestRunner.
+Research and design are complete at source-review level. Spray & Hygiene now contains a bootstrap, validated configuration and two pure Lua gameplay data models. They are not yet connected to FS25 vehicle callbacks, persistence or networking. No gameplay effect is active and no in-game validation has been performed.
 
 ## Phase 1 — Research and specifications (complete)
 - [x] Project structure and contribution conventions.
@@ -23,11 +23,12 @@ Research and design are complete at source-review level. The first Spray & Hygie
 
 ## Phase 3 — Spray & Hygiene implementation
 - [x] Initial modDesc and bootstrap/configuration foundation committed (not runtime-tested).
+- [x] Pure Lua condition and cleaning/residue models committed (not engine-integrated).
 - [ ] Runtime-load validation and GIANTS log review.
 - [ ] Sprayer specialization registration and non-invasive observation.
 - [ ] Server persistence/configuration and networking.
-- [ ] Sprayer condition and coverage model.
-- [ ] Cleaning/residue model.
+- [ ] Connect condition/coverage model to verified successful spraying events.
+- [ ] Cleaning actions, costs and residue transitions.
 - [ ] Wind provider and drift model behind runtime validation gate.
 - [ ] Farmland contamination.
 - [ ] UI/localization completion and packaging.
@@ -54,5 +55,5 @@ Research and design are complete at source-review level. The first Spray & Hygie
 - Server owns gameplay state; clients submit validated intent.
 - Disabled modules must preserve vanilla behavior.
 - Never modify native sprayer consumption in v1.
-- No runtime feature is marked complete until tested in-game.
-- Source review is not a substitute for current-patch runtime validation.
+- No runtime feature is marked complete until the relevant current-patch tests pass.
+- Source review is not a substitute for runtime validation.

@@ -7,21 +7,23 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The
 ## [Unreleased]
 
 ### Added
-- Initial Spray & Hygiene script-mod manifest and bootstrap foundation.
-- Namespaced configuration defaults and validation helpers for the four planned modules.
+- Initial Spray & Hygiene mod manifest and bootstrap foundation.
+- Validated configuration defaults for all four planned modules.
+- Pure Lua sprayer-condition model: condition, wear, calibration, nozzle-group blockage and coverage factor.
+- Pure Lua cleaning/residue model for tank, lines and filters with abstract product-class carry-over.
 - English and German localization starter files.
-- Explicit implementation status and runtime-validation gates in project documentation.
+- Manual gameplay-model test plan.
 
 ### Changed
-- Completed and consolidated the source-level FS25 API research and both mod technical specifications.
-- Updated project overview, architecture, roadmap and development setup to reflect the transition from research/specification into implementation.
-- Clarified that the first Spray & Hygiene commit is infrastructure only and does not yet change gameplay.
+- Completed source-level FS25 API research and both independent mod technical specifications.
+- Updated project overview, architecture, roadmap and development setup to reflect implementation status.
 
-### Not yet implemented
+### Not yet implemented or runtime-certified
 - Sprayer specialization registration and non-invasive processing observation.
-- Spray drift, equipment condition, cleaning/residue and farmland contamination gameplay.
-- Farm Biosecurity code and gameplay.
-- Savegame persistence, network events, in-game UI and release packaging.
+- Connecting condition degradation to successful native spraying.
+- Cleaning actions, water/resource costs and in-game UI.
+- Spray drift, farmland contamination and Farm Biosecurity gameplay.
+- Savegame persistence, network events and release packaging.
 - GIANTS TestRunner, single-player, multiplayer and dedicated-server validation.
 
 ## Releases
