@@ -1,7 +1,7 @@
 AgriSystemsFarmBiosecurity = AgriSystemsFarmBiosecurity or {}
 local Mod=AgriSystemsFarmBiosecurity
 Mod.MOD_NAME=g_currentModName or "FS25_AgriSystems_FarmBiosecurity"
-Mod.VERSION="0.4.0.0"
+Mod.VERSION="0.4.1.0"
 Mod.CONFIG=nil
 Mod.STATE_STORE=nil
 local function log(message) print(string.format("[%s] %s",Mod.MOD_NAME,message)) end
