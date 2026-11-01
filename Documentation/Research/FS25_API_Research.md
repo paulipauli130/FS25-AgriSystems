@@ -68,7 +68,7 @@ FS25 itself confirms cluster-ID lookup in an animal network event and cluster it
 
 Disease, infection, vaccination, and quarantine are not documented as built-in FS25 systems in the reviewed references. These mechanics would be custom. Before implementation, we must inspect the FS25 husbandry/cluster source to verify stable identifiers, cluster replacement/merge/split behavior, movement between husbandries, and save/load semantics. A cluster's array position is not a safe persistent key. A cluster ID is promising, but its uniqueness scope and lifecycle must be confirmed.
 
-## Farmland, work areas, persistence, and networking
+## Farmland, fields, persistence, and networking
 
 ### Confirmed in the FS25 GDN
 
@@ -76,16 +76,16 @@ Disease, infection, vaccination, and quarantine are not documented as built-in F
 - `FarmlandManager:getFarmlandOwner(farmlandId)` returns the owning farm ID and returns `0` when no owner mapping exists. `getFarmlandAtWorldPosition(x, z)` returns the farmland object, and `getCanAccessLandAtWorldPosition(farmId, x, z)` checks farm access at a world position.
 - `FarmlandManager:getIsOwnedByFarmAtWorldPosition(farmId, x, z)` checks whether the sampled position belongs to that farm. `getIsOwnedByFarmAlongLine(...)` can test ownership along a line, which may be useful for diagnostics but is not a substitute for sampling the actual sprayer work-area footprint.
 - These methods concern farmland parcels/ownership, not crop-field identity. A single farmland can contain more than one field or non-field area. Spray & Hygiene should therefore store farmland association separately from any future crop-field identity.
+- The FS25 `FieldManager` is a separate manager with its own `fields` collection, `farmlandIdFieldMapping`, `loadFromXMLFile()`, and `saveToXMLFile()`. Its `saveToXMLFile(xmlFilename)` writes field records and pending field updates to a dedicated fields XML file. This confirms that field data is managed and persisted separately from farmland ownership.
 - FS25 specializations expose lifecycle callbacks such as `onLoad`, `onPostLoad`, `onReadStream`, `onWriteStream`, `onReadUpdateStream`, and `onWriteUpdateStream`. GDN examples explicitly describe `onWriteStream` as server-side on join and `onReadStream` as client-side on join.
-- FS25 placeable specializations can register savegame XML paths with `registerSavegameXMLPaths(schema, basePath)` and persist values with `saveToXMLFile(xmlFile, key, usedModNames)`. The GDN `PlaceableFarmhouse` is one documented example. Other specializations register update-stream callbacks separately, demonstrating that save persistence and live network synchronization are distinct concerns.
+- FS25 placeable specializations can register savegame XML paths with `registerSavegameXMLPaths(schema, basePath)` and persist values with `saveToXMLFile(xmlFile, key, usedModNames)`. The GDN `PlaceableFarmhouse` is one documented example. The `PlaceableFactory` example shows nested data being written with `xmlFile:setSortedTable(...)` and delegated storage serialization via `storage:saveToXMLFile(...)`.
 - `FillUnit` registers the event `onFillUnitFillLevelChanged` as well as fill-type and filling-state events. This can be used as an event-driven signal for tank state changes rather than polling every frame, subject to the exact callback signature documented above.
-- The FS25 `FieldManager` is a separate manager with its own `fields` collection, `farmlandIdFieldMapping`, `loadFromXMLFile()`, and `saveToXMLFile()`. This supports treating crop-field identity separately from farmland parcel ownership. Its exact position-to-field lookup methods still need inspection.
 
 ### Current conclusion
 
-The FS25 API provides a documented way to map world positions to farmland IDs and owners, plus established specialization lifecycle hooks for savegame persistence and initial/live network synchronization. AgriSystems state should be authoritative on the server, saved persistently, and replicated only when clients need to display or react to it. We should not assume that writing a savegame value automatically synchronizes it to multiplayer clients.
+The FS25 API provides separate systems for farmland ownership and crop-field data. It also provides established savegame XML patterns and distinct network stream callbacks. AgriSystems state should be authoritative on the server, saved persistently, and replicated only when clients need to display or react to it. We should not assume that writing a savegame value automatically synchronizes it to multiplayer clients.
 
-For Spray & Hygiene, farmland association is feasible from world coordinates, but it is not the same as crop-field identity. For Farm Biosecurity, a persistent server-side registry or placeable/cluster-associated data may be feasible, but the correct key and lifecycle depend on the still-open husbandry/cluster investigation.
+For Spray & Hygiene, field identity should be resolved through the FieldManager/field system where possible, while farmland ownership remains a separate attribute. For Farm Biosecurity, a persistent server-side registry or placeable/cluster-associated data may be feasible, but the correct key and lifecycle depend on the still-open husbandry/cluster investigation.
 
 ## Research questions still open
 
@@ -108,7 +108,7 @@ For Spray & Hygiene, farmland association is feasible from world coordinates, bu
 ### Animals and husbandry
 
 1. Inspect the FS25 husbandry and cluster-system source for exact methods and lifecycle.
-2. Verify stable cluster IDs, cluster add/remove/merge/split behavior, and how animals transferred between husbandries are represented.
+2. Verify stable identifiers, cluster add/remove/merge/split behavior, and how animals transferred between husbandries are represented.
 3. Inspect FS25 cluster savegame serialization and network events before selecting a persistence model for quarantine/disease status.
 4. Determine which stock animal dirt/cleanliness state is available across animal types and what must remain custom disease/biosecurity state.
 
