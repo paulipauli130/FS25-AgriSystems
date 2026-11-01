@@ -1,4 +1,4 @@
-name: Pure Lua model tests
+name: AgriSystems CI and build
 
 on:
   push:
@@ -7,11 +7,16 @@ on:
     branches: [main]
 
 jobs:
-  model-tests:
+  validate-and-build:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
 
       - name: Install Lua 5.1
         run: |
@@ -27,3 +32,16 @@ jobs:
 
       - name: Run Farm Biosecurity model tests
         run: lua5.1 Testing/Model_Tests/Run_Farm_Biosecurity.lua
+
+      - name: Build and validate both mod ZIPs
+        run: python tools/build_mods.py --clean
+
+      - name: Upload development mod ZIPs
+        uses: actions/upload-artifact@v4
+        with:
+          name: FS25-AgriSystems-development-builds
+          path: |
+            Releases/FS25_AgriSystems_SprayHygiene.zip
+            Releases/FS25_AgriSystems_FarmBiosecurity.zip
+          if-no-files-found: error
+          retention-days: 30
