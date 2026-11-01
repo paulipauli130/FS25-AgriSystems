@@ -25,7 +25,6 @@ Spezialisierung, fahrzeugbezogene Speicherung und erste Synchronisierung befinde
         <sourceFile filename="scripts/core/SprayDrift.lua"/>
         <sourceFile filename="scripts/core/FieldContamination.lua"/>
         <sourceFile filename="scripts/core/StateStore.lua"/>
-        <sourceFile filename="scripts/vehicle/AgriSystemsSprayer.lua"/>
         <sourceFile filename="scripts/register.lua"/>
         <sourceFile filename="scripts/AgriSystemsSprayHygiene.lua"/>
     </extraSourceFiles>
