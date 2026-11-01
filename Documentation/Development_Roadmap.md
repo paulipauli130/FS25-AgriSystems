@@ -2,7 +2,7 @@
 
 ## Current status
 
-Spray & Hygiene contains four pure gameplay models, a state container, early Sprayer-only specialization, per-vehicle XML save/load code and an initial server-to-client snapshot. These engine-facing features are source-reviewed but not runtime-tested. Farm Biosecurity has an independent bootstrap, four pure gameplay models and a server-gated group StateStore with conservative split/merge helpers. Neither mod is runtime-certified and no public release is available.
+Spray & Hygiene contains four pure gameplay models, a state container, early Sprayer-only specialization, per-vehicle XML save/load code and an initial server-to-client snapshot. These engine-facing features are source-reviewed but not runtime-tested. Farm Biosecurity has an independent bootstrap, four pure gameplay models and a server-gated group StateStore with conservative split/merge helpers and bounded storage. Both mods have standalone Lua assertion suites and independent runtime packaging scripts. Neither mod is runtime-certified and no public release is available.
 
 ## Phase 1 — Research and specifications (complete)
 - [x] Project structure and contribution conventions.
@@ -15,11 +15,12 @@ Spray & Hygiene contains four pure gameplay models, a state container, early Spr
 - [x] Multiplayer authority, persistence, performance, compatibility and acceptance criteria.
 
 ## Phase 2 — Shared development conventions
-- [ ] Define build/package scripts and versioning.
+- [ ] Finalize build/package scripts and versioning.
 - [x] Define independent mod namespaces and initial configuration conventions.
 - [ ] Finalize shared event and XML schema conventions.
 - [ ] Establish TestRunner invocation and supported game patch in the local test environment.
 - [x] Add standalone Lua model assertion tests.
+- [x] Add independent runtime-only ZIP packaging script.
 
 ## Phase 3 — Spray & Hygiene implementation
 - [x] Bootstrap and validated configuration.
@@ -39,12 +40,12 @@ Spray & Hygiene contains four pure gameplay models, a state container, early Spr
 - [ ] Packaging and release validation.
 
 ## Phase 4 — Farm Biosecurity implementation
-- [x] Independent modDesc and bootstrap foundation.
+- [x] Independent modDesc, localization and bootstrap foundation.
 - [x] Group-level disease progression and explicit contact-based exposure.
 - [x] Quarantine model with hygiene-compliance release gate.
-- [x] Dirt cleaning and disinfection model.
+- [x] Dirt cleaning and disinfection contact-time model.
 - [x] Derived weighted Biosecurity Score.
-- [x] Server-gated group StateStore with transient cluster mapping.
+- [x] Server-gated group StateStore with bounded husbandry/group/surface storage.
 - [x] Conservative split/merge helpers for disease and quarantine state.
 - [x] Standalone pure Lua model test script (execution pending).
 - [ ] Placeable specialization registration.
@@ -57,6 +58,7 @@ Spray & Hygiene contains four pure gameplay models, a state container, early Spr
 
 ## Phase 5 — Validation and release
 - [ ] Execute pure Lua model tests in a compatible Lua runtime.
+- [ ] Run PowerShell packaging script and inspect ZIP contents.
 - [ ] GIANTS TestRunner matching the installed patch.
 - [ ] Single-player regression and save migration.
 - [ ] Dedicated-server host/client/late-join/reconnect tests.

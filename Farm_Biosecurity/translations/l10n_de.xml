@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <texts>
+        <text name="agsBio_modName"><de>AgriSystems Hof-Biosicherheit</de></text>
+        <text name="agsBio_status_development"><de>Entwicklungsgrundlage</de></text>
+        <text name="agsBio_quarantine"><de>Quarantäne</de></text>
+        <text name="agsBio_disease"><de>Krankheitsverlauf</de></text>
+        <text name="agsBio_hygiene"><de>Hygiene</de></text>
+        <text name="agsBio_score"><de>Biosicherheitswert</de></text>
+    </texts>
+</l10n>

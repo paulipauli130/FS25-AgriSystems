@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<l10n>
+    <texts>
+        <text name="agsBio_modName"><en>AgriSystems Farm Biosecurity</en></text>
+        <text name="agsBio_status_development"><en>Development foundation</en></text>
+        <text name="agsBio_quarantine"><en>Quarantine</en></text>
+        <text name="agsBio_disease"><en>Disease progression</en></text>
+        <text name="agsBio_hygiene"><en>Hygiene</en></text>
+        <text name="agsBio_score"><en>Biosecurity Score</en></text>
+    </texts>
+</l10n>

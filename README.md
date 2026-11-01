@@ -8,7 +8,7 @@ The project contains two independent FS25 script mods. Each mod is designed to i
 
 > **Project status: Early implementation**
 >
-> Technical research and specifications are complete at source-review level. Both mods now have pure gameplay model foundations. Spray & Hygiene has early Sprayer specialization and per-vehicle save/network code; Farm Biosecurity has group disease, quarantine, hygiene and score models. Engine-facing features remain untested in FS25. No public release is available yet.
+> Technical research and specifications are complete at source-review level. Both mods have pure gameplay model foundations. Spray & Hygiene has early Sprayer specialization and per-vehicle save/network code; Farm Biosecurity has group disease, quarantine, hygiene, score and state-store models. Engine-facing features remain untested in FS25. No public release is available yet.
 
 ## Projects
 
@@ -34,7 +34,7 @@ Both products are independent. Neither requires the other, and there is no third
 | Project research and technical specifications | Complete at source-review level |
 | Spray & Hygiene pure gameplay models | Implemented; not engine-integrated |
 | Spray & Hygiene specialization/save/network foundation | Early source-reviewed implementation; runtime test pending |
-| Farm Biosecurity pure gameplay models | Implemented; not engine-integrated |
+| Farm Biosecurity pure gameplay models and state store | Implemented; not engine-integrated |
 | Farm Biosecurity engine integration | Not started |
 | GIANTS TestRunner / in-game validation | Pending |
 | Public releases | None |
