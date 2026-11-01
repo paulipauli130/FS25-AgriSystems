@@ -67,16 +67,19 @@ The reviewed FS25 documentation does **not** establish a built-in disease, infec
 
 ### Confirmed in the FS25 GDN
 
-- `FarmlandManager:getFarmlandIdAtWorldPosition(worldPosX, worldPosZ)` maps world X/Z coordinates to a farmland ID. Its documented return value is `0` when the position is not valid/buyable farmland. This can support associating a recorded spray-work-area position with a farmland, but the work-area parallelogram and field ownership must not be conflated with a crop field boundary.
+- `FarmlandManager:getFarmlandIdAtWorldPosition(worldPosX, worldPosZ)` maps world X/Z coordinates to a farmland ID. The documented implementation converts world coordinates into the farmland bit-vector map and reads the ID at that point. A return value of `0` means the position is not valid/buyable farmland.
+- `FarmlandManager:getFarmlandOwner(farmlandId)` returns the owning farm ID and returns `0` when no owner mapping exists. `getFarmlandAtWorldPosition(x, z)` returns the farmland object, and `getCanAccessLandAtWorldPosition(farmId, x, z)` checks farm access at a world position.
+- `FarmlandManager:getIsOwnedByFarmAtWorldPosition(farmId, x, z)` checks whether the sampled position belongs to that farm. `getIsOwnedByFarmAlongLine(...)` can test ownership along a line, which may be useful for diagnostics but is not a substitute for sampling the actual sprayer work-area footprint.
+- These methods concern farmland parcels/ownership, not crop-field identity. A single farmland can contain more than one field or non-field area. Spray & Hygiene should therefore store farmland association separately from any future crop-field identity.
 - FS25 specializations expose lifecycle callbacks such as `onLoad`, `onPostLoad`, `onReadStream`, `onWriteStream`, `onReadUpdateStream`, and `onWriteUpdateStream`. GDN examples explicitly describe `onWriteStream` as server-side on join and `onReadStream` as client-side on join.
 - FS25 placeable specializations can register savegame XML paths with `registerSavegameXMLPaths(schema, basePath)` and persist values with `saveToXMLFile(xmlFile, key, usedModNames)`. The GDN `PlaceableFarmhouse` is one documented example. Other specializations register update-stream callbacks separately, demonstrating that save persistence and live network synchronization are distinct concerns.
 - `FillUnit` registers the event `onFillUnitFillLevelChanged` as well as fill-type and filling-state events. This can be used as an event-driven signal for tank state changes rather than polling every frame, subject to the exact callback signature documented above.
 
 ### Current conclusion
 
-The FS25 API provides a documented way to map world positions to farmland IDs, plus established specialization lifecycle hooks for savegame persistence and initial/live network synchronization. AgriSystems state should be authoritative on the server, saved persistently, and replicated only when clients need to display or react to it. We should not assume that writing a savegame value automatically synchronizes it to multiplayer clients.
+The FS25 API provides a documented way to map world positions to farmland IDs and owners, plus established specialization lifecycle hooks for savegame persistence and initial/live network synchronization. AgriSystems state should be authoritative on the server, saved persistently, and replicated only when clients need to display or react to it. We should not assume that writing a savegame value automatically synchronizes it to multiplayer clients.
 
-For Spray & Hygiene, farmland association is feasible from world coordinates. For Farm Biosecurity, a persistent server-side registry or placeable/cluster-associated data may be feasible, but the correct key and lifecycle depend on the still-open husbandry/cluster investigation.
+For Spray & Hygiene, farmland association is feasible from world coordinates, but it is not the same as crop-field identity. For Farm Biosecurity, a persistent server-side registry or placeable/cluster-associated data may be feasible, but the correct key and lifecycle depend on the still-open husbandry/cluster investigation.
 
 ## Research questions still open
 
@@ -105,7 +108,7 @@ For Spray & Hygiene, farmland association is feasible from world coordinates. Fo
 
 ### Field and persistence integration
 
-1. Inspect exact `FarmlandManager` and field-system APIs for field identity versus farmland ownership.
+1. Inspect whether FS25 exposes a distinct crop-field identity API and how it differs from farmland parcel lookup.
 2. Select the persistence host for each mod's custom state and document save/load behavior under dedicated server restart and client join.
 
 ## General research rules
