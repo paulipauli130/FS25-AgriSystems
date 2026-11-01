@@ -1,6 +1,6 @@
 AgriSystemsHusbandry = {}
 local Spec=AgriSystemsHusbandry
-local ROOT="agriSystemsBiosecurity"
+local ROOT="agriSystemsHusbandry"
 local MAX_GROUPS=512
 local MAX_SURFACES=128
 
@@ -18,7 +18,8 @@ function Spec.prerequisitesPresent(specializations)
 end
 
 function Spec.registerSavegameXMLPaths(schema,basePath)
- local base=basePath.."."..ROOT
+ local base=basePath
+ schema:setXMLSpecializationType("AgriSystemsHusbandry")
  schema:register(XMLValueType.INT,base.."#schemaVersion","AgriSystems Biosecurity schema")
  schema:register(XMLValueType.FLOAT,base.."#clockHours","Elapsed in-game hours for Biosecurity state")
  schema:register(XMLValueType.STRING,base..".group(?)#id","Mod-owned animal cohort ID")
@@ -37,6 +38,7 @@ function Spec.registerSavegameXMLPaths(schema,basePath)
  schema:register(XMLValueType.FLOAT,base..".surface(?)#contamination","Surface contamination")
  schema:register(XMLValueType.FLOAT,base..".surface(?)#disinfectantUntil","Disinfection contact-time end")
  schema:register(XMLValueType.FLOAT,base..".surface(?)#pendingEffectiveness","Pending disinfection effectiveness")
+ schema:setXMLSpecializationType()
 end
 
 function Spec.registerOverwrittenFunctions(placeableType)
@@ -197,7 +199,7 @@ function Spec:saveToXMLFile(xmlFile,key,usedModNames)
  local store=getStore()
  local data=store~=nil and store:getHusbandryState(spec.husbandryId) or nil
  if data==nil then return end
- local base=key.."."..ROOT
+ local base=key
  xmlFile:setValue(base.."#schemaVersion",1)
  xmlFile:setValue(base.."#clockHours",spec.clockHours or 0)
  local index=0

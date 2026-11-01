@@ -1,7 +1,7 @@
 AgriSystemsSprayer = {}
 
 local Spec = AgriSystemsSprayer
-local ROOT_KEY = "agriSystemsSprayHygiene"
+local ROOT_KEY = "agriSystemsSprayer"
 local MAX_RESIDUE_ENTRIES = 48
 local MAX_NOZZLE_GROUPS = 32
 
@@ -20,6 +20,7 @@ end
 function Spec.initSpecialization()
     local schema = Vehicle.xmlSchemaSavegame
     local base = "vehicles.vehicle(?)." .. ROOT_KEY
+    Vehicle.xmlSchemaSavegame:setXMLSpecializationType("AgriSystemsSprayer")
     schema:register(XMLValueType.INT, base .. "#schemaVersion", "AgriSystems state schema version")
     schema:register(XMLValueType.FLOAT, base .. "#condition", "Sprayer condition")
     schema:register(XMLValueType.FLOAT, base .. "#wear", "Sprayer wear")
@@ -29,6 +30,7 @@ function Spec.initSpecialization()
     schema:register(XMLValueType.STRING, base .. ".residue(?)#compartment", "Residue compartment")
     schema:register(XMLValueType.STRING, base .. ".residue(?)#productClass", "Residue product class")
     schema:register(XMLValueType.FLOAT, base .. ".residue(?)#amount", "Residue amount")
+    Vehicle.xmlSchemaSavegame:setXMLSpecializationType()
 end
 
 function Spec.registerEventListeners(vehicleType)
@@ -202,7 +204,7 @@ function Spec:saveToXMLFile(xmlFile, key, usedModNames)
         return
     end
 
-    local base = key .. "." .. ROOT_KEY
+    local base = key
     xmlFile:setValue(base .. "#schemaVersion", 1)
     xmlFile:setValue(base .. "#condition", spec.condition.condition)
     xmlFile:setValue(base .. "#wear", spec.condition.wear)
