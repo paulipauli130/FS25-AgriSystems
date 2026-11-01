@@ -8,51 +8,41 @@ The project contains two independent FS25 script mods. Each mod is designed to i
 
 > **Project status: Early implementation**
 >
-> Technical research and both detailed specifications are complete. The first development foundation for Spray & Hygiene is now in the repository. No gameplay feature has been runtime-certified and no public release is available yet.
-
----
+> Technical research and specifications are complete at source-review level. Both mods now have pure gameplay model foundations. Spray & Hygiene has early Sprayer specialization and per-vehicle save/network code; Farm Biosecurity has group disease, quarantine, hygiene and score models. Engine-facing features remain untested in FS25. No public release is available yet.
 
 ## Projects
 
 ### 1. AgriSystems Spray & Hygiene
-
 A modular system for crop protection, spraying technology, machine hygiene and mechanical contamination transfer.
 
-Planned modules:
 - **Spray Drift** — bounded drift and off-target exposure based on weather and equipment.
 - **Sprayer Engineering** — equipment condition, nozzle wear/blockage and application quality.
 - **Sprayer Cleaning** — tank, line, filter and nozzle-group residues and cleaning procedures.
 - **Field Contamination** — transfer of weed seeds, crop residues and pathogen loads through machinery.
 
-The modules are designed to be configurable and independently enabled. Native FS25 spray application and fill consumption must remain unchanged.
+Native FS25 spray application and fill consumption must remain unchanged.
 
 ### 2. AgriSystems Farm Biosecurity
-
-A separate mod for livestock quarantine, group-level disease exposure, vehicle/equipment/visitor hygiene, barn hygiene and a derived Biosecurity Score.
+An independent mod for livestock quarantine, group-level disease exposure/progression, vehicle/equipment/visitor hygiene, barn hygiene and a derived Biosecurity Score.
 
 Both products are independent. Neither requires the other, and there is no third shared runtime package.
-
----
 
 ## Development status
 
 | Area | Status |
 |---|---|
-| Project structure and conventions | Complete |
-| FS25 source/API research | Complete at source-review level |
-| Spray & Hygiene technical specification | Complete |
-| Farm Biosecurity technical specification | Complete |
-| Spray & Hygiene bootstrap/configuration foundation | Initial source committed; not yet game-tested |
-| Spray & Hygiene gameplay systems | Not implemented |
-| Farm Biosecurity implementation | Not started |
+| Project research and technical specifications | Complete at source-review level |
+| Spray & Hygiene pure gameplay models | Implemented; not engine-integrated |
+| Spray & Hygiene specialization/save/network foundation | Early source-reviewed implementation; runtime test pending |
+| Farm Biosecurity pure gameplay models | Implemented; not engine-integrated |
+| Farm Biosecurity engine integration | Not started |
 | GIANTS TestRunner / in-game validation | Pending |
 | Public releases | None |
 
-See [Development Roadmap](Documentation/Development_Roadmap.md) for detailed milestones and [CHANGELOG](CHANGELOG.md) for repository changes.
+See Documentation/Development_Roadmap.md and CHANGELOG.md.
 
 ## Development principles
-
-- **Realism:** use plausible, bounded gameplay models rather than unsupported claims of physical accuracy.
+- **Realism:** bounded gameplay models, no unsupported physical or veterinary accuracy claims.
 - **Modularity:** independent systems and configuration.
 - **Performance:** event-driven work and bounded update intervals; no global per-frame scans.
 - **Multiplayer:** server-authoritative simulation and validated client requests.
@@ -60,25 +50,16 @@ See [Development Roadmap](Documentation/Development_Roadmap.md) for detailed mil
 - **Transparency:** distinguish source-reviewed behavior from runtime-tested behavior.
 
 ## Repository layout
-
-- `Spray_Hygiene/` — independent mod source, configuration, documentation and tests.
-- `Farm_Biosecurity/` — independent mod source, configuration, documentation and tests.
-- `Core/` — development-time shared conventions/source only; not a required third mod.
-- `Documentation/` — project architecture, research and roadmap.
-- `Testing/` — test plans, reports and local test material (savegames/logs are not committed).
+- Spray_Hygiene/ — independent mod source, configuration, documentation and tests.
+- Farm_Biosecurity/ — independent mod source, configuration, documentation and tests.
+- Core/ — development-time shared conventions/source only; not a required third mod.
+- Documentation/ — project architecture, research and roadmap.
+- Testing/ — test plans, reports and local test material.
 
 ## Development and testing
-
-The installable mod folder must contain `modDesc.xml` at its root. Development source and documentation remain in the repository; release ZIPs are built separately with only runtime files.
+Installable mod folders have modDesc.xml at their root. Development source and documentation remain in the repository; release ZIPs are built separately with runtime files only.
 
 Target platform is Farming Simulator 25 on PC/Mac. Multiplayer and dedicated-server support are design goals, not certified until tested in-game. Console script-mod support is not promised.
 
-See [Development Setup](Documentation/Development_Setup.md) and the individual mod specifications.
-
-## Contributing
-
-Bug reports, feature proposals, documentation improvements and tested code contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes.
-
 ## License
-
-The project is distributed under the MIT License. See [LICENSE](LICENSE).
+MIT. See LICENSE.

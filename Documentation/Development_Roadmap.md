@@ -1,8 +1,8 @@
 # Development Roadmap
 
-## Current status — models, state container and early Sprayer specialization
+## Current status
 
-Spray & Hygiene contains four pure gameplay models, a server-gated state container, Sprayer-only specialization registration, per-vehicle XML save/load code, a read-only native callback observer and an initial server-to-client snapshot. All engine-facing work remains source-reviewed and untested in FS25. No gameplay penalties or native spray changes are active.
+Spray & Hygiene contains four pure gameplay models, a state container, early Sprayer-only specialization, per-vehicle XML save/load code and an initial server-to-client snapshot. These engine-facing features are source-reviewed but not runtime-tested. Farm Biosecurity now has an independent bootstrap and four pure gameplay models. Neither mod is runtime-certified and no public release is available.
 
 ## Phase 1 — Research and specifications (complete)
 - [x] Project structure and contribution conventions.
@@ -21,30 +21,35 @@ Spray & Hygiene contains four pure gameplay models, a server-gated state contain
 - [ ] Establish TestRunner invocation and supported game patch in the local test environment.
 
 ## Phase 3 — Spray & Hygiene implementation
-- [x] Bootstrap and validated configuration foundation.
+- [x] Bootstrap and validated configuration.
 - [x] Pure Lua condition, cleaning, drift and farmland contamination models.
-- [x] Server-gated engine-independent state container (not mission-persistent).
+- [x] Server-gated engine-independent state container.
 - [x] Sprayer specialization registration restricted to base Sprayer types (source-reviewed).
-- [x] Read-only native spray callback observer (diagnostic count only).
+- [x] Read-only native spray callback observer.
 - [x] Per-vehicle XML schema and save/load code (runtime reload not yet tested).
-- [x] Initial server-to-client snapshot for per-vehicle condition and cleaning state.
+- [x] Initial server-to-client snapshot.
 - [ ] Runtime-load validation and GIANTS log review.
-- [ ] Validate registration hook on exact target patch and mod load order.
-- [ ] Test per-vehicle save/reload and stream serialization in game.
 - [ ] Incremental dirty-state replication.
 - [ ] Connect condition/coverage model to measured successful spraying work.
 - [ ] Cleaning actions, costs and in-game UI.
 - [ ] Wind provider and drift model behind runtime validation gate.
 - [ ] Mission-level farmland contamination persistence and contact adapter.
-- [ ] UI/localization completion and packaging.
+- [ ] Packaging and release validation.
 
 ## Phase 4 — Farm Biosecurity implementation
-- [ ] Minimal modDesc and placeable specialization registration.
-- [ ] Husbandry identity/reconciliation and persistence.
-- [ ] Quarantine and disease progression.
-- [ ] Vehicle/equipment/visitor/barn hygiene.
-- [ ] Biosecurity Score and UI/localization.
-- [ ] Packaging.
+- [x] Independent modDesc and bootstrap foundation.
+- [x] Group-level disease progression model.
+- [x] Explicit contact-based exposure calculation.
+- [x] Quarantine model with hygiene-compliance release gate.
+- [x] Dirt cleaning and disinfection model.
+- [x] Derived weighted Biosecurity Score.
+- [ ] Placeable specialization registration.
+- [ ] Husbandry identity and conservative cluster reconciliation.
+- [ ] Group and husbandry persistence.
+- [ ] Server networking and late-join snapshot.
+- [ ] Quarantine and hygiene actions, costs and UI.
+- [ ] Vehicle/equipment/visitor/barn integration.
+- [ ] Runtime validation and packaging.
 
 ## Phase 5 — Validation and release
 - [ ] GIANTS TestRunner matching the installed patch.
