@@ -3,7 +3,7 @@
  <author>Paul</author><version>0.4.0.0</version>
  <title><en>AgriSystems Farm Biosecurity</en><de>AgriSystems Hof-Biosicherheit</de></title>
  <description>
-  <en><![CDATA[Development foundation with group disease, quarantine, hygiene, score and server-gated state models. Gameplay integration is not active yet.]]></en>
+  <en><![CDATA[Development foundation with group disease, quarantine, hygiene, score and server-gated state models. Initial placeable integration is in development; gameplay and multiplayer validation are pending.]]></en>
   <de><![CDATA[Entwicklungsgrundlage mit Modellen für gruppenbasierte Krankheitsentwicklung, Quarantäne, Hygiene und Biosicherheitsbewertung. Die Gameplay-Integration ist noch nicht aktiv.]]></de>
  </description>
  <multiplayer supported="true"/>
@@ -14,6 +14,7 @@
   <sourceFile filename="scripts/core/Quarantine.lua"/>
   <sourceFile filename="scripts/core/Hygiene.lua"/>
   <sourceFile filename="scripts/core/BiosecurityScore.lua"/>
+  <sourceFile filename="scripts/core/StateStore.lua"/>
   <sourceFile filename="scripts/register.lua"/>
   <sourceFile filename="scripts/AgriSystemsFarmBiosecurity.lua"/>
  </extraSourceFiles>

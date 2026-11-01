@@ -46,6 +46,8 @@ function Spec.registerEventListeners(placeableType)
  SpecializationUtil.registerEventListener(placeableType,"onHourChanged",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onWriteStream",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onReadStream",Spec)
+ SpecializationUtil.registerEventListener(placeableType,"onWriteStream",Spec)
+ SpecializationUtil.registerEventListener(placeableType,"onReadStream",Spec)
 end
 
 local function makeCohortId(subType)
@@ -223,6 +225,83 @@ function Spec:saveToXMLFile(xmlFile,key,usedModNames)
   xmlFile:setValue(s.."#pendingEffectiveness",surface.pendingDisinfectantEffectiveness)
   index=index+1
  end
+end
+
+
+function Spec:onWriteStream(streamId,connection)
+ if not self.isServer then return end
+ local spec=self.spec_agriSystemsBiosecurity
+ local store=getStore()
+ local data=spec~=nil and spec.husbandryId~=nil and store~=nil and store:getHusbandryState(spec.husbandryId) or nil
+ streamWriteFloat32(streamId,spec~=nil and spec.clockHours or 0)
+ local groupList={}
+ for id,record in pairs((data~=nil and data.groups) or {}) do
+  if #groupList<MAX_GROUPS then table.insert(groupList,{id=id,record=record}) end
+ end
+ streamWriteUInt16(streamId,#groupList)
+ for _,entry in ipairs(groupList) do
+  local d=entry.record.disease
+  streamWriteString(streamId,entry.id)
+  streamWriteString(streamId,d.status or "susceptible")
+  streamWriteString(streamId,d.diseaseId or "")
+  streamWriteFloat32(streamId,d.elapsedHours or 0)
+  streamWriteFloat32(streamId,d.exposureLoad or 0)
+  streamWriteFloat32(streamId,d.severity or 0)
+  local q=entry.record.quarantine
+  streamWriteBool(streamId,q~=nil)
+  if q~=nil then
+   streamWriteBool(streamId,q.active)
+   streamWriteFloat32(streamId,q.startedAtHours)
+   streamWriteFloat32(streamId,q.durationHours)
+   streamWriteBool(streamId,q.hygieneCompliant)
+   streamWriteBool(streamId,q.releaseRequested)
+  end
+ end
+ local surfaces={}
+ for id,surface in pairs((data~=nil and data.hygiene and data.hygiene.surfaces) or {}) do
+  if #surfaces<MAX_SURFACES then table.insert(surfaces,{id=id,value=surface}) end
+ end
+ streamWriteUInt8(streamId,#surfaces)
+ for _,entry in ipairs(surfaces) do
+  streamWriteString(streamId,entry.id)
+  streamWriteFloat32(streamId,entry.value.dirt)
+  streamWriteFloat32(streamId,entry.value.contamination)
+  streamWriteFloat32(streamId,entry.value.disinfectantUntilHours)
+  streamWriteFloat32(streamId,entry.value.pendingDisinfectantEffectiveness)
+ end
+end
+
+function Spec:onReadStream(streamId,connection)
+ if self.isServer then return end
+ local spec=self.spec_agriSystemsBiosecurity
+ if spec==nil then return end
+ local store=getStore()
+ local husbandryId=spec.husbandryId
+ spec.clockHours=math.max(0,math.min(100000000,streamReadFloat32(streamId)))
+ local data={groups={},hygiene={surfaces={}}}
+ local groupCount=math.min(streamReadUInt16(streamId),MAX_GROUPS)
+ for _=1,groupCount do
+  local id=streamReadString(streamId)
+  local status=streamReadString(streamId)
+  local diseaseId=streamReadString(streamId)
+  local disease={groupId=id,status=status,diseaseId=diseaseId~="" and diseaseId or nil,
+   elapsedHours=streamReadFloat32(streamId),exposureLoad=streamReadFloat32(streamId),severity=streamReadFloat32(streamId)}
+  local quarantine=nil
+  if streamReadBool(streamId) then
+   quarantine={groupId=id,active=streamReadBool(streamId),startedAtHours=streamReadFloat32(streamId),
+    durationHours=streamReadFloat32(streamId),hygieneCompliant=streamReadBool(streamId),
+    releaseRequested=streamReadBool(streamId),reason="network"}
+  end
+  if type(id)=="string" and id~="" then data.groups[id]={disease=disease,quarantine=quarantine} end
+ end
+ local surfaceCount=math.min(streamReadUInt8(streamId),MAX_SURFACES)
+ for _=1,surfaceCount do
+  local id=streamReadString(streamId)
+  local surface={dirt=streamReadFloat32(streamId),contamination=streamReadFloat32(streamId),
+   disinfectantUntilHours=streamReadFloat32(streamId),pendingDisinfectantEffectiveness=streamReadFloat32(streamId)}
+  if type(id)=="string" and id~="" then data.hygiene.surfaces[id]=surface end
+ end
+ if store~=nil and husbandryId~=nil then store:applyClientSnapshot(husbandryId,data) end
 end
 
 function Spec:onDelete()
