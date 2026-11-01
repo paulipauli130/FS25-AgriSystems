@@ -514,3 +514,28 @@ The same generic FS25 `TypeManager` lifecycle is used for placeable types. The G
 Do not attach the livestock disease specialization to every placeable. Do not create one update loop per animal. Update when cluster membership changes, on relevant simulation time intervals, and on contact events. A cluster represents a group and may contain multiple animals; this is suitable for scalable disease simulation but cannot represent different health status for individual animals inside one cluster unless the engine cluster is split or the mod tracks individual-level overlays itself. Individual-level simulation is therefore out of scope for the first release.
 
 **Open technical check:** verify the exact runtime global and lifecycle for the placeable type manager in the user's FS25 1.25 build, plus whether all husbandry types use the base specialization class directly or some map/mod husbandries implement alternate animal systems.
+
+
+## Multiplayer event security – request validation
+
+The official FS25 GDN `PlayerSetFarmEvent` demonstrates an important distinction between transport and authorization:
+- `readStream` decodes the player object and requested farm ID, then calls `run(connection)`.
+- `run` distinguishes server-side execution using `not connection:getIsServer()`.
+- On the server, it resolves the actual user/farm, checks the requested farm exists, and validates the user's admin/password authorization before changing farm membership.
+- Only after server-side validation does it update state and send/broadcast the result.
+
+Other base-game events such as `AnimalNameEvent` show husbandry-scoped serialization of a placeable object reference plus a cluster ID, but do not contain the same detailed authorization checks in the public GDN excerpt. Do not assume every vanilla event is an adequate security template for a new gameplay system.
+
+**AgriSystems event rule:** clients may send *requests*, never authoritative results. The server must independently validate:
+1. sender identity and that the player object is valid;
+2. the referenced vehicle/placeable still exists and is synchronized;
+3. the player has the required farm ownership/access/permission;
+4. the action is valid for the current object state and module configuration;
+5. numeric values, enum IDs, strings and object references are in allowed bounds;
+6. request rate is reasonable to prevent spam.
+
+The server then applies the state change and broadcasts the accepted state. A client must never be able to set its own contamination level, disease state, sprayer condition, wind reading, or arbitrary farm score by sending raw values.
+
+Use object references via `NetworkUtil.writeNodeObject/readNodeObject` when the referenced game object is network-synchronized. Serialize compact numeric identifiers and values with explicit bounds. For custom records not represented by a game network object, use mod-owned IDs scoped to the owning save/husbandry/implement and validate them against the server's registry. Do not serialize arbitrary Lua tables or assume a local object pointer is meaningful on another peer.
+
+For initial join, send a compact authoritative snapshot; for later changes, send delta events or dirty-state updates. Avoid broadcasting the full farm/animal/field database every tick.
