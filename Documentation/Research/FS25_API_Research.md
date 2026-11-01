@@ -460,3 +460,40 @@ For this project:
 - Confirm native crop application and native fill-unit consumption remain unchanged when optional realism modules are disabled.
 - Confirm disabling one module does not disable unrelated modules.
 - Confirm uninstalling a mod does not corrupt the save; define whether orphaned mod-owned XML is retained or safely ignored.
+
+
+## Script-only integration – registering with existing sprayer vehicle types
+
+The FS25 GDN documents the relevant manager lifecycle:
+
+- `SpecializationManager:addSpecialization(name, className, filename, customEnvironment)` registers a custom specialization.
+- `TypeManager:validateTypes()` validates type specializations and prerequisites.
+- `TypeManager:addSpecialization(typeName, specName)` adds a registered specialization to a specific vehicle type.
+- `TypeManager:finalizeTypes()` subsequently registers events, functions, overwritten functions and event listeners for the specializations in each type.
+
+A public FS25 script-mod implementation demonstrates the common integration pattern of registering the custom specialization with `g_specializationManager` and appending a function to `TypeManager.validateTypes` to inject the specialization into eligible vehicle types. This is community implementation evidence; the manager methods themselves are official GDN-documented.
+
+**Recommended approach for Spray & Hygiene:**
+1. Register the mod's own specialization once through the specialization manager.
+2. During vehicle type validation, iterate registered vehicle types and add the specialization only to types that actually contain the base-game `Sprayer` specialization (and any additional prerequisites that the mod truly needs).
+3. Do not add it to every vehicle type. This reduces unnecessary per-vehicle overhead and prevents unrelated types from acquiring a sprayer-only spec.
+4. Let normal type finalization register the specialization's listeners and functions.
+5. Use a unique namespaced specialization name derived from the mod's technical name. Avoid global generic class names and avoid modifying the base `Sprayer` class directly.
+6. Keep the prerequisite check tolerant: if the vehicle lacks a sprayer or required fill-unit behavior, the mod must not attach its sprayer-specific functionality.
+
+This registration path is more appropriate for a global script mod than editing every vehicle XML. It also avoids a dependency on individual mod authors adding our specialization manually.
+
+**Critical compatibility checks before implementation:** exact type manager hook timing in FS25 1.25, exact base specialization object identity/name, whether type injection is repeated during map/type reloads, and interaction with other mods that also append `validateTypes`. The integration must be idempotent and log how many types were injected. It must not silently inject twice or add duplicate specialization entries.
+
+### Event hook choice
+
+For the Spray & Hygiene modules, the base sprayer's registered callbacks are the primary integration points. Prefer registering our own listener for:
+- `onStartWorkAreaProcessing` when a pre-processing snapshot is required;
+- `onEndWorkAreaProcessing` for completed server-side processing and authoritative native usage;
+- `onFillUnitFillLevelChanged` for changes to the sprayer's own fill unit, while remembering that product can come from a linked external fill source.
+
+Avoid a permanent per-frame `onUpdate` loop for drift or contamination. Use work-area callbacks to collect the work footprint and accumulate simulation time, then process at a bounded interval. If a feature must react to changing wind between work-area callbacks, use a low-frequency server-side sampling interval and cache the latest wind state.
+
+### Separate mod namespaces
+
+Both mods should use separate technical names and unique global namespaces. Common code can be duplicated into each package at build time, but the runtime must not assume the other mod is present. If both mods are installed, their shared helper code must not overwrite the same globals or register duplicate event classes. Prefix every event, specialization, settings file, log category and savegame XML root with its own mod identity.
