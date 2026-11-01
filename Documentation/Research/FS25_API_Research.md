@@ -590,3 +590,137 @@ To complete the API audit without guessing, inspect the exact local game-source 
 The local source must be from the same FS25 patch as the planned development/testing build. Record the game patch and archive provenance in the research log. If the archive is unavailable, the affected features must remain behind adapters/fallbacks and cannot be marked fully verified.
 
 **No implementation should begin until these local-source checks are completed or the project owner explicitly accepts the listed fallback behavior.** This is the last research dependency that cannot be resolved from public documentation with sufficient confidence.
+
+
+## Local gameSource.zip audit – exact installed script snapshot
+
+**Source inspected:** user-provided `gameSource.zip`, containing the original `dataS/` Lua script tree. The archive is 2.4 MB and its ZIP entries are timestamped `2026-09-29 22:44`. It contains the exact files listed below. The archive itself does not include an explicit game patch/version manifest, so the entry timestamp is provenance metadata, not proof of the executable patch number. The following conclusions are based on the actual uploaded scripts, not the public mirror.
+
+### Base Sprayer – confirmed against local game source
+
+File: `dataS/scripts/vehicles/specializations/Sprayer.lua`
+
+Confirmed exact methods:
+- `Sprayer:onStartWorkAreaProcessing(dt)`
+- `Sprayer:processSprayerArea(workArea, dt)`
+- `Sprayer:onEndWorkAreaProcessing(dt, hasProcessed)`
+- `Sprayer:getSprayerUsage(fillType, dt)`
+- `Sprayer:onFillUnitFillLevelChanged(fillUnitIndex, fillLevelDelta, fillType, toolType, fillPositionData, appliedDelta)`
+- `Sprayer:onStateChange(state, data)`
+
+Local source confirms the complete sequence and the design implications:
+1. `onStartWorkAreaProcessing` selects the native sprayer fill unit, or searches attached/root-vehicle fill type sources when its own tank is empty.
+2. It calculates native `usage` through `getSprayerUsage` and records the selected source vehicle/fill-unit index, fill type, fill level, and usage in `spec_sprayer.workAreaParameters`.
+3. External filling is handled separately by `getIsSprayerExternallyFilled()` / `getExternalFill()`. Therefore `sprayVehicle == nil` is a valid external supply path.
+4. `processSprayerArea` obtains the work-area start/width/height node translations and calls `FSDensityMapUtil.updateSprayArea`. Only then it sets `workAreaParameters.isActive = true` and accumulates changed/total/stat area and spray time.
+5. `onEndWorkAreaProcessing` is server authoritative. If `isActive`, it deducts `usage` from the selected source vehicle/fill unit when `sprayVehicle ~= nil`, updates farm statistics, and updates last worked area.
+6. The base usage formula is exactly:
+   `scale * litersPerSecond * self.speedLimit * workWidth * dt * 0.001`.
+   The scale is selected by fill type/default; `litersPerSecond` comes from SprayTypeManager when a spray type exists; work width comes from the configured usage scale's work-area index or working width.
+
+**Implementation lock:** AgriSystems must never deduct native spray usage itself. Use the successful work-area processing state as an observation point, and keep custom equipment condition/coverage effects separate from native density-map application in the first implementation. External supply must be handled as a valid source case. Any callback ordering assumption must be checked with a runtime test.
+
+### Precision Farming – local source confirms extension-chain interaction
+
+File: `dataS/scripts/internalMods/FS25_precisionFarming/scripts/specializations/ExtendedSprayer.lua`
+
+The local official game installation includes Precision Farming source. It confirms:
+- `ExtendedSprayer:getSprayerUsage(superFunc, fillType, dt)` calls `superFunc(self, fillType, dt)` and then applies its own usage logic.
+- `ExtendedSprayer:processSprayerArea(superFunc, workArea, dt)` calls the supplied `superFunc` in relevant paths and performs additional server-side precision map/subsection processing.
+- `ExtendedSprayer:onEndWorkAreaProcessing(dt, hasProcessed)` reads the native sprayer work-area parameters and records Precision Farming statistics.
+
+**Implementation lock:** do not overwrite `getSprayerUsage`, `processSprayerArea`, or `onEndWorkAreaProcessing` in the first version. Attach a separate listener/specialization and observe the native work-area state. Do not modify `usage`, `sprayFillLevel`, or the density map as a side effect of a condition/cleaning module. Test with Precision Farming on and off.
+
+### FieldManager – local source disproves the assumed public position lookup
+
+Files:
+- `dataS/scripts/field/FieldManager.lua`
+- `dataS/scripts/field/Field.lua`
+
+The complete local `FieldManager.lua` defines these methods:
+- `new`
+- `initDataStructures`
+- `loadMapData`
+- `unloadMapData`
+- `delete`
+- `loadFromXMLFile`
+- `saveToXMLFile`
+
+There is no `FieldManager:getFieldAtWorldPosition(x, z)` method in this archive. There is also no declared `FieldManager:getFieldById(fieldId)` method in the file; the string `getFieldById` occurs as a call in field-update loading code, not as a definition. The local `Field.lua` contains `Field.new`, `Field:load(id)`, and `Field:delete()`; it does not expose the expected position lookup.
+
+**Implementation lock:** do not call `g_fieldManager:getFieldAtWorldPosition` as a guaranteed API. For the first field contamination implementation, use the verified farmland lookup from FarmlandManager and store contamination per farmland. Exact crop-field-level contamination is deferred until a separate, tested field geometry lookup is designed for the target map set. This removes the earlier uncertain field API dependency from the first release.
+
+### Husbandry – local placeable source confirms cluster-system integration, but cluster implementation is absent
+
+File: `dataS/scripts/animals/husbandry/placeables/PlaceableHusbandryAnimals.lua`
+
+Confirmed local behavior:
+- During `onLoad(savegame)`, the placeable creates `AnimalClusterSystem.new(self.isServer, self)` and subscribes to `AnimalClusterUpdateEvent`.
+- The placeable exposes `getClusters()`, `getCluster(index)`, `getClusterById(id)`, and `getClusterSystem()`.
+- Cluster updates are routed through `updatedClusters(husbandry)`; it checks the husbandry instance, reads the current cluster list, raises `onHusbandryAnimalsUpdate`, and publishes `MessageType.HUSBANDRY_ANIMALS_CHANGED`.
+- `onUpdate(dt)` calls `clusterSystem:update(dt)` only on the server.
+- Initial network state is delegated through `clusterSystem:readStream(streamId, connection)` / `writeStream(streamId, connection)`.
+- Save/load is delegated through `clusterSystem:saveToXMLFile(xmlFile, key .. ".clusters", usedModNames)` and `loadFromXMLFile(xmlFile, key .. ".clusters")`.
+- New groups are added through `addPendingAddCluster`; reproduction creates new cluster objects and queues them.
+- Riding a single animal from a group changes the source group's animal count and clones a one-animal cluster for the rideable vehicle, then calls `updateNow()`. This is a real split/reassignment path.
+
+**Not present in this archive:** no `AnimalClusterSystem.lua`, no cluster class implementation, and no implementation of `AnimalClusterUpdateEvent`. Consequently this archive does not establish ID allocation, uniqueness scope, persistence of IDs, ID reuse, cluster merge behavior, or exact split inheritance semantics. The public mirror also did not contain these class implementations.
+
+**Implementation lock:** use husbandry object + current cluster ID only as a lookup address. Create a mod-owned stable record ID and reconciliation policy. For the first version, disease state is group-level and updates when the husbandry reports cluster changes. On a split or replacement, use an explicit conservative inheritance rule (e.g. copy exposure/infection status to resulting groups) rather than assuming engine ID continuity. This is enough to design the first implementation, but the exact engine identity lifecycle remains a test gate.
+
+### Weather and wind – local archive is incomplete for this subsystem
+
+The uploaded archive contains:
+- `dataS/scripts/environment/weather/Twister.lua`
+- `dataS/scripts/placeables/specializations/PlaceableWindTurbine.lua`
+
+It does **not** contain the general environment/weather manager or a `WindUpdater` implementation. The local wind-turbine callback is:
+`PlaceableWindTurbine:setWindValues(windDirX, windDirZ, windVelocity, cirrusCloudSpeedFactor)`.
+It uses the direction components to orient the turbine head and passes velocity to rotor-speed calculation. This proves that wind values are supplied to this specialization, but it does not establish how a mod obtains them, their units, sampling/listener lifecycle, or server/client synchronization.
+
+**Implementation lock:** keep a `WindProvider` adapter and do not hard-code an assumed global path. The drift module may be developed against a test provider or configured wind input, but the production wind integration must remain disabled/fail-safe until the exact weather scripts are available and runtime-tested. This is a blocker for activating realistic wind-dependent drift, not for the other modules.
+
+### Specialization registration – local manager lifecycle
+
+Files:
+- `dataS/scripts/specialization/SpecializationManager.lua`
+- `dataS/scripts/specialization/TypeManager.lua`
+
+Local source confirms:
+- `SpecializationManager:addSpecialization(name, className, filename, customEnvironment)` loads the script with `source(filename, customEnvironment)`, resolves the class object and stores the specialization. Duplicate names are rejected.
+- `TypeManager:addSpecialization(typeName, specName)` is the per-type registration method.
+- `TypeManager:validateTypes()` and `TypeManager:finalizeTypes()` are separate lifecycle phases.
+- `finalizeTypes()` iterates each type's specializations and registers their events, functions, overwritten functions and event listeners.
+
+**Implementation lock:** register each AgriSystems specialization once with a unique namespaced name, then inject only into relevant types during the correct type-validation phase. Injection must be idempotent and restricted to types containing the prerequisite native specialization. For Sprayer this means types with base `Sprayer`; for Biosecurity it means placeables with `PlaceableHusbandryAnimals`. The exact hook registration order and interaction with other mods still require a runtime smoke test.
+
+### Archive completeness and remaining gates
+
+The uploaded ZIP is a substantial script snapshot but is **not the complete game source tree**:
+- no explicit game build manifest;
+- no general weather manager / WindUpdater;
+- no AnimalClusterSystem / cluster class / AnimalClusterUpdateEvent implementation;
+- no field-position lookup implementation;
+- only selected script paths are present.
+
+Therefore the audit closes several previous assumptions decisively, but it cannot truthfully certify the missing systems. Before enabling the affected features, either provide the missing source files or validate them in-game on the target patch.
+
+### Revised implementation readiness
+
+**Can now be designed and implemented without guessing:**
+- server-authoritative mod state and savegame persistence structure;
+- native sprayer observation without changing native consumption;
+- Precision Farming-safe non-invasive integration strategy;
+- farmland-level contamination (not crop-field ID);
+- husbandry specialization attachment and group-level update flow;
+- separate mod-owned animal health record identity;
+- specialization registration and targeted type injection approach;
+- local/server settings versus save-specific simulation state separation.
+
+**Must remain gated pending missing source/runtime validation:**
+- real wind-driven drift integration;
+- exact field-level position lookup (farmland-level fallback is ready);
+- animal cluster ID stability/merge/split identity semantics;
+- exact callback ordering and mod load-order behavior in multiplayer.
+
+This means the project is ready to begin a carefully scoped first implementation with the above gates and fallbacks. It is not honest to call every proposed feature fully API-verified until the missing source/runtime tests are completed.
