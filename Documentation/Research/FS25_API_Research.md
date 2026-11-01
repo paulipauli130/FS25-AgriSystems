@@ -44,6 +44,20 @@ The most promising server-authoritative observation point for a real application
 
 The reviewed official API material does not establish a built-in nozzle-wear model, clogging model, or hydraulic pressure simulation. Those would therefore be custom AgriSystems simulation systems, not existing FS25 values we can simply read. We must investigate the base `Sprayer` usage calculation and effect setup further before choosing an extension point. Avoid modifying the game's actual fill-level consumption in a way that conflicts with its normal server processing.
 
+## Animals and husbandry – initial FS25 findings
+
+### Confirmed in the FS25 GDN
+
+- The FS25 Animals API category includes `AnimalLoadingTrigger`. It resolves supported animal type names through `g_currentMission.animalSystem:getTypeIndexByName()` and exposes the trigger's configured animal types through `getAnimals()`. This is trigger/type selection, not a complete husbandry-health interface.
+- FS25 has animal-related network events, including `AnimalCleanEvent` and `AnimalNameEvent`. `AnimalCleanEvent` identifies a husbandry object and animal cluster ID, then applies a dirt change to that cluster. This confirms that at least some animal state is represented per cluster and changed through network events.
+- FS25 `PlaceableHusbandryMilk` and `PlaceableHusbandryStraw` expose `onHusbandryAnimalsUpdate(clusters)`. Their implementations iterate animal clusters, read each cluster's subtype and age, resolve subtype data through `g_currentMission.animalSystem`, and calculate production/consumption values. This is evidence for an animal-cluster update lifecycle and subtype-based animal data.
+
+### Current conclusion and limitations
+
+The FS25 API provides animal clusters, subtype/age information in husbandry update callbacks, and networked animal actions. This gives Farm Biosecurity a plausible foundation for tracking livestock groups and attaching custom health/quarantine state to a husbandry/cluster identity.
+
+The reviewed FS25 documentation does **not** establish a built-in disease, infection, vaccination, or quarantine system. Those mechanics must be custom. We have not yet verified the base FS25 husbandry specialization's full public API, stable cluster identifiers/lifecycle, animal movement between husbandries, or savegame persistence strategy. Those are required before deciding whether disease state belongs to a cluster, a husbandry, or a separate registry.
+
 ## Research questions still open
 
 ### Sprayer engineering
@@ -62,10 +76,16 @@ The reviewed official API material does not establish a built-in nozzle-wear mod
 3. Confirm whether wind values are global or position-dependent, and establish the direction-vector convention.
 4. Determine whether wind values should be read server-side and replicated to clients for consistent multiplayer drift calculations.
 
+### Animals and husbandry
+
+1. Inspect the base FS25 husbandry and cluster-system source for exact methods and lifecycle.
+2. Verify stable cluster IDs, cluster add/remove/move events, and how animals transferred between husbandries are represented.
+3. Inspect savegame serialization and network events before selecting a persistence model for quarantine/disease status.
+4. Determine what stock animal dirt/cleanliness state can be reused and what must remain custom disease/biosecurity state.
+
 ### Other systems
 
 - Field and work-area APIs for application detection.
-- Animal and husbandry APIs for Farm Biosecurity.
 - Events, networking, and savegame persistence.
 - Feature-to-API feasibility matrix before finalizing mod folder structures.
 
