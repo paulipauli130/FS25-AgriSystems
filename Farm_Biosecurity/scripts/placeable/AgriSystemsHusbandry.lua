@@ -46,7 +46,7 @@ function Spec.registerOverwrittenFunctions(placeableType)
 end
 
 function Spec:getNeedHourChanged(superFunc)
- return true
+ return superFunc(self) or true
 end
 
 function Spec.registerEventListeners(placeableType)
