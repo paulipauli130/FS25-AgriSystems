@@ -8,7 +8,7 @@ The project contains two independent FS25 script mods. Each mod is designed to i
 
 > **Project status: Early implementation**
 >
-> Technical research and specifications are complete at source-review level. Both mods have pure gameplay model foundations. Spray & Hygiene has early Sprayer specialization and per-vehicle save/network code; Farm Biosecurity has group disease, quarantine, hygiene, score and state-store models. Engine-facing features remain untested in FS25. No public release is available yet.
+> Spray & Hygiene has four pure gameplay models, a Sprayer-only specialization, per-vehicle save/load foundation and initial server-to-client snapshot. Farm Biosecurity has disease, quarantine, hygiene and score models, a husbandry specialization, subtype cohorts, per-placeable persistence, hourly progression and initial state snapshot. Engine-facing code has not yet been tested in FS25. No public release is available.
 
 ## Projects
 
@@ -23,23 +23,25 @@ A modular system for crop protection, spraying technology, machine hygiene and m
 Native FS25 spray application and fill consumption must remain unchanged.
 
 ### 2. AgriSystems Farm Biosecurity
-An independent mod for livestock quarantine, group-level disease exposure/progression, vehicle/equipment/visitor hygiene, barn hygiene and a derived Biosecurity Score.
+An independent livestock system with group-level disease exposure/progression, quarantine, barn/equipment hygiene and a derived Biosecurity Score.
 
-Both products are independent. Neither requires the other, and there is no third shared runtime package.
+Logical cohorts are aggregated by configured animal subtype within each husbandry. This deliberately avoids relying on transient FS25 animal-cluster IDs.
 
 ## Development status
 
 | Area | Status |
 |---|---|
-| Project research and technical specifications | Complete at source-review level |
-| Spray & Hygiene pure gameplay models | Implemented; not engine-integrated |
-| Spray & Hygiene specialization/save/network foundation | Early source-reviewed implementation; runtime test pending |
-| Farm Biosecurity pure gameplay models and state store | Implemented; not engine-integrated |
-| Farm Biosecurity engine integration | Not started |
+| Public API research and specifications | Complete at source-review level |
+| Spray & Hygiene gameplay models | Implemented; not engine-integrated |
+| Spray & Hygiene specialization/save/network foundation | Early implementation; runtime test pending |
+| Farm Biosecurity gameplay models and state store | Implemented |
+| Farm Biosecurity placeable persistence/hourly progression/snapshot | Early implementation; runtime test pending |
+| Standalone Lua model tests | Added; execution pending |
+| Independent ZIP packaging script | Added; execution pending |
 | GIANTS TestRunner / in-game validation | Pending |
 | Public releases | None |
 
-See Documentation/Development_Roadmap.md and CHANGELOG.md.
+See Documentation/Development_Roadmap.md, CHANGELOG.md and the individual mod Implementation Notes.
 
 ## Development principles
 - **Realism:** bounded gameplay models, no unsupported physical or veterinary accuracy claims.
@@ -54,10 +56,15 @@ See Documentation/Development_Roadmap.md and CHANGELOG.md.
 - Farm_Biosecurity/ — independent mod source, configuration, documentation and tests.
 - Core/ — development-time shared conventions/source only; not a required third mod.
 - Documentation/ — project architecture, research and roadmap.
-- Testing/ — test plans, reports and local test material.
+- Testing/ — test plans and standalone model tests.
+- tools/ — Windows PowerShell packaging script.
 
-## Development and testing
-Installable mod folders have modDesc.xml at their root. Development source and documentation remain in the repository; release ZIPs are built separately with runtime files only.
+## Build and testing
+Run PowerShell from the repository root:
+
+    .\tools\Build-Mods.ps1
+
+The script validates modDesc source references, localization files and dynamically loaded specialization files, then creates separate ZIPs under Releases. It does not run GIANTS TestRunner.
 
 Target platform is Farming Simulator 25 on PC/Mac. Multiplayer and dedicated-server support are design goals, not certified until tested in-game. Console script-mod support is not promised.
 
