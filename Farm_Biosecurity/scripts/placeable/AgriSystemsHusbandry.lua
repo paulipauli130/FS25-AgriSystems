@@ -20,6 +20,7 @@ end
 function Spec.registerSavegameXMLPaths(schema,basePath)
  local base=basePath.."."..ROOT
  schema:register(XMLValueType.INT,base.."#schemaVersion","AgriSystems Biosecurity schema")
+ schema:register(XMLValueType.FLOAT,base.."#clockHours","Elapsed in-game hours for Biosecurity state")
  schema:register(XMLValueType.STRING,base..".group(?)#id","Mod-owned animal cohort ID")
  schema:register(XMLValueType.STRING,base..".group(?)#status","Disease progression state")
  schema:register(XMLValueType.STRING,base..".group(?)#diseaseId","Disease profile ID")
@@ -42,6 +43,7 @@ function Spec.registerEventListeners(placeableType)
  SpecializationUtil.registerEventListener(placeableType,"onLoad",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onFinalizePlacement",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onHusbandryAnimalsUpdate",Spec)
+ SpecializationUtil.registerEventListener(placeableType,"onHourChanged",Spec)
 end
 
 local function makeCohortId(subType)
@@ -51,7 +53,7 @@ local function makeCohortId(subType)
 end
 
 function Spec:onLoad(savegame)
- self.spec_agriSystemsBiosecurity={husbandryId=self:getUniqueId(),loaded=false,savegame=savegame}
+ self.spec_agriSystemsBiosecurity={husbandryId=self:getUniqueId(),loaded=false,savegame=savegame,clockHours=0}
  local spec=self.spec_agriSystemsBiosecurity
  if not self.isServer then return end
  if type(spec.husbandryId)~="string" or spec.husbandryId=="" then
@@ -65,6 +67,7 @@ function Spec:onLoad(savegame)
 
  local xmlFile=savegame.xmlFile
  local base=savegame.key.."."..ROOT
+ spec.clockHours=math.max(0,math.min(100000000,xmlFile:getValue(base.."#clockHours",0)))
  if not xmlFile:hasProperty(base) then return end
  local schemaVersion=xmlFile:getValue(base.."#schemaVersion",1)
  if schemaVersion~=1 then
@@ -152,9 +155,26 @@ function Spec:onHusbandryAnimalsUpdate(clusters)
   if store:getGroup(spec.husbandryId,cohortId)==nil then
    local disease=AgriSystemsFarmBiosecurity.DiseaseModel.createGroupState(cohortId)
    local config=AgriSystemsFarmBiosecurity.CONFIG or AgriSystemsFarmBiosecurity.Config.validate(nil)
-   local quarantine=AgriSystemsFarmBiosecurity.Quarantine.createState(cohortId,0,config.quarantine.durationHours)
+   local quarantine=AgriSystemsFarmBiosecurity.Quarantine.createState(cohortId,spec.clockHours,config.quarantine.durationHours)
    store:setGroup(spec.husbandryId,cohortId,disease,quarantine)
   end
+ end
+end
+
+function Spec:onHourChanged(hour)
+ if not self.isServer then return end
+ local spec=self.spec_agriSystemsBiosecurity
+ if spec==nil or spec.husbandryId==nil then return end
+ local store=getStore()
+ if store==nil then return end
+ spec.clockHours=math.min(100000000,(spec.clockHours or 0)+1)
+ local data=store:getHusbandryState(spec.husbandryId)
+ if data==nil then return end
+ for groupId,record in pairs(data.groups or {}) do
+  local disease=AgriSystemsFarmBiosecurity.DiseaseModel.advance(record.disease,1)
+  local quarantine=record.quarantine
+  if quarantine~=nil then quarantine=AgriSystemsFarmBiosecurity.Quarantine.advance(quarantine,spec.clockHours) end
+  store:setGroup(spec.husbandryId,groupId,disease,quarantine)
  end
 end
 
@@ -167,6 +187,7 @@ function Spec:saveToXMLFile(xmlFile,key,usedModNames)
  if data==nil then return end
  local base=key.."."..ROOT
  xmlFile:setValue(base.."#schemaVersion",1)
+ xmlFile:setValue(base.."#clockHours",spec.clockHours or 0)
  local index=0
  for groupId,record in pairs(data.groups or {}) do
   if index>=MAX_GROUPS then break end

@@ -11,7 +11,9 @@ function Mod:loadMap()
   log("ERROR: model modules missing; gameplay remains inactive."); return
  end
  self.CONFIG=self.Config.validate(nil)
- self.STATE_STORE=self.StateStore.new(g_server~=nil,self.CONFIG.disease.maximumGroups)
+ if self.STATE_STORE==nil then
+  self.STATE_STORE=self.StateStore.new(g_server~=nil,self.CONFIG.disease.maximumGroups)
+ end
  log(string.format("Development foundation loaded (version %s). Pure gameplay models and server-gated state store available; engine integration is inactive.",self.VERSION))
 end
 function Mod:deleteMap()
