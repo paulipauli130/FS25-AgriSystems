@@ -49,7 +49,7 @@ def validate(mod_root: Path) -> str:
     if register.is_file():
         text = register.read_text(encoding="utf-8")
         for relative in re.findall(r'Utils\.getFilename\("([^"]+)"', text):
-            target = mod_root / "scripts" / relative
+            target = mod_root / relative
             if not target.is_file():
                 raise RuntimeError(f"Specialization registration references missing script: {target}")
 
