@@ -1,0 +1,25 @@
+name: Pure Lua model tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  model-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Lua 5.1
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lua5.1
+
+      - name: Run Spray & Hygiene model tests
+        run: lua5.1 Testing/Model_Tests/Run_Spray_Hygiene.lua
+
+      - name: Run Farm Biosecurity model tests
+        run: lua5.1 Testing/Model_Tests/Run_Farm_Biosecurity.lua
