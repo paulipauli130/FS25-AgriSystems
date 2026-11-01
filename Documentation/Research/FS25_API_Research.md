@@ -33,6 +33,8 @@ Wind-dependent spray drift appears technically plausible because FS25's own wind
 - `FillUnit` is the vehicle specialization for capacities and tanks. Its documented methods include `getFillUnits()`, `getFillUnitByIndex(index)`, `getFillUnitExists(index)`, `getFillUnitCapacity(index)`, `getFillUnitFillLevel(index)`, `getFillUnitFillLevelPercentage(index)`, `getFillUnitFillType(index)`, and `getFillUnitFreeCapacity(index)`.
 - `getFillUnitFillLevel(index)` returns the current fill level; `getFillUnitFillType(index)` returns the fill-type index. Fill units are indexed per vehicle; do not assume every sprayer uses the same index.
 - `ExtendedSprayer` exists in the FS25 API. Its `getSprayerUsage()` checks whether the vehicle is turned on, reads `spec_sprayer`, determines the active spray type, and uses work-area width and vehicle speed in usage calculations.
+- **Important compatibility limit:** the GDN's `ExtendedSprayer.prerequisitesPresent()` requires both `Sprayer` and `PrecisionFarmingStatistic`. Therefore, `ExtendedSprayer` is not a universal base interface guaranteed to exist on every sprayer. Our mod must primarily integrate with the base sprayer/work-area lifecycle and treat ExtendedSprayer-specific data as optional.
+- `ExtendedSprayer.getFillTypeSourceVehicle(sprayer)` shows that the product can be consumed from a separate source vehicle/fill unit. It first checks the sprayer's own fill unit, then scans configured `spec_sprayer.fillTypeSources` for a compatible source vehicle and fill unit. This is important for multi-vehicle and externally supplied sprayer configurations; never assume the tank is on the same object as the boom.
 - `Sprayer:onEndWorkAreaProcessing(dt, hasProcessed)` is a useful processing lifecycle point. GIANTS' own FS25 `WeedSpotSpray:onEndWorkAreaProcessing()` checks `self.isServer`, `spec_sprayer.workAreaParameters.isActive`, the spray fill type, `sprayVehicle`, and `usage` before updating herbicide statistics.
 - The FS25 `ExtendedSprayer:processSprayerArea()` implementation obtains the work-area start, width, and height world positions and performs its relevant density-map processing under `self.isServer`. This confirms the work-area processing path has explicit server-side behavior.
 - GIANTS' FS25 vehicle utility code traverses attached implements through `getAttachedImplements()`, then recurses into each `implement.object`. `ExtendedSprayer.getValidSprayerToUse()` also searches `rootVehicle.childVehicles` for a valid sprayer. These are concrete patterns for discovering equipment beyond the root tractor, but the final mod should handle nil objects and avoid double-processing the same implement.
@@ -40,7 +42,9 @@ Wind-dependent spray drift appears technically plausible because FS25's own wind
 
 ### Current conclusion
 
-The most promising server-authoritative observation point for a real application event is the sprayer work-area processing lifecycle, using its active state and actual usage rather than merely `getIsTurnedOn()`. The relevant work-area data also gives us a basis to calculate affected area and application intensity. A recursive attached-implement scan is feasible using documented GIANTS patterns.
+The most promising server-authoritative observation point for a real application event is the base sprayer work-area processing lifecycle, using its active state and actual usage rather than merely `getIsTurnedOn()`. The relevant work-area data also gives us a basis to calculate affected area and application intensity. A recursive attached-implement scan is feasible using documented GIANTS patterns.
+
+Product sourcing must be resolved per sprayer configuration: the source tank may be the sprayer itself or another linked vehicle. ExtendedSprayer provides one verified example of that resolution, but because it is optional, we need a generic fallback based on the base Sprayer configuration.
 
 The reviewed official API material does not establish a built-in nozzle-wear model, clogging model, or hydraulic pressure simulation. Those would therefore be custom AgriSystems simulation systems, not existing FS25 values we can simply read. We must investigate the base `Sprayer` usage calculation and effect setup further before choosing an extension point. Avoid modifying the game's actual fill-level consumption in a way that conflicts with its normal server processing.
 
@@ -80,7 +84,7 @@ For Spray & Hygiene, farmland association is feasible from world coordinates. Fo
 1. Inspect the base FS25 `Sprayer` implementation and exact registration/lifecycle methods, including when `workAreaParameters` is populated and reset.
 2. Verify exact meaning and units of `workAreaParameters.usage`, `sprayFillType`, and `sprayVehicleFillUnitIndex`.
 3. Determine whether an overwrite of `Sprayer:getSprayerUsage()` or a work-area event listener is safer for custom flow/pressure calculations, and how to avoid double consumption.
-4. Confirm whether all stock and modded sprayers use the same specialization and identify graceful fallback behavior for custom implementations.
+4. Confirm how base Sprayer fill-type sources are represented when ExtendedSprayer is absent.
 5. Investigate nozzle node/effect configuration to see whether individual sections/nozzles can be mapped reliably. Do not infer nozzle count from visuals alone.
 6. Decide how custom wear/clogging state is stored and synchronized on the server.
 
