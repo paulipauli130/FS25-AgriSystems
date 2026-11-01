@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<modDesc descVersion="104" iconFilename="icon.dds">
+<modDesc descVersion="104">
  <author>Paul</author>
+    <iconFilename>icon.dds</iconFilename>
  <version>0.4.2.0</version>
  <title><en>AgriSystems Farm Biosecurity</en><de>AgriSystems Hof-Biosicherheit</de></title>
  <description>
