@@ -1,199 +1,67 @@
-# FS25 AgriSystems – Development Setup
+# FS25 AgriSystems — Development Setup
 
 ## 1. Overview
+This document describes the development workflow for both independent FS25 script mods. The repository is the source of truth; installable mod folders are built separately from repository documentation and tests.
 
-This document describes the recommended development environment for FS25 AgriSystems.
+## 2. Required software
+- Farming Simulator 25 for runtime testing.
+- Git and GitHub Desktop for version control and synchronization.
+- Visual Studio Code or another Lua/XML-capable editor.
+- A Lua language server/parser compatible with the Lua version used by FS25, where available.
 
-The goal is to establish a consistent workflow for developing, testing and maintaining both AgriSystems mods.
+## 3. GIANTS resources
+Official resources:
+- GIANTS Developer Network: https://gdn.giants-software.com/
+- FS25 Scripting API: https://gdn.giants-software.com/documentation_scripting_fs25.php
+- FS25 Modding Tutorials: https://www.farming-simulator.com/dlc-detail.php?country=us&dlc_id=fs25mt60&lang=en
+- GIANTS VS Code extension: https://marketplace.visualstudio.com/items?itemName=GIANTSSoftware.farmingsimulator-ide
 
-The project primarily uses Lua scripting and XML configuration files.
+Use the API reference and the installed game's script source to verify contracts. Community templates are useful examples, not authoritative specifications.
 
----
+## 4. Repository workflow
+1. Pull the latest changes with GitHub Desktop.
+2. Make changes on a focused branch for substantial features; small documentation updates may go directly to main.
+3. Keep each mod's runtime source under its own mod directory.
+4. Run available static checks and inspect the diff.
+5. Test in FS25 and inspect `Documents/My Games/FarmingSimulator2025/log.txt`.
+6. Commit with a descriptive message and push.
+7. Keep release ZIPs out of the source tree; publish separate ZIP assets only after acceptance tests pass.
 
-## 2. Required Software
+## 5. Runtime development folders
+The installable development folder for Spray & Hygiene is `Spray_Hygiene/`; its `modDesc.xml` must be at the root of that folder. The repository itself is not a loadable mod. Farm Biosecurity will have its own independent root folder and manifest when its implementation starts.
 
-### Farming Simulator 25
+For an unpacked mod, the game reads the mod directory directly. For a release ZIP, `modDesc.xml` must be at the ZIP root, not inside an extra enclosing folder. Do not include repository docs, .git metadata, test saves, logs or developer tools in a release ZIP.
 
-A working installation of Farming Simulator 25 is required for in-game testing.
+## 6. Current first-mod foundation
+Spray & Hygiene currently contains a minimal manifest, bootstrap, validated default configuration and English/German localization starter files. It intentionally does not register a vehicle specialization or alter gameplay yet. This foundation must first be loaded in the target game and checked in `log.txt` before additional runtime hooks are added.
 
-The game installation also provides access to relevant game files and scripting resources for development.
+## 7. Test strategy
+Static checks can validate XML well-formedness, Lua syntax, file references and package layout, but they cannot prove engine callback order, multiplayer authority or gameplay correctness.
 
-### Visual Studio Code
+Required runtime coverage:
+- Clean game and existing save.
+- Each mod installed independently; both installed together.
+- Single-player and dedicated-server host/client/late-join/reconnect.
+- Save/load and mod disable/re-enable.
+- Precision Farming on/off, AI, external fill sources and supported third-party mods.
+- Large farms/herds and map transitions.
 
-Visual Studio Code is the recommended code editor.
+Run GIANTS TestRunner matching the installed game patch before release. Record the exact game/TestRunner versions and the tests actually performed; never describe source review as runtime certification.
 
-It will be used for:
-
-- Lua development.
-- XML editing.
-- Project-wide code navigation.
-- Documentation.
-- Git integration.
-
-### Git
-
-Git is used for version control.
-
-All development changes should be tracked so that changes can be reviewed and reverted if necessary.
-
-The public GitHub repository is the central location for source code and project documentation.
-
----
-
-## 3. Recommended GIANTS Tools
-
-Official tools and documentation are available through the GIANTS Developer Network.
-
-**GDN:** https://gdn.giants-software.com/
-
-Recommended resources:
-
-- Farming Simulator 25 Scripting API Reference.
-- GIANTS Editor.
-- GIANTS Studio and available development tools.
-- Official modding tutorials.
-- Modding documentation and community forums.
-
-The GIANTS Editor is mainly relevant when working with maps, 3D assets and I3D files. Pure Lua scripting does not require every graphical modding tool.
-
----
-
-## 4. Recommended VS Code Extensions
-
-### Farming Simulator IDE Support
-
-The official GIANTS Software extension for Visual Studio Code is recommended.
-
-It provides features such as:
-
-- Lua IntelliSense.
-- GIANTS Engine API autocomplete.
-- XML schema validation.
-- Lua debugging support.
-- Script hot-reload support.
-- Game log viewing.
-- Lua documentation assistance.
-
-Extension:
-
-https://marketplace.visualstudio.com/items?itemName=GIANTSSoftware.farmingsimulator-ide
-
-Additional extensions may be installed when needed.
-
----
-
-## 5. Repository Workflow
-
-The GitHub repository is the central development location.
-
-Recommended workflow:
-
-1. Pull the latest repository changes.
-2. Create a branch for larger features or bug fixes.
-3. Implement the changes locally.
-4. Test the changes in Farming Simulator 25.
-5. Review the game log for errors and warnings.
-6. Commit the changes with a descriptive message.
-7. Push the changes to GitHub.
-8. Submit a Pull Request when changes should be reviewed before merging.
-
-Small documentation changes may be committed directly to the main branch.
-
----
-
-## 6. Local Development Structure
-
-The local development environment should follow the repository structure.
-
-```text
-FS25-AgriSystems/
-│
-├── Documentation/
-├── Core/
-├── Spray_Hygiene/
-├── Farm_Biosecurity/
-└── Testing/
-```
-
-The actual installable mod structures will be defined separately.
-
-Development source files and release ZIP files should remain clearly separated.
-
----
-
-## 7. Testing Environment
-
-Testing should be performed in a separate Farming Simulator 25 test environment where practical.
-
-Test scenarios should include:
-
-- Clean game installation.
-- AgriSystems mod installed independently.
-- Both AgriSystems mods installed together.
-- Single-player gameplay.
-- Multiplayer gameplay.
-- Dedicated server gameplay.
-- Existing savegame reloads.
-- Compatibility with selected third-party mods.
-
-Relevant game logs should be collected when investigating errors.
-
----
-
-## 8. Game Log
-
-The Farming Simulator log file is an important debugging resource.
-
-On Windows, the typical location is:
-
+## 8. Game logs
+Typical Windows log path:
 ```text
 Documents/My Games/FarmingSimulator2025/log.txt
 ```
+Check Lua/XML errors, missing files, invalid configuration, network synchronization warnings and performance messages after every significant test.
 
-The log should be checked after each significant test.
+## 9. Project conventions
+- Use namespaced identifiers and separate save roots per mod.
+- Keep configuration versioned, range-checked and server-authoritative.
+- Do not trust client-submitted gameplay state.
+- Do not override native sprayer processing or deduct native fill in v1.
+- Do not persist runtime animal cluster IDs.
+- Do not commit personal settings, test saves or logs.
 
-Pay particular attention to:
-
-- Lua errors.
-- XML loading errors.
-- Missing files.
-- Invalid configuration values.
-- Multiplayer synchronisation errors.
-- Performance warnings.
-
----
-
-## 9. Development Standards
-
-All contributors should follow these standards:
-
-- Use clear and descriptive file names.
-- Keep Lua modules focused on individual responsibilities.
-- Document important functions and configuration options.
-- Avoid unnecessary dependencies.
-- Do not commit temporary test files or personal configuration data.
-- Test changes before marking them as complete.
-- Keep release packages separate from development source code.
-
----
-
-## 10. Technical References
-
-Official and community resources:
-
-| Resource | Link |
-|---|---|
-| GIANTS Developer Network | https://gdn.giants-software.com/ |
-| FS25 Scripting API | https://gdn.giants-software.com/documentation.php |
-| GIANTS Modding Tutorials | https://www.farming-simulator.com/dlc-detail.php?dlc_id=fs25mt60 |
-| GIANTS VS Code Extension | https://marketplace.visualstudio.com/items?itemName=GIANTSSoftware.farmingsimulator-ide |
-
-Official documentation should take priority when verifying game APIs and supported modding interfaces.
-
----
-
-## 11. Status
-
-**Current status:** Initial development environment defined.
-
-Specific tool versions, game versions and testing procedures will be documented as development progresses.
+## 10. Status
+The first Spray & Hygiene source foundation is committed but not yet game-tested. Farm Biosecurity remains at specification stage. GIANTS TestRunner execution and all in-game validation are pending.

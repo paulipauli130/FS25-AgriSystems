@@ -43,5 +43,10 @@ No global per-frame scans. Event-driven callbacks, bounded intervals, cached typ
 ## 8. Testing and release
 Run GIANTS TestRunner matching the installed patch, then actual single-player and dedicated-server tests. Acceptance matrices live in each mod's Technical_Specification.md. Package each mod separately with modDesc.xml at ZIP root; exclude documentation, tests, repository metadata and developer tools.
 
-## 9. Status
-Source research and both implementation specifications are complete. Implementation has not started. Runtime gates above are explicit pre-release tests, not reasons to invent unsupported APIs or block unrelated implementation modules.
+## 9. Implementation status
+- Research and both technical specifications: complete at source-review level.
+- Spray & Hygiene: initial manifest/bootstrap/configuration source committed; no gameplay specialization or gameplay behavior yet; runtime load not yet verified.
+- Farm Biosecurity: specification complete; implementation not started.
+- GIANTS TestRunner and in-game SP/MP/dedicated-server validation: pending.
+
+The codebase must not mark a feature complete until the relevant current-patch runtime tests pass.

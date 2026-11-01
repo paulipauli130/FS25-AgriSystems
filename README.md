@@ -2,133 +2,83 @@
 
 **Realistic and modular gameplay systems for Farming Simulator 25.**
 
-AgriSystems is an open-source modding project focused on expanding Farming Simulator 25 with deeper agricultural processes, realistic mechanics and interconnected gameplay systems.
+AgriSystems is an open-source modding project focused on deeper agricultural processes, realistic mechanics and interconnected farm-management systems.
 
-The goal is to create configurable, well-documented and multiplayer-compatible mods that add meaningful depth without unnecessarily complicating the game.
+The project contains two independent FS25 script mods. Each mod is designed to install, run, save and uninstall without depending on the other.
 
-> **Project status: Early Development**
+> **Project status: Early implementation**
 >
-> AgriSystems is currently in the planning and development phase. The features described below are planned functionality and are not yet released or guaranteed to be implemented.
+> Technical research and both detailed specifications are complete. The first development foundation for Spray & Hygiene is now in the repository. No gameplay feature has been runtime-certified and no public release is available yet.
 
 ---
 
 ## Projects
 
-AgriSystems currently consists of two independent mods.
-
 ### 1. AgriSystems Spray & Hygiene
 
-A modular system focused on crop protection, spraying technology, machine hygiene and the spread of agricultural contamination.
+A modular system for crop protection, spraying technology, machine hygiene and mechanical contamination transfer.
 
-**Planned modules:**
+Planned modules:
+- **Spray Drift** — bounded drift and off-target exposure based on weather and equipment.
+- **Sprayer Engineering** — equipment condition, nozzle wear/blockage and application quality.
+- **Sprayer Cleaning** — tank, line, filter and nozzle-group residues and cleaning procedures.
+- **Field Contamination** — transfer of weed seeds, crop residues and pathogen loads through machinery.
 
-- **Spray Drift** – Simulates pesticide drift based on environmental conditions and spraying equipment.
-- **Sprayer Engineering** – Adds technical aspects such as nozzle wear, blockages, pressure, flow rates and application accuracy.
-- **Sprayer Cleaning** – Introduces tank, filter and pipe cleaning, residue management and cleaning procedures.
-- **Field Contamination** – Simulates the spread of weed seeds, plant residues and pathogens through agricultural machinery.
-
-Each module is intended to be configurable and independently adjustable.
+The modules are designed to be configurable and independently enabled. Native FS25 spray application and fill consumption must remain unchanged.
 
 ### 2. AgriSystems Farm Biosecurity
 
-A separate mod focused on hygiene, disease prevention and biosecurity management across the farm.
+A separate mod for livestock quarantine, group-level disease exposure, vehicle/equipment/visitor hygiene, barn hygiene and a derived Biosecurity Score.
 
-**Planned systems:**
-
-- Animal quarantine for newly purchased livestock.
-- Disease transmission between animal groups and farms.
-- Vehicle and equipment disinfection.
-- Barn hygiene and sanitation.
-- Visitor access and hygiene management.
-- Biosecurity Score to evaluate farm hygiene standards.
-
-The aim is to make disease prevention and farm hygiene meaningful parts of everyday farm management.
+Both products are independent. Neither requires the other, and there is no third shared runtime package.
 
 ---
 
-## Development Goals
+## Development status
 
-AgriSystems follows these principles:
+| Area | Status |
+|---|---|
+| Project structure and conventions | Complete |
+| FS25 source/API research | Complete at source-review level |
+| Spray & Hygiene technical specification | Complete |
+| Farm Biosecurity technical specification | Complete |
+| Spray & Hygiene bootstrap/configuration foundation | Initial source committed; not yet game-tested |
+| Spray & Hygiene gameplay systems | Not implemented |
+| Farm Biosecurity implementation | Not started |
+| GIANTS TestRunner / in-game validation | Pending |
+| Public releases | None |
 
-- **Realism:** Agricultural processes should be represented in a believable way.
-- **Modularity:** Individual systems should be configurable and independently adjustable.
-- **Performance:** Systems should be designed with performance and multiplayer in mind.
-- **Compatibility:** Avoid unnecessary conflicts with other Farming Simulator mods.
-- **Transparency:** Development, planned features and known issues should be publicly documented.
-- **Community-driven:** Feedback, suggestions and contributions are welcome.
+See [Development Roadmap](Documentation/Development_Roadmap.md) for detailed milestones and [CHANGELOG](CHANGELOG.md) for repository changes.
 
----
+## Development principles
 
-## Development Roadmap
+- **Realism:** use plausible, bounded gameplay models rather than unsupported claims of physical accuracy.
+- **Modularity:** independent systems and configuration.
+- **Performance:** event-driven work and bounded update intervals; no global per-frame scans.
+- **Multiplayer:** server-authoritative simulation and validated client requests.
+- **Compatibility:** preserve native FS25 behavior and avoid overwriting other mods' extension chains.
+- **Transparency:** distinguish source-reviewed behavior from runtime-tested behavior.
 
-| Stage | Project | Status |
-|---|---|---|
-| 1 | Project foundation and architecture | Planning |
-| 2 | Core systems and configuration | Planned |
-| 3 | Sprayer Engineering | Planned |
-| 4 | Spray Drift | Planned |
-| 5 | Sprayer Cleaning | Planned |
-| 6 | Field Contamination | Planned |
-| 7 | Farm Biosecurity | Planned |
-| 8 | Multiplayer and compatibility testing | Planned |
-| 9 | Public releases | Planned |
+## Repository layout
 
-The roadmap may change as development progresses and community feedback is collected.
+- `Spray_Hygiene/` — independent mod source, configuration, documentation and tests.
+- `Farm_Biosecurity/` — independent mod source, configuration, documentation and tests.
+- `Core/` — development-time shared conventions/source only; not a required third mod.
+- `Documentation/` — project architecture, research and roadmap.
+- `Testing/` — test plans, reports and local test material (savegames/logs are not committed).
 
----
+## Development and testing
+
+The installable mod folder must contain `modDesc.xml` at its root. Development source and documentation remain in the repository; release ZIPs are built separately with only runtime files.
+
+Target platform is Farming Simulator 25 on PC/Mac. Multiplayer and dedicated-server support are design goals, not certified until tested in-game. Console script-mod support is not promised.
+
+See [Development Setup](Documentation/Development_Setup.md) and the individual mod specifications.
 
 ## Contributing
 
-Contributions from the community are welcome.
-
-You can help by:
-
-- Reporting bugs.
-- Suggesting new features.
-- Testing development versions.
-- Improving documentation.
-- Submitting code changes through Pull Requests.
-
-Please read the contribution guidelines before submitting changes.
-
----
-
-## Bug Reports & Feature Requests
-
-Found a problem or have an idea?
-
-Please use the GitHub Issues section to report bugs or suggest improvements.
-
-Include as much relevant information as possible, such as:
-
-- Farming Simulator version.
-- Mod version.
-- Steps to reproduce the issue.
-- Relevant log entries.
-- Screenshots or other useful information.
-
----
-
-## Compatibility
-
-The mods are being developed for **Farming Simulator 25**.
-
-Multiplayer compatibility and compatibility with other mods are important development goals. Actual compatibility will be documented and tested as development progresses.
-
----
+Bug reports, feature proposals, documentation improvements and tested code contributions are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes.
 
 ## License
 
-The project is intended to be released under the **MIT License**.
-
-See the `LICENSE` file for the full license text.
-
----
-
-## Project Status
-
-AgriSystems is an independent community modding project.
-
-Development is public. Features, documentation and releases will be added as the project progresses.
-
-**Follow the repository to stay up to date and help shape the future of AgriSystems.**
+The project is distributed under the MIT License. See [LICENSE](LICENSE).

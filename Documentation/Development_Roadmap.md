@@ -1,7 +1,8 @@
 # Development Roadmap
 
-## Current status — specification phase complete, implementation not started
-The source-level API research has been expanded using the complete owner-provided decompiled FS25 script tree. Both independent mod specifications are documented and ready to guide implementation. No Lua implementation or modDesc has been committed yet.
+## Current status — implementation foundation started
+
+Research and design are complete at source-review level. The first Spray & Hygiene bootstrap/configuration files are now committed. This is infrastructure only: no gameplay specialization or gameplay effect is implemented, and the mod has not yet been loaded in the game or run through GIANTS TestRunner.
 
 ## Phase 1 — Research and specifications (complete)
 - [x] Project structure and contribution conventions.
@@ -16,17 +17,20 @@ The source-level API research has been expanded using the complete owner-provide
 
 ## Phase 2 — Shared development conventions
 - [ ] Define build/package scripts and versioning.
-- [ ] Define namespaced event and XML schema conventions.
+- [x] Define independent mod namespaces and initial configuration conventions.
+- [ ] Finalize shared event and XML schema conventions.
 - [ ] Establish TestRunner invocation and supported game patch in the local test environment.
 
 ## Phase 3 — Spray & Hygiene implementation
-- [ ] Minimal modDesc and specialization registration.
+- [x] Initial modDesc and bootstrap/configuration foundation committed (not runtime-tested).
+- [ ] Runtime-load validation and GIANTS log review.
+- [ ] Sprayer specialization registration and non-invasive observation.
 - [ ] Server persistence/configuration and networking.
-- [ ] Non-invasive Sprayer observation and condition model.
+- [ ] Sprayer condition and coverage model.
 - [ ] Cleaning/residue model.
 - [ ] Wind provider and drift model behind runtime validation gate.
 - [ ] Farmland contamination.
-- [ ] UI/localization and packaging.
+- [ ] UI/localization completion and packaging.
 
 ## Phase 4 — Farm Biosecurity implementation
 - [ ] Minimal modDesc and placeable specialization registration.
@@ -37,7 +41,7 @@ The source-level API research has been expanded using the complete owner-provide
 - [ ] Packaging.
 
 ## Phase 5 — Validation and release
-- [ ] GIANTS TestRunner for target patch.
+- [ ] GIANTS TestRunner matching the installed patch.
 - [ ] Single-player regression and save migration.
 - [ ] Dedicated-server host/client/late-join/reconnect tests.
 - [ ] Precision Farming, AI, Courseplay and animal-system compatibility.
@@ -51,4 +55,4 @@ The source-level API research has been expanded using the complete owner-provide
 - Disabled modules must preserve vanilla behavior.
 - Never modify native sprayer consumption in v1.
 - No runtime feature is marked complete until tested in-game.
-- Research/specification completion does not imply runtime certification.
+- Source review is not a substitute for current-patch runtime validation.

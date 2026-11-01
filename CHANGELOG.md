@@ -1,36 +1,28 @@
 # Changelog
 
-All notable changes to FS25 AgriSystems will be documented in this file.
+All notable changes to FS25 AgriSystems are documented here.
 
-The project is currently in early development. No public releases are available yet.
-
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). There are no public releases yet; entries under `Unreleased` describe repository development, not released gameplay features.
 
 ## [Unreleased]
 
-### Planned
+### Added
+- Initial Spray & Hygiene script-mod manifest and bootstrap foundation.
+- Namespaced configuration defaults and validation helpers for the four planned modules.
+- English and German localization starter files.
+- Explicit implementation status and runtime-validation gates in project documentation.
 
-#### AgriSystems Spray & Hygiene
-- Spray Drift simulation
-- Sprayer Engineering
-- Sprayer Cleaning
-- Field Contamination
+### Changed
+- Completed and consolidated the source-level FS25 API research and both mod technical specifications.
+- Updated project overview, architecture, roadmap and development setup to reflect the transition from research/specification into implementation.
+- Clarified that the first Spray & Hygiene commit is infrastructure only and does not yet change gameplay.
 
-#### AgriSystems Farm Biosecurity
-- Livestock quarantine
-- Disease transmission
-- Vehicle and equipment hygiene
-- Barn hygiene
-- Visitor management
-- Biosecurity Score
-
-### Development
-- Project architecture
-- Shared technical foundations
-- Configuration system
-- Documentation
-
----
+### Not yet implemented
+- Sprayer specialization registration and non-invasive processing observation.
+- Spray drift, equipment condition, cleaning/residue and farmland contamination gameplay.
+- Farm Biosecurity code and gameplay.
+- Savegame persistence, network events, in-game UI and release packaging.
+- GIANTS TestRunner, single-player, multiplayer and dedicated-server validation.
 
 ## Releases
 

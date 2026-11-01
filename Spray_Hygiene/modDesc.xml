@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<modDesc descVersion="104">
+    <author>Paul</author>
+    <version>0.1.0.0</version>
+
+    <title>
+        <en>AgriSystems Spray &amp; Hygiene</en>
+        <de>AgriSystems Spritzen &amp; Hygiene</de>
+    </title>
+
+    <description>
+        <en><![CDATA[
+Development foundation for modular spraying, sprayer maintenance and machinery hygiene systems.
+This development build does not yet change gameplay.
+        ]]></en>
+        <de><![CDATA[
+Technische Grundlage für modulare Spritz-, Wartungs- und Maschinenhygienesysteme.
+Diese Entwicklungsversion verändert das Gameplay noch nicht.
+        ]]></de>
+    </description>
+
+    <multiplayer supported="true"/>
+
+    <l10n filenamePrefix="translations/l10n"/>
+
+    <extraSourceFiles>
+        <sourceFile filename="scripts/core/Config.lua"/>
+        <sourceFile filename="scripts/AgriSystemsSprayHygiene.lua"/>
+    </extraSourceFiles>
+</modDesc>
