@@ -1,288 +1,47 @@
-# FS25 AgriSystems – Technical Architecture
-
-## 1. Overview
-
-This document describes the planned technical architecture of FS25 AgriSystems.
-
-The architecture is designed to support two independent Farming Simulator 25 mods while maintaining consistent development standards and reusable components.
-
-The two products are:
-
-- AgriSystems Spray & Hygiene
-- AgriSystems Farm Biosecurity
-
-The architecture must support modular development, savegame persistence, multiplayer synchronisation and configurable gameplay systems.
-
-**Important:** All technical implementation details must be verified against the actual Farming Simulator 25 scripting environment and available APIs before implementation.
-
----
-
-## 2. Architectural Principles
-
-The following principles guide development:
-
-- Modularity: Each gameplay system should be implemented as a separate module.
-- Independence: Both mods must function without requiring the other.
-- Reusability: Common functionality should be shared where practical.
-- Server Authority: Gameplay-critical calculations and state changes should be controlled by the server.
-- Persistence: Relevant gameplay data must survive savegame reloads.
-- Configuration: Gameplay parameters should be configurable without modifying Lua source code.
-- Compatibility: Avoid unnecessary modifications to base-game systems.
-- Maintainability: Code should remain readable, documented and testable.
-
----
-
-## 3. High-Level Structure
-
-```text
-AgriSystems
-│
-├── Core
-│   ├── Logging
-│   ├── Configuration
-│   ├── Savegame
-│   ├── Events
-│   ├── Networking
-│   └── Utilities
-│
-├── Spray_Hygiene
-│   ├── Main
-│   ├── Modules
-│   │   ├── SprayDrift
-│   │   ├── SprayerEngineering
-│   │   ├── SprayerCleaning
-│   │   └── FieldContamination
-│   ├── Config
-│   └── UI
-│
-└── Farm_Biosecurity
-    ├── Main
-    ├── Modules
-    │   ├── Quarantine
-    │   ├── DiseaseTransmission
-    │   ├── VehicleHygiene
-    │   ├── EquipmentHygiene
-    │   ├── BarnHygiene
-    │   ├── VisitorManagement
-    │   └── BiosecurityScore
-    ├── Config
-    └── UI
-```
-
-This is a logical architecture. The final physical folder structure may differ depending on Farming Simulator 25 loading requirements.
-
----
-
-## 4. Core Systems
-
-Common functionality should follow consistent interfaces.
-
-### 4.1 Logging
-
-The logging system should provide:
-
-- Informational messages.
-- Warnings.
-- Errors.
-- Debug output.
-- Consistent prefixes for each module.
-- Configurable debug logging.
-
-Example:
-
-```lua
-AgriSystems.log("SprayDrift", "Spray drift calculation initialized")
-```
-
-### 4.2 Configuration
-
-Gameplay parameters should be configurable.
-
-Examples:
-
-- Enable or disable individual modules.
-- Adjust simulation intensity.
-- Configure contamination risks.
-- Set cleaning effectiveness.
-- Adjust maintenance intervals.
-- Configure notification behaviour.
-
-Configuration should use supported XML or other appropriate formats.
-
-### 4.3 Savegame Persistence
-
-Gameplay data must be stored in the savegame where appropriate.
-
-Potential data includes:
-
-- Sprayer condition.
-- Nozzle wear.
-- Tank residue.
-- Equipment contamination.
-- Field contamination.
-- Livestock quarantine status.
-- Barn hygiene.
-- Biosecurity Score.
-
-Savegame data must be versioned to allow future updates without unnecessarily breaking existing saves.
-
-### 4.4 Event System
-
-Gameplay state changes should use a consistent event-handling approach.
-
-Examples:
-
-- Sprayer maintenance completed.
-- Cleaning procedure completed.
-- Field contamination transferred.
-- Animal group placed in quarantine.
-- Visitor access recorded.
-
-The implementation must use supported Farming Simulator 25 event and networking mechanisms.
-
----
-
-## 5. Module Architecture
-
-Each gameplay module should have a clearly defined responsibility.
-
-A module should ideally contain:
-
-- Initialisation.
-- Configuration loading.
-- Runtime logic.
-- State management.
-- Savegame integration.
-- Multiplayer integration where required.
-- Cleanup and shutdown handling.
-
-Modules should communicate through defined interfaces rather than accessing each other's internal implementation directly.
-
----
-
-## 6. Multiplayer Architecture
-
-Multiplayer compatibility is a core requirement.
-
-The planned architecture follows these principles:
-
-- The server is authoritative for gameplay-critical state.
-- Clients receive the relevant synchronised state.
-- Client-side interfaces must not independently modify authoritative gameplay data.
-- Events must be validated by the server.
-- Savegame persistence must be handled consistently.
-- Dedicated server behaviour must be tested.
-
-Potential synchronised data includes equipment condition, contamination states, quarantine status and relevant field information.
-
-The exact event and synchronisation implementation must be verified against the Farming Simulator 25 networking API.
-
----
-
-## 7. User Interface
-
-Both mods should provide a consistent user experience.
-
-Planned interface elements:
-
-- Module status.
-- Equipment condition.
-- Contamination information.
-- Cleaning status.
-- Quarantine information.
-- Biosecurity Score.
-- Configuration options.
-- Notifications and warnings.
-
-The interface should communicate relevant information without overwhelming the player.
-
----
-
-## 8. Performance Considerations
-
-The simulation must avoid unnecessary continuous calculations.
-
-Planned optimisation approaches:
-
-- Event-driven updates where possible.
-- Controlled update intervals.
-- Avoid unnecessary scans of all vehicles, fields or animals.
-- Cache frequently accessed data where appropriate.
-- Limit multiplayer network traffic.
-- Avoid excessive savegame writes.
-
-Performance must be evaluated in realistic single-player and multiplayer scenarios.
-
----
-
-## 9. Compatibility Strategy
-
-AgriSystems should minimise conflicts with other mods.
-
-Development guidelines:
-
-- Avoid unnecessary overwriting of base-game functions.
-- Use supported extension mechanisms.
-- Check whether another mod has already modified relevant game functions.
-- Handle missing or unsupported data safely.
-- Log compatibility problems clearly.
-- Test with common mod combinations.
-
-Compatibility cannot be guaranteed for every third-party mod.
-
----
-
-## 10. Error Handling
-
-The system should fail safely wherever possible.
-
-Examples:
-
-- Missing configuration values should use documented defaults.
-- Invalid savegame data should not crash the game.
-- Unsupported equipment should be handled gracefully.
-- Missing optional functionality should not prevent unrelated modules from loading.
-
-Errors should provide enough information to identify the affected module and problem.
-
----
-
-## 11. Development and Testing
-
-Technical implementation should follow this sequence:
-
-1. Verify relevant Farming Simulator 25 APIs.
-2. Create a minimal working mod structure.
-3. Implement logging and configuration.
-4. Implement savegame persistence.
-5. Establish multiplayer event handling.
-6. Develop individual gameplay modules.
-7. Test modules independently.
-8. Test interactions between modules.
-9. Perform multiplayer and dedicated server testing.
-10. Document verified behaviour.
-
----
-
-## 12. Open Technical Questions
-
-The following points require investigation before implementation:
-
-- Available APIs for sprayer pressure and nozzle data.
-- Access to weather and wind information.
-- Reliable identification of field areas and neighbouring fields.
-- Available animal health and disease-related interfaces.
-- Supported savegame extension mechanisms.
-- Multiplayer event registration and synchronisation.
-- Supported user interface extension mechanisms.
-- Compatibility with existing vehicle and equipment mods.
-
-These questions must be resolved through official documentation, source inspection where permitted and in-game testing.
-
----
-
-## 13. Architecture Status
-
-**Current status:** Proposed architecture.
-
-This document describes the intended design. Implementation details may change when technical limitations or better solutions are identified.
+# Technical Architecture
+
+## 1. Product boundaries
+AgriSystems consists of two independently installable FS25 script mods: Spray & Hygiene and Farm Biosecurity. There is no required shared runtime package or third ZIP. Common conventions/source may be duplicated at build time; each final ZIP must be standalone.
+
+## 2. Runtime model
+- Target FS25 PC/Mac; console script-mod support is not promised.
+- Server authoritative for all shared simulation, validation, persistence and random seeds.
+- Client requests actions; server validates sender/farm/object/permissions/distance/resources/state.
+- Initial snapshot on connection; compact dirty-state events afterward.
+- Savegame XML is authoritative for simulation settings/state. Local modSettings are client UI preferences only.
+- Each mod has unique specialization/event/XML namespaces and independent versioning.
+
+## 3. FS25 integration contracts
+### Spray & Hygiene
+- Base Sprayer start/process/end callbacks are observation points. Native game calculates and deducts usage. External fill sources may leave source vehicle nil.
+- Precision Farming wraps usage, area processing and end processing. Do not override these functions or alter workAreaParameters/usage in v1.
+- Wind path: g_currentMission.environment.weather.windUpdater; getCurrentValues returns dirX, dirZ, velocity m/s, cirrus factor. Listener add/remove methods exist. Vector sign and dedicated-server authority are runtime gates.
+- FarmlandManager position lookup is supported. FieldManager:getFieldById maps farmland ID to Field; not a world position query. V1 uses farmland-level contamination.
+### Farm Biosecurity
+- PlaceableHusbandryAnimals owns AnimalClusterSystem and exposes cluster getters; cluster updates are event-driven.
+- Engine cluster IDs are transient, regenerated on load and changed by split/merge. Persistent biosecurity records require mod-owned IDs and conservative reconciliation.
+### Registration
+- SpecializationManager registration and TypeManager validation/finalization are distinct phases. Inject only into eligible vehicle/placeable types with required base specializations. Make injection idempotent and namespaces unique.
+
+## 4. State and persistence
+Each mod owns a versioned XML root. Persist only mod-owned stable IDs and gameplay state; rebuild runtime object/cluster mappings on load. Validate ranges and schema versions; ignore unknown keys; migrate conservatively. Orphan records are bounded and safely pruned. Uninstall must not damage vanilla save data.
+
+## 5. Events and security
+Use bounded primitive payloads and valid network object references. Never trust client-submitted simulation values. Server calculates and validates results. Avoid full-state broadcasts per tick. Late join receives complete initial snapshot; later changes are deltas.
+
+## 6. Performance
+No global per-frame scans. Event-driven callbacks, bounded intervals, cached type checks, dirty-state replication, bounded records/history. Group-level animal model in v1. Farmland-level contamination in v1.
+
+## 7. Runtime gates
+- Wind vector sign and actual drift direction.
+- Dedicated-server weather authority, listener lifecycle and client synchronization.
+- Sprayer callback timing with Precision Farming, AI, external tanks and other mods.
+- Cluster reconciliation through split/merge/reproduction/riding/death/save-load/late join.
+- Placeable/vehicle type validation order and load-order compatibility.
+- Field geometry lookup only if field-level contamination is later introduced.
+
+## 8. Testing and release
+Run GIANTS TestRunner matching the installed patch, then actual single-player and dedicated-server tests. Acceptance matrices live in each mod's Technical_Specification.md. Package each mod separately with modDesc.xml at ZIP root; exclude documentation, tests, repository metadata and developer tools.
+
+## 9. Status
+Source research and both implementation specifications are complete. Implementation has not started. Runtime gates above are explicit pre-release tests, not reasons to invent unsupported APIs or block unrelated implementation modules.

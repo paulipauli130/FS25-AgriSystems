@@ -724,3 +724,50 @@ Therefore the audit closes several previous assumptions decisively, but it canno
 - exact callback ordering and mod load-order behavior in multiplayer.
 
 This means the project is ready to begin a carefully scoped first implementation with the above gates and fallbacks. It is not honest to call every proposed feature fully API-verified until the missing source/runtime tests are completed.
+
+
+# Superseding audit: complete decompiled FS25 script tree
+
+**Source:** owner-provided `FS25-Decompiled.zip`; 1,975 entries, approximately 17.5 MB extracted. This section supersedes earlier conclusions below wherever they conflict. The archive did not expose a definitive executable build manifest; runtime patch provenance must be recorded during testing.
+
+## WindUpdater (verified in source)
+Files: `environment/weather/WindUpdater.lua`, `environment/weather/Weather.lua`, `environment/weather/WindObject.lua`.
+- Weather constructs `self.windUpdater = WindUpdater.new()`; mission path is `g_currentMission.environment.weather.windUpdater`.
+- `getCurrentValues()` returns `currentDirX, currentDirZ, currentVelocity, currentCirrusSpeedFactor` in that order.
+- Velocity is m/s. WindObject converts XML km/h with `MathUtil.kmhToMps`; weather debug display converts m/s to km/h.
+- Listener API: `addWindChangedListener(listener)`, `removeWindChangedListener(listener)`; callback `setWindValues(dirX, dirZ, velocity, cirrusFactor)`.
+- Weather owns updater lifecycle. Existing integrations register listeners and sample initial values.
+- `MAX_SPEED=42` is a shader normalization limit, not a physical cap.
+- Source does not prove whether vector direction means wind-to or wind-from. Verify with controlled in-game visual test before drift penalties activate.
+- Integration: guarded server-side WindProvider; validate finite values and object availability; register/unregister safely or poll at modest interval. No invalid-data penalty. Server owns drift state.
+
+## AnimalCluster identity and reconciliation (verified in source)
+Files: `animals/husbandry/cluster/AnimalCluster.lua`, `AnimalClusterSystem.lua`, `AnimalClusterUpdateEvent.lua`.
+- Cluster IDs are generated from runtime `AnimalCluster.CLUSTER_ID`; reset method resets counter. IDs are not persisted in cluster savegame XML.
+- Save data stores animal count, age, health, reproduction and subtype data; loading creates new clusters and therefore new runtime IDs.
+- Initial network stream sends cluster IDs and subtype index; clients reconcile the received current set.
+- Cluster system maintains `idToIndex`; IDs are current-session lookup keys only.
+- Clone creates a fresh ID and copies selected attributes, not the original ID/count.
+- Server queues add/remove operations. Update removes empty/removed clusters and merges compatible groups when merging is supported and hashes match. The surviving ID depends on iteration/order.
+- Split/merge/reproduction/riding can change group identity. Never use engine cluster ID as persistent mod identity.
+- Design: persistent husbandry-level mod ID and mod-owned group records; transient mapping to current engine IDs. Reconcile on every cluster update and after load. On ambiguous split/merge, conservative inheritance: retain quarantine and strongest infection/exposure state rather than silently clearing it.
+
+## FieldManager (verified in source)
+File: `field/FieldManager.lua`.
+- Full source defines `getFieldById(fieldId)`, returning `farmlandIdFieldMapping[fieldId]`; `getFields()` returns field list.
+- This is a farmland-ID mapping, not world-position lookup. No `getFieldAtWorldPosition(x,z)` definition exists in FieldManager.
+- V1 contamination remains keyed by verified FarmlandManager farmland ID. Field geometry resolver is deferred.
+
+## Sprayer, Precision Farming, specialization lifecycle
+The full tree corroborates prior local source findings. Base Sprayer start/process/end callbacks select native or external fill source, calculate native usage, apply density map and deduct usage server-side at successful end. External supply may have nil sprayVehicle. Precision Farming wraps `getSprayerUsage`, `processSprayerArea` and end processing. Do not deduct native usage or override these methods in v1. Observe native processing state only; verify callback order at runtime.
+SpecializationManager registration, TypeManager validation and finalization are separate lifecycle stages; finalization registers callbacks/functions/overwrites/listeners. Register unique namespaced specialization once and inject idempotently only into types with required base specialization.
+
+## Remaining runtime-only gates
+1. Wind vector sign and real drift direction.
+2. Dedicated-server weather authority, client updates and listener lifecycle.
+3. Sprayer callback timing with Precision Farming, AI, external tanks and other mods.
+4. Animal cluster reconciliation under purchase/sale, split, merge, riding, reproduction, death, save/load and late join.
+5. Field geometry position lookup (not required for farmland-level v1).
+6. Actual placeable/vehicle type-validation order and load-order interactions.
+
+**Status correction:** The earlier sections saying WindUpdater/AnimalCluster implementation were absent refer to the smaller initial ZIP and are superseded by this complete-source audit. The full-source findings above are source-verified; runtime behavior is not yet certified.
