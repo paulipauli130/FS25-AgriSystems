@@ -1,23 +1,23 @@
 # Farm Biosecurity — Implementation Notes
 
-## Development build 0.2.2.0
-- Independent mod bootstrap and validated configuration.
-- Group-level disease progression, explicit contact-based exposure and conservative split/merge helpers.
-- Quarantine with hygiene-compliance release gate.
-- Dirt cleaning followed by disinfection with a real contact-time completion step.
-- Derived weighted Biosecurity Score.
-- Server-gated StateStore for husbandry/group records.
-- Transient engine-cluster-to-mod-group mapping is memory-only and cleared on load.
-- Storage is bounded to 128 husbandries, a configured maximum of 1–2048 groups per husbandry, and 1024 hygiene surfaces per husbandry.
-- Split preflights record capacity; merge rejects invalid/duplicate IDs.
-- Standalone Lua assertion suite and manual test plan.
+## Development build 0.3.0.0
+- Independent mod bootstrap, validated configuration and pure disease/quarantine/hygiene/score models.
+- Server-gated bounded StateStore with per-husbandry cohort state.
+- Initial PlaceableHusbandryAnimals-only specialization registration.
+- Stable husbandry identity uses the base-game persistent Placeable uniqueId.
+- Cohort identity is animal type plus configured subtype ID. All engine clusters of the same subtype in one husbandry are aggregated into one logical cohort; transient cluster IDs are not persisted.
+- Placeable savegame XML schema, load and save paths for cohort disease/quarantine state and hygiene surfaces.
+- Animal cohort creation is observed through onHusbandryAnimalsUpdate; newly seen cohorts start in quarantine.
+- No physical animal movement restriction or disease exposure is active yet.
+
+## Important granularity decision
+FS25 animal cluster IDs are runtime identities and are regenerated/changed by cluster operations. To avoid unsafe ID matching, this implementation uses one persistent logical cohort per configured subtype in each husbandry. This deliberately aggregates same-subtype engine clusters. It avoids losing disease/quarantine state on cluster split/merge, but does not yet distinguish separate same-subtype subgroups inside one pen.
 
 ## Explicit limitations
-- No placeable specialization or actual AnimalClusterSystem callback integration.
-- Mod-owned husbandry/group IDs still require an engine adapter and savegame persistence.
-- Split/merge helpers require explicit verified relationships from the engine adapter.
-- No group/husbandry XML persistence, network events, UI, costs or action triggers.
-- No gameplay effect is active; no FS25 runtime or GIANTS TestRunner validation has been performed.
+- Placeable specialization registration and XML serialization are source-reviewed but not runtime-tested.
+- Cohort progression, quarantine clock advancement, exposure/contact events and hygiene actions are not wired to gameplay.
+- No incremental network replication or UI exists.
+- No runtime validation has been performed in FS25 or on a dedicated server.
 
 ## Safety boundary
-Engine cluster IDs are transient references only and are never serialized. Ambiguous reconciliation must not clear disease or quarantine. Exposure requires a server-confirmed contact opportunity.
+Only the server creates or saves cohort state. The engine's cluster ID is never persisted. Ambiguous or unsupported subtype metadata is skipped without clearing existing state. No clinical claims are made.
