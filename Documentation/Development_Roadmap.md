@@ -4,7 +4,7 @@ This document describes the planned development stages of FS25 AgriSystems.
 
 The roadmap is a living document and may change as development progresses, technical limitations are discovered and community feedback is collected.
 
-**Current overall status: Planning**
+**Current overall status: Project setup completed; technical research pending**
 
 ---
 
@@ -12,13 +12,15 @@ The roadmap is a living document and may change as development progresses, techn
 
 **Status: In Progress**
 
-- [ ] Establish repository structure.
-- [ ] Define project architecture.
-- [ ] Create technical documentation.
-- [ ] Establish coding and contribution guidelines.
-- [ ] Research Farming Simulator 25 scripting APIs.
-- [ ] Create initial mod templates.
-- [ ] Establish configuration and logging systems.
+- [x] Create public GitHub repository and initial repository structure.
+- [x] Create project concept documentation.
+- [x] Draft the initial technical architecture.
+- [x] Create development setup documentation.
+- [x] Establish contribution and community guidelines.
+- [x] Add changelog and license.
+- [ ] Research and verify Farming Simulator 25 scripting APIs.
+- [ ] Define the final physical mod folder structures.
+- [ ] Establish verified configuration, logging and savegame approaches.
 
 ## Phase 2 – AgriSystems Spray & Hygiene
 
