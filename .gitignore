@@ -1,38 +1,21 @@
-﻿# Windows
+# OS / editor
+.DS_Store
 Thumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Editors
-.vs/
+.vscode/
 .idea/
-*.swp
-*.swo
 
-# Temporary files
-*.tmp
-*.temp
-*.bak
-*.old
-*.orig
-
-# Logs
+# Logs and temporary files
 *.log
+*.tmp
+*.bak
+*.swp
+*~
 
-# Farming Simulator local data
-Test_Saves/
-**/Test_Saves/
-FarmingSimulator2025/
+# FS25 local test data
+Testing/Logs/
+Testing/Test_Saves/
+Testing/Test_Reports/Local/
 
 # Build output
-/build/
-/dist/
-/out/
-
-# Archive packages (use GitHub Releases)
-*.zip
-*.7z
-*.rar
-
-# OS metadata
-.DS_Store
+Releases/.staging/
+Releases/FS25_AgriSystems_*.zip
