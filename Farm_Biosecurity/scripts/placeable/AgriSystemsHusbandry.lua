@@ -40,7 +40,7 @@ end
 
 function Spec.registerEventListeners(placeableType)
  SpecializationUtil.registerEventListener(placeableType,"onLoad",Spec)
- SpecializationUtil.registerEventListener(placeableType,"onDelete",Spec)
+ SpecializationUtil.registerEventListener(placeableType,"onFinalizePlacement",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onHusbandryAnimalsUpdate",Spec)
 end
 
@@ -51,11 +51,11 @@ local function makeCohortId(subType)
 end
 
 function Spec:onLoad(savegame)
- self.spec_agriSystemsBiosecurity={husbandryId=self:getUniqueId(),loaded=false}
+ self.spec_agriSystemsBiosecurity={husbandryId=self:getUniqueId(),loaded=false,savegame=savegame}
  local spec=self.spec_agriSystemsBiosecurity
  if not self.isServer then return end
  if type(spec.husbandryId)~="string" or spec.husbandryId=="" then
-  Logging.warning("[AgriSystems Farm Biosecurity] Placeable has no persistent uniqueId; this husbandry is inactive")
+  -- PlaceableSystem may assign the persistent uniqueId after the first load callback.
   return
  end
  local store=getStore()
@@ -121,9 +121,20 @@ end
 -- Cohort identity is stable within a husbandry: animal type + configured subtype ID.
 -- Engine cluster IDs are deliberately not persisted; clusters of the same subtype
 -- are aggregated into one logical cohort so split/merge cannot lose its state.
+function Spec:onFinalizePlacement()
+ local spec=self.spec_agriSystemsBiosecurity
+ if spec~=nil and (spec.husbandryId==nil or spec.husbandryId=="") then
+  self:onLoad(spec.savegame)
+ end
+end
+
 function Spec:onHusbandryAnimalsUpdate(clusters)
  if not self.isServer then return end
  local spec=self.spec_agriSystemsBiosecurity
+ if spec~=nil and (spec.husbandryId==nil or spec.husbandryId=="") then
+  self:onLoad(spec.savegame)
+  spec=self.spec_agriSystemsBiosecurity
+ end
  if spec==nil or spec.husbandryId==nil then return end
  local store=getStore()
  if store==nil then return end
@@ -163,7 +174,7 @@ function Spec:saveToXMLFile(xmlFile,key,usedModNames)
   local d=record.disease
   xmlFile:setValue(g.."#id",groupId)
   xmlFile:setValue(g.."#status",d.status)
-  xmlFile:setValue(g.."#diseaseId",d.diseaseId)
+  if d.diseaseId~=nil then xmlFile:setValue(g.."#diseaseId",d.diseaseId) end
   xmlFile:setValue(g.."#elapsedHours",d.elapsedHours)
   xmlFile:setValue(g.."#exposureLoad",d.exposureLoad)
   xmlFile:setValue(g.."#severity",d.severity)

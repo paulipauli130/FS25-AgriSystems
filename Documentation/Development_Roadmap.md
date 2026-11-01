@@ -2,75 +2,67 @@
 
 ## Current status
 
-Spray & Hygiene contains four pure gameplay models, a state container, early Sprayer-only specialization, per-vehicle XML save/load code and an initial server-to-client snapshot. These engine-facing features are source-reviewed but not runtime-tested. Farm Biosecurity has an independent bootstrap, four pure gameplay models and a server-gated group StateStore with conservative split/merge helpers and bounded storage. Both mods have standalone Lua assertion suites and independent runtime packaging scripts. Neither mod is runtime-certified and no public release is available.
+Spray & Hygiene contains four pure gameplay models, a state container, early Sprayer-only specialization, per-vehicle XML save/load code and an initial server-to-client snapshot. These engine-facing features are source-reviewed but not runtime-tested. Farm Biosecurity has an independent bootstrap, four pure gameplay models, a bounded StateStore, PlaceableHusbandryAnimals-only specialization and per-placeable cohort save/load code. Both mods have standalone Lua assertion suites and independent runtime packaging scripts. Neither mod is runtime-certified.
 
 ## Phase 1 — Research and specifications (complete)
-- [x] Project structure and contribution conventions.
+- [x] Project structure and conventions.
 - [x] Public GDN/API research and local FS25 source audit.
 - [x] Sprayer native processing and Precision Farming extension-chain review.
-- [x] WindUpdater access path, return values and units source-verified.
+- [x] WindUpdater access path, values and units source-verified.
 - [x] Animal cluster identity, save/load, network and merge behavior source-verified.
 - [x] FieldManager mapping clarified; farmland-level fallback selected.
-- [x] Spray & Hygiene and Farm Biosecurity technical specifications.
-- [x] Multiplayer authority, persistence, performance, compatibility and acceptance criteria.
+- [x] Both technical specifications and multiplayer/persistence acceptance criteria.
 
 ## Phase 2 — Shared development conventions
-- [ ] Finalize build/package scripts and versioning.
-- [x] Define independent mod namespaces and initial configuration conventions.
-- [ ] Finalize shared event and XML schema conventions.
-- [ ] Establish TestRunner invocation and supported game patch in the local test environment.
-- [x] Add standalone Lua model assertion tests.
-- [x] Add independent runtime-only ZIP packaging script.
+- [x] Independent mod namespaces and configuration conventions.
+- [x] Standalone Lua model assertion tests.
+- [x] Independent runtime-only ZIP packaging script.
+- [ ] Finalize shared event/XML schema conventions.
+- [ ] Establish TestRunner invocation and supported game patch in local test environment.
 
-## Phase 3 — Spray & Hygiene implementation
-- [x] Bootstrap and validated configuration.
-- [x] Pure Lua condition, cleaning, drift and farmland contamination models.
+## Phase 3 — Spray & Hygiene
+- [x] Bootstrap, configuration and four pure gameplay models.
 - [x] Server-gated engine-independent state container.
-- [x] Sprayer specialization registration restricted to base Sprayer types (source-reviewed).
+- [x] Sprayer-only specialization registration (source-reviewed).
 - [x] Read-only native spray callback observer.
-- [x] Per-vehicle XML schema and save/load code (runtime reload not yet tested).
+- [x] Per-vehicle XML schema/save/load code (runtime reload untested).
 - [x] Initial server-to-client snapshot.
-- [x] Standalone pure Lua model test script (execution pending).
 - [ ] Runtime-load validation and GIANTS log review.
 - [ ] Incremental dirty-state replication.
-- [ ] Connect condition/coverage model to measured successful spraying work.
-- [ ] Cleaning actions, costs and in-game UI.
-- [ ] Wind provider and drift model behind runtime validation gate.
-- [ ] Mission-level farmland contamination persistence and contact adapter.
-- [ ] Packaging and release validation.
+- [ ] Connect condition/coverage to measured spraying work.
+- [ ] Cleaning actions, costs and UI.
+- [ ] Wind provider and drift integration.
+- [ ] Mission-level farmland contamination persistence/contact adapter.
 
-## Phase 4 — Farm Biosecurity implementation
-- [x] Independent modDesc, localization and bootstrap foundation.
-- [x] Group-level disease progression and explicit contact-based exposure.
-- [x] Quarantine model with hygiene-compliance release gate.
-- [x] Dirt cleaning and disinfection contact-time model.
-- [x] Derived weighted Biosecurity Score.
-- [x] Server-gated group StateStore with bounded husbandry/group/surface storage.
-- [x] Conservative split/merge helpers for disease and quarantine state.
-- [x] Standalone pure Lua model test script (execution pending).
-- [ ] Placeable specialization registration.
-- [ ] Husbandry identity and conservative cluster reconciliation.
-- [ ] Group and husbandry persistence.
-- [ ] Server networking and late-join snapshot.
-- [ ] Quarantine and hygiene actions, costs and UI.
-- [ ] Vehicle/equipment/visitor/barn integration.
-- [ ] Runtime validation and packaging.
+## Phase 4 — Farm Biosecurity
+- [x] Independent modDesc, localization and bootstrap.
+- [x] Disease progression, explicit contact exposure, quarantine, hygiene and score models.
+- [x] Bounded server-gated StateStore and conservative split/merge helpers.
+- [x] PlaceableHusbandryAnimals-only specialization registration (source-reviewed).
+- [x] Stable per-placeable identity using base-game uniqueId.
+- [x] Subtype-level cohort reconciliation to avoid persisting engine cluster IDs.
+- [x] Per-placeable savegame XML schema and cohort/hygiene serialization code (runtime reload untested).
+- [ ] Runtime-load and placeable save/reload validation.
+- [ ] Quarantine clock and disease progression on game time.
+- [ ] Server-to-client snapshot and dirty-state replication.
+- [ ] Contact/exposure events and hygiene actions.
+- [ ] Vehicle/equipment/visitor/barn integration and UI.
 
 ## Phase 5 — Validation and release
 - [ ] Execute pure Lua model tests in a compatible Lua runtime.
 - [ ] Run PowerShell packaging script and inspect ZIP contents.
-- [ ] GIANTS TestRunner matching the installed patch.
-- [ ] Single-player regression and save migration.
+- [ ] GIANTS TestRunner matching installed patch.
+- [ ] Single-player save migration and regression.
 - [ ] Dedicated-server host/client/late-join/reconnect tests.
 - [ ] Precision Farming, AI, Courseplay and animal-system compatibility.
 - [ ] Performance tests on large farms.
-- [ ] Separate ZIP releases; publish only after all acceptance tests pass.
+- [ ] Separate ZIP releases only after acceptance tests pass.
 
 ## Development rules
-- The two mods must install, run, save and uninstall independently.
-- No third shared mod dependency. Shared source may be copied into each package at build time only.
+- The two mods install, run, save and uninstall independently.
+- No third shared runtime dependency.
 - Server owns gameplay state; clients submit validated intent.
-- Disabled modules must preserve vanilla behavior.
+- Disabled modules preserve vanilla behavior.
 - Never modify native sprayer consumption in v1.
-- No runtime feature is marked complete until the relevant current-patch tests pass.
-- Source review is not a substitute for runtime validation.
+- No runtime feature is complete until tested on the target game patch.
+- Source review is not runtime certification.

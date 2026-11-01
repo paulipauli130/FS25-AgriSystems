@@ -3,39 +3,39 @@
 ## [Unreleased]
 - Continue engine integration, persistence, networking and runtime validation.
 
+## [Farm Biosecurity 0.3.1.0] - 2026-11-01
+### Changed
+- Retry persistent husbandry identity acquisition after placeable finalization.
+- Avoid writing nil disease IDs to XML.
+
+## [Farm Biosecurity 0.3.0.0] - 2026-11-01
+### Added
+- PlaceableHusbandryAnimals-only specialization and per-placeable cohort save/load.
+- Stable husbandry identity from the base-game persistent Placeable uniqueId.
+- Subtype cohort model avoids persisting unstable engine cluster IDs.
+
 ## [Farm Biosecurity 0.2.2.0] - 2026-11-01
 ### Changed
-- Added a hard cap of 128 husbandry records and clamps the per-husbandry group cap.
-- Retained the 1024-surface limit per husbandry.
+- Bounded husbandry and group state storage.
 
 ## [Farm Biosecurity 0.2.1.0] - 2026-11-01
 ### Changed
-- Disinfection now has an explicit contact-time window.
-- Group split capacity is preflighted; merge rejects duplicate or invalid IDs.
+- Disinfection requires the configured contact-time window.
 
 ## [Farm Biosecurity 0.2.0.0] - 2026-11-01
 ### Added
-- Bounded server-gated group StateStore and transient engine-cluster mapping.
-- Conservative disease split/merge helpers and quarantine inheritance.
+- Bounded server-gated group StateStore and conservative split/merge helpers.
 
 ## [Farm Biosecurity 0.1.0.0] - 2026-11-01
 ### Added
-- Independent mod bootstrap, validated configuration and pure disease, quarantine, hygiene and score models.
+- Independent bootstrap and disease, quarantine, hygiene and score models.
 
 ## [Spray & Hygiene 0.7.0.0] - 2026-11-01
 ### Added
-- Initial server-to-client Sprayer condition and cleaning snapshot.
+- Initial server-to-client Sprayer state snapshot.
 
 ## [Spray & Hygiene 0.6.0.0] - 2026-11-01
 ### Added
-- Initial Sprayer-only specialization and per-vehicle XML save/load code.
-
-## [Spray & Hygiene 0.5.0.0] - 2026-11-01
-### Added
-- Server-gated engine-independent state container.
-
-## [Spray & Hygiene 0.4.0.0] - 2026-11-01
-### Added
-- Farmland-level contamination model.
+- Initial Sprayer specialization and per-vehicle XML save/load code.
 
 All entries are development foundations, not certified releases.
