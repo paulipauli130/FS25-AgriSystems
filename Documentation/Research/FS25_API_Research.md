@@ -77,13 +77,22 @@ Disease, infection, vaccination, and quarantine are not documented as built-in F
 - `FarmlandManager:getIsOwnedByFarmAtWorldPosition(farmId, x, z)` checks whether the sampled position belongs to that farm. `getIsOwnedByFarmAlongLine(...)` can test ownership along a line, which may be useful for diagnostics but is not a substitute for sampling the actual sprayer work-area footprint.
 - These methods concern farmland parcels/ownership, not crop-field identity. A single farmland can contain more than one field or non-field area. Spray & Hygiene should therefore store farmland association separately from any future crop-field identity.
 - The FS25 `FieldManager` is a separate manager with its own `fields` collection, `farmlandIdFieldMapping`, `loadFromXMLFile()`, and `saveToXMLFile()`. Its `saveToXMLFile(xmlFilename)` writes field records and pending field updates to a dedicated fields XML file. This confirms that field data is managed and persisted separately from farmland ownership.
+- **Field lookup – community implementation evidence:** the FS25 mod Realistic Soil & Fertilizer uses `g_fieldManager:getFieldAtWorldPosition(x, z)` as its primary field lookup and reports improved accuracy on complex maps. Its development notes explicitly distinguish `fieldId` from `farmlandId`. This is a useful real-world FS25 implementation reference, but the method signature/behavior has not yet been cross-checked against a directly surfaced GDN class page in this research pass.
 - FS25 specializations expose lifecycle callbacks such as `onLoad`, `onPostLoad`, `onReadStream`, `onWriteStream`, `onReadUpdateStream`, and `onWriteUpdateStream`. GDN examples explicitly describe `onWriteStream` as server-side on join and `onReadStream` as client-side on join.
 - FS25 placeable specializations can register savegame XML paths with `registerSavegameXMLPaths(schema, basePath)` and persist values with `saveToXMLFile(xmlFile, key, usedModNames)`. The GDN `PlaceableFarmhouse` is one documented example. The `PlaceableFactory` example shows nested data being written with `xmlFile:setSortedTable(...)` and delegated storage serialization via `storage:saveToXMLFile(...)`.
-- `FillUnit` registers the event `onFillUnitFillLevelChanged` as well as fill-type and filling-state events. This can be used as an event-driven signal for tank state changes rather than polling every frame, subject to the exact callback signature documented above.
+- FS25 event examples establish a standard custom-network-event pattern: serialize object references and state in `writeStream`, reconstruct them in `readStream`, then apply the change in `run`. GIANTS examples such as `FlashlightToggleLightEvent` and `ProductionPointProductionStatusEvent` send client requests to the server or broadcast server-originated changes to clients. The server checks the connection direction and broadcasts accepted changes.
+
+### Current architecture recommendation (research-based, not code)
+
+- Keep gameplay state authoritative on the server. Clients should request actions; they should not directly decide disease status, contamination state, drift results, or equipment wear.
+- In each custom event, validate sender permissions, farm ownership/access, object validity, and state transition on the server before applying it. Broadcast only accepted results to clients.
+- Use initial object streams for state a joining client must know immediately, and update streams/events for subsequent changes. Savegame XML is a separate persistence layer; it does not replace network synchronization.
+- For field tracking, resolve the actual crop field with `g_fieldManager:getFieldAtWorldPosition(x, z)` where verified, and separately resolve farmland ID/owner with `g_farmlandManager`. Do not use farmland ID as a field ID.
+- For animal quarantine, do not persist an array index. Prefer a verified stable identity composed from the husbandry identity plus cluster ID, with a migration/cleanup strategy for cluster changes. This remains provisional until FS25 cluster lifecycle is inspected.
 
 ### Current conclusion
 
-The FS25 API provides separate systems for farmland ownership and crop-field data. It also provides established savegame XML patterns and distinct network stream callbacks. AgriSystems state should be authoritative on the server, saved persistently, and replicated only when clients need to display or react to it. We should not assume that writing a savegame value automatically synchronizes it to multiplayer clients.
+The FS25 API provides separate systems for farmland ownership and crop-field data. It also provides established savegame XML patterns and distinct network stream/event callbacks. AgriSystems state should be authoritative on the server, saved persistently, and replicated only when clients need to display or react to it. We should not assume that writing a savegame value automatically synchronizes it to multiplayer clients.
 
 For Spray & Hygiene, field identity should be resolved through the FieldManager/field system where possible, while farmland ownership remains a separate attribute. For Farm Biosecurity, a persistent server-side registry or placeable/cluster-associated data may be feasible, but the correct key and lifecycle depend on the still-open husbandry/cluster investigation.
 
@@ -114,9 +123,10 @@ For Spray & Hygiene, field identity should be resolved through the FieldManager/
 
 ### Field and persistence integration
 
-1. Inspect exact `FieldManager` position-to-field lookup methods and field object semantics.
-2. Select the persistence host for each mod's custom state and document save/load behavior under dedicated server restart and client join.
-3. Decide how global registries are loaded, saved, versioned, and migrated without conflicting with existing game save data.
+1. Cross-check `g_fieldManager:getFieldAtWorldPosition(x, z)` against the direct FS25 GDN source and confirm its return type.
+2. Inspect exact `FieldManager` position-to-field lookup methods and field object semantics.
+3. Select the persistence host for each mod's custom state and document save/load behavior under dedicated server restart and client join.
+4. Decide how global registries are loaded, saved, versioned, and migrated without conflicting with existing game save data.
 
 ## General research rules
 
