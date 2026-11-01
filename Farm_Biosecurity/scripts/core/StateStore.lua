@@ -2,6 +2,7 @@ AgriSystemsFarmBiosecurity = AgriSystemsFarmBiosecurity or {}
 AgriSystemsFarmBiosecurity.StateStore = {}
 local Store=AgriSystemsFarmBiosecurity.StateStore
 Store.SCHEMA_VERSION=1
+Store.MAX_HUSBANDRIES=128
 local function validId(v) return type(v)=="string" and v~="" and string.len(v)<=128 end
 local function count(t) local n=0; for _ in pairs(t) do n=n+1 end; return n end
 local function copy(t)
@@ -12,11 +13,16 @@ local function copy(t)
 end
 function Store.createState() return {schemaVersion=1,husbandries={}} end
 function Store.new(isServer,maximumGroups)
- return setmetatable({isServer=isServer==true,maximumGroups=maximumGroups or 512,state=Store.createState(),clusterToGroup={},dirty=false},{__index=Store})
+ local limit=type(maximumGroups)=="number" and math.floor(maximumGroups) or 512
+ limit=math.max(1,math.min(2048,limit))
+ return setmetatable({isServer=isServer==true,maximumGroups=limit,state=Store.createState(),clusterToGroup={},dirty=false},{__index=Store})
 end
 function Store:ensureHusbandry(husbandryId)
  if not self.isServer or not validId(husbandryId) then return false end
- if self.state.husbandries[husbandryId]==nil then self.state.husbandries[husbandryId]={groups={},hygiene={surfaces={}}}; self.dirty=true end
+ if self.state.husbandries[husbandryId]==nil then
+  if count(self.state.husbandries)>=Store.MAX_HUSBANDRIES then return false end
+  self.state.husbandries[husbandryId]={groups={},hygiene={surfaces={}}}; self.dirty=true
+ end
  return true
 end
 function Store:ensureGroup(husbandryId,groupId)
@@ -114,6 +120,7 @@ function Store:loadState(candidate)
  local state=Store.createState()
  if type(candidate)=="table" and type(candidate.husbandries)=="table" then
   for husbandryId,h in pairs(candidate.husbandries) do
+   if count(state.husbandries)>=Store.MAX_HUSBANDRIES then break end
    if validId(husbandryId) and type(h)=="table" then
     local target={groups={},hygiene=AgriSystemsFarmBiosecurity.Hygiene.validateState(h.hygiene)}
     if type(h.groups)=="table" then
