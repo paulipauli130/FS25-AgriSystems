@@ -4,7 +4,7 @@ local Mod = AgriSystemsSprayHygiene
 
 Mod.MOD_NAME = g_currentModName or "FS25_AgriSystems_SprayHygiene"
 Mod.MOD_DIRECTORY = g_currentModDirectory or ""
-Mod.VERSION = "0.2.0.0"
+Mod.VERSION = "0.3.0.0"
 Mod.CONFIG = nil
 
 local function log(message)
@@ -20,13 +20,13 @@ function Mod:loadMap()
 
     self.CONFIG = self.Config.validate(nil)
 
-    if self.SprayerCondition == nil or self.SprayerCleaning == nil then
-        log("ERROR: gameplay model modules are missing; gameplay remains inactive.")
+    if self.SprayerCondition == nil or self.SprayerCleaning == nil or self.SprayDrift == nil then
+        log("ERROR: one or more gameplay model modules are missing; gameplay remains inactive.")
         return
     end
 
     log(string.format(
-        "Development foundation loaded (version %s). Condition and cleaning models are available; engine integration is inactive.",
+        "Development foundation loaded (version %s). Condition, cleaning and drift models are available; engine integration is inactive.",
         self.VERSION
     ))
 end
