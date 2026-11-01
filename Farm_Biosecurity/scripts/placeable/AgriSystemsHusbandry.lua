@@ -6,9 +6,9 @@ local MAX_SURFACES=128
 
 local function getStore()
  local mod=AgriSystemsFarmBiosecurity
- if mod.STATE_STORE==nil and g_server~=nil and mod.StateStore~=nil then
+ if mod.STATE_STORE==nil and mod.StateStore~=nil then
   local config=mod.CONFIG or mod.Config.validate(nil)
-  mod.STATE_STORE=mod.StateStore.new(true,config.disease.maximumGroups)
+  mod.STATE_STORE=mod.StateStore.new(g_server~=nil,config.disease.maximumGroups)
  end
  return mod.STATE_STORE
 end
@@ -44,6 +44,8 @@ function Spec.registerEventListeners(placeableType)
  SpecializationUtil.registerEventListener(placeableType,"onFinalizePlacement",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onHusbandryAnimalsUpdate",Spec)
  SpecializationUtil.registerEventListener(placeableType,"onHourChanged",Spec)
+ SpecializationUtil.registerEventListener(placeableType,"onWriteStream",Spec)
+ SpecializationUtil.registerEventListener(placeableType,"onReadStream",Spec)
 end
 
 local function makeCohortId(subType)

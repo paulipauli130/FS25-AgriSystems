@@ -172,3 +172,25 @@ function Store:loadHusbandryState(husbandryId,candidate)
  self.dirty=true
  return true
 end
+
+function Store:applyClientSnapshot(husbandryId,candidate)
+ if self.isServer or not validId(husbandryId) or type(candidate)~="table" then return false end
+ local target={groups={},hygiene=AgriSystemsFarmBiosecurity.Hygiene.validateState(candidate.hygiene)}
+ if type(candidate.groups)=="table" then
+  for groupId,record in pairs(candidate.groups) do
+   if count(target.groups)>=self.maximumGroups then break end
+   if validId(groupId) and type(record)=="table" then
+    local disease=AgriSystemsFarmBiosecurity.DiseaseModel.validateGroupState(record.disease)
+    if disease~=nil then
+     disease.groupId=groupId
+     local quarantine=record.quarantine and AgriSystemsFarmBiosecurity.Quarantine.validateState(record.quarantine) or nil
+     if quarantine~=nil then quarantine.groupId=groupId end
+     target.groups[groupId]={disease=disease,quarantine=quarantine}
+    end
+   end
+  end
+ end
+ self.state.husbandries[husbandryId]=target
+ self.dirty=false
+ return true
+end

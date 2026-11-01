@@ -1,7 +1,13 @@
 # Changelog
 
 ## [Unreleased]
-- Continue engine integration, persistence, networking and runtime validation.
+- Continue engine integration and runtime validation.
+
+## [Farm Biosecurity 0.4.0.0] - 2026-11-01
+### Added
+- Initial server-to-client snapshot for husbandry cohorts and hygiene state.
+- Client snapshot application without client authority.
+- Hourly disease/quarantine progression hook and elapsed game-hour persistence.
 
 ## [Farm Biosecurity 0.3.1.0] - 2026-11-01
 ### Changed
@@ -11,8 +17,8 @@
 ## [Farm Biosecurity 0.3.0.0] - 2026-11-01
 ### Added
 - PlaceableHusbandryAnimals-only specialization and per-placeable cohort save/load.
-- Stable husbandry identity from the base-game persistent Placeable uniqueId.
-- Subtype cohort model avoids persisting unstable engine cluster IDs.
+- Persistent husbandry identity from Placeable uniqueId.
+- Subtype cohorts that do not persist engine cluster IDs.
 
 ## [Farm Biosecurity 0.2.2.0] - 2026-11-01
 ### Changed

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <modDesc descVersion="104">
- <author>Paul</author><version>0.2.2.0</version>
+ <author>Paul</author><version>0.4.0.0</version>
  <title><en>AgriSystems Farm Biosecurity</en><de>AgriSystems Hof-Biosicherheit</de></title>
  <description>
   <en><![CDATA[Development foundation with group disease, quarantine, hygiene, score and server-gated state models. Gameplay integration is not active yet.]]></en>
