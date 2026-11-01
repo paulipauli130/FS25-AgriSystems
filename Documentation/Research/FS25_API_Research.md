@@ -26,21 +26,34 @@ The currently surfaced GDN reference identifies Script v1.20.0.0 and Engine v1.2
 
 Wind-dependent spray drift appears technically plausible because FS25's own wind-turbine specialization receives wind direction and velocity. However, the exact safe mod-facing access method, units for the returned velocity, update/listener lifecycle, and multiplayer authority/synchronization still need confirmation against FS25 source or an in-game runtime test. No wind API should be coded until those points are verified.
 
-## Sprayer and fill-unit interfaces
+## Sprayer processing, attached implements, and fill units
 
 ### Confirmed in the FS25 GDN
 
-- `FillUnit` is documented as the vehicle specialization for capacities and tanks; it manages fill types, capacities, and fill-level changes.
-- The documented interface includes `getFillUnits()`, `getFillUnitByIndex(index)`, `getFillUnitCapacity(index)`, `getFillUnitFillLevel(index)`, `getFillUnitFillLevelPercentage(index)`, `getFillUnitFillType(index)`, and `getFillUnitFreeCapacity(index)`.
-- `getFillUnitFillLevel(index)` returns the current fill level; `getFillUnitFillType(index)` returns the fill-type index. The implementation accesses the corresponding fill-unit entry in `spec_fillUnit.fillUnits`.
-- `ExtendedSprayer` exists in the FS25 API. Its documented methods include `getSprayerUsage`, `getCurrentSprayerMode`, `getValidSprayerToUse`, and `getIsVehicleValid`. GIANTS' implementation of `getSprayerUsage` checks `self:getIsTurnedOn()`, reads `self.spec_sprayer`, resolves the active spray type, and uses work-area width and vehicle speed in usage calculations.
-- The documented `ExtendedSprayer:processSprayerArea` processes a work area using its start/width/height nodes and executes the relevant field processing on the server. This provides a verified integration point to investigate for application detection, but not yet a complete implementation design.
+- `FillUnit` is the vehicle specialization for capacities and tanks. Its documented methods include `getFillUnits()`, `getFillUnitByIndex(index)`, `getFillUnitExists(index)`, `getFillUnitCapacity(index)`, `getFillUnitFillLevel(index)`, `getFillUnitFillLevelPercentage(index)`, `getFillUnitFillType(index)`, and `getFillUnitFreeCapacity(index)`.
+- `getFillUnitFillLevel(index)` returns the current fill level; `getFillUnitFillType(index)` returns the fill-type index. Fill units are indexed per vehicle; do not assume every sprayer uses the same index.
+- `ExtendedSprayer` exists in the FS25 API. Its `getSprayerUsage()` checks whether the vehicle is turned on, reads `spec_sprayer`, determines the active spray type, and uses work-area width and vehicle speed in usage calculations.
+- `Sprayer:onEndWorkAreaProcessing(dt, hasProcessed)` is a useful processing lifecycle point. GIANTS' own FS25 `WeedSpotSpray:onEndWorkAreaProcessing()` checks `self.isServer`, `spec_sprayer.workAreaParameters.isActive`, the spray fill type, `sprayVehicle`, and `usage` before updating herbicide statistics.
+- The FS25 `ExtendedSprayer:processSprayerArea()` implementation obtains the work-area start, width, and height world positions and performs its relevant density-map processing under `self.isServer`. This confirms the work-area processing path has explicit server-side behavior.
+- GIANTS' FS25 vehicle utility code traverses attached implements through `getAttachedImplements()`, then recurses into each `implement.object`. `ExtendedSprayer.getValidSprayerToUse()` also searches `rootVehicle.childVehicles` for a valid sprayer. These are concrete patterns for discovering equipment beyond the root tractor, but the final mod should handle nil objects and avoid double-processing the same implement.
+- FS25 exposes `VehicleConfigurationDataSprayerNodes`, which loads configured `sprayerNozzles.nozzle` node entries and creates extended sprayer effect nodes. This confirms nozzle-related node/effect configuration exists; it does not demonstrate physical nozzle wear or pressure simulation.
 
 ### Current conclusion
 
-Tank state and fill type can be read through documented FS25 FillUnit methods on objects that actually have the FillUnit specialization. Sprayer state and work-area processing are represented by FS25 sprayer-related specializations. We still need to establish a robust way to identify all sprayer implementations, including attached implements and non-standard modded sprayers, and determine the best safe hook points for nozzle wear, pressure/flow simulation, cleaning residues, and drift calculations. Do not assume every sprayer uses the same fill-unit index or the same specialization combination.
+The most promising server-authoritative observation point for a real application event is the sprayer work-area processing lifecycle, using its active state and actual usage rather than merely `getIsTurnedOn()`. The relevant work-area data also gives us a basis to calculate affected area and application intensity. A recursive attached-implement scan is feasible using documented GIANTS patterns.
 
-## Remaining verification steps
+The reviewed official API material does not establish a built-in nozzle-wear model, clogging model, or hydraulic pressure simulation. Those would therefore be custom AgriSystems simulation systems, not existing FS25 values we can simply read. We must investigate the base `Sprayer` usage calculation and effect setup further before choosing an extension point. Avoid modifying the game's actual fill-level consumption in a way that conflicts with its normal server processing.
+
+## Research questions still open
+
+### Sprayer engineering
+
+1. Inspect the base FS25 `Sprayer` implementation and exact registration/lifecycle methods, including when `workAreaParameters` is populated and reset.
+2. Verify exact meaning and units of `workAreaParameters.usage`, `sprayFillType`, and `sprayVehicleFillUnitIndex`.
+3. Determine whether an overwrite of `Sprayer:getSprayerUsage()` or a work-area event listener is safer for custom flow/pressure calculations, and how to avoid double consumption.
+4. Confirm whether all stock and modded sprayers use the same specialization and identify graceful fallback behavior for custom implementations.
+5. Investigate nozzle node/effect configuration to see whether individual sections/nozzles can be mapped reliably. Do not infer nozzle count from visuals alone.
+6. Decide how custom wear/clogging state is stored and synchronized on the server.
 
 ### Weather
 
@@ -48,13 +61,6 @@ Tank state and fill type can be read through documented FS25 FillUnit methods on
 2. Confirm whether `weather.windUpdater:getCurrentValues()` exists in FS25, and record its exact return values and units.
 3. Confirm whether wind values are global or position-dependent, and establish the direction-vector convention.
 4. Determine whether wind values should be read server-side and replicated to clients for consistent multiplayer drift calculations.
-
-### Sprayer and fill units
-
-1. Inspect FS25 `Sprayer`, `FillUnit`, `WorkArea`, and `ExtendedSprayer` source and exact specialization prerequisites.
-2. Verify how attached implements are traversed and how sprayer fill units are selected for multi-tank or multi-product equipment.
-3. Identify reliable hooks for detecting actual application rather than merely a switched-on sprayer.
-4. Check server/client execution and synchronization before designing wear, clogging, or contamination state.
 
 ### Other systems
 
