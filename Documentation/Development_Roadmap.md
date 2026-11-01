@@ -2,7 +2,7 @@
 
 ## Current status
 
-Spray & Hygiene has four pure models, a state container, early Sprayer-only specialization, per-vehicle XML save/load and an initial server-to-client snapshot. Farm Biosecurity has an independent bootstrap, four pure models, bounded group StateStore, PlaceableHusbandryAnimals-only specialization, per-placeable cohort persistence, hourly disease/quarantine progression and an initial server-to-client snapshot. All engine-facing features are source-reviewed but not runtime-tested. Both mods have standalone Lua model tests and independent packaging scripts. No public release is available.
+Both independent mods have pure gameplay models, bootstraps, standalone Lua model test suites and runtime-only packaging. Spray & Hygiene has early Sprayer specialization, per-vehicle save/load and initial server-to-client snapshot. Farm Biosecurity has husbandry specialization, subtype cohorts, per-placeable persistence, hourly progression and initial snapshot. Public GDN API review informed registration and savegame paths. Engine-facing code remains untested in the actual game. No public release is available.
 
 ## Phase 1 — Research and specifications
 - [x] Project structure, conventions and technical specifications.
@@ -16,15 +16,15 @@ Spray & Hygiene has four pure models, a state container, early Sprayer-only spec
 ## Phase 2 — Development conventions
 - [x] Independent mod namespaces/configuration.
 - [x] Standalone Lua model assertion tests.
-- [x] Independent runtime-only ZIP packaging script.
-- [ ] Finalize shared event/XML schema conventions.
-- [ ] Confirm installed game patch and matching TestRunner.
+- [x] GitHub Actions workflow for Lua model tests.
+- [x] Independent runtime-only ZIP packaging script with source/localization validation.
+- [ ] Confirm installed game patch and matching GIANTS TestRunner.
 
 ## Phase 3 — Spray & Hygiene
 - [x] Bootstrap, configuration and four pure gameplay models.
 - [x] Server-gated state container.
 - [x] Sprayer-only specialization and read-only native callback observer.
-- [x] Per-vehicle XML save/load code (runtime reload untested).
+- [x] Per-vehicle XML schema/save/load code (runtime reload untested).
 - [x] Initial server-to-client snapshot.
 - [ ] Runtime-load, save/reload and log validation.
 - [ ] Incremental dirty-state replication.
@@ -35,7 +35,7 @@ Spray & Hygiene has four pure models, a state container, early Sprayer-only spec
 
 ## Phase 4 — Farm Biosecurity
 - [x] Independent modDesc, localization and bootstrap.
-- [x] Disease, explicit contact-exposure, quarantine, hygiene and score models.
+- [x] Disease, contact-exposure, quarantine, hygiene and score models.
 - [x] Bounded server-gated group StateStore and conservative split/merge helpers.
 - [x] PlaceableHusbandryAnimals-only specialization and persistent placeable identity.
 - [x] Subtype-level logical cohorts; no engine cluster IDs persisted.
@@ -49,8 +49,9 @@ Spray & Hygiene has four pure models, a state container, early Sprayer-only spec
 - [ ] Vehicle/equipment/visitor/barn integration and UI.
 
 ## Phase 5 — Validation and release
-- [ ] Execute pure Lua model tests in a compatible Lua runtime.
+- [ ] Execute pure Lua model tests in GitHub Actions.
 - [ ] Run PowerShell packaging script and inspect ZIP contents.
+- [ ] Test each mod separately in the actual FS25 patch.
 - [ ] GIANTS TestRunner matching installed patch.
 - [ ] Single-player save migration/regression.
 - [ ] Dedicated-server host/client/late-join/reconnect tests.
