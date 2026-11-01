@@ -91,9 +91,28 @@ def build(output: Path, clean: bool) -> list[Path]:
                     zf.write(file, file.relative_to(stage).as_posix())
 
         with zipfile.ZipFile(archive) as zf:
-            names = zf.namelist()
+            names = set(zf.namelist())
             if "modDesc.xml" not in names or any(name.startswith(folder + "/") for name in names):
                 raise RuntimeError(f"Invalid ZIP root layout: {archive}")
+
+            descriptor = ET.parse(stage / "modDesc.xml").getroot()
+            required = {
+                node.get("filename")
+                for node in descriptor.findall("./extraSourceFiles/sourceFile")
+            }
+            l10n = descriptor.find("./l10n")
+            if l10n is not None and l10n.get("filenamePrefix"):
+                prefix = l10n.get("filenamePrefix")
+                required.update(
+                    f"{prefix}_{language}.xml" for language in ("en", "de")
+                )
+            missing = sorted(path for path in required if path not in names)
+            if missing:
+                raise RuntimeError(
+                    f"Runtime files referenced by modDesc are missing from {archive}: "
+                    + ", ".join(missing)
+                )
+
             bad = zf.testzip()
             if bad:
                 raise RuntimeError(f"Corrupt ZIP member {bad} in {archive}")
