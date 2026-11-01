@@ -12,8 +12,9 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The
 - Pure Lua sprayer-condition model: condition, wear, calibration, nozzle-group blockage and coverage factor.
 - Pure Lua cleaning/residue model for tank, lines and filters with abstract product-class carry-over.
 - Pure Lua spray-drift risk estimator with bounded inputs, risk bands and normalized explicit wind-to direction.
+- Pure Lua farmland-level contamination model with bounded class loads, machinery-contact transfer and field washing.
 - English and German localization starter files.
-- Manual gameplay-model and spray-drift test plans.
+- Manual condition, cleaning, drift and field-contamination test plans.
 
 ### Changed
 - Completed source-level FS25 API research and both independent mod technical specifications.
@@ -23,7 +24,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). The
 - Sprayer specialization registration and non-invasive processing observation.
 - Connecting condition degradation to successful native spraying.
 - Cleaning actions, water/resource costs and in-game UI.
-- Wind provider integration, calibrated spray drift and farmland contamination.
+- Wind provider integration, calibrated spray drift and farmland contact adapter.
 - Farm Biosecurity gameplay.
 - Savegame persistence, network events and release packaging.
 - GIANTS TestRunner, single-player, multiplayer and dedicated-server validation.
