@@ -392,3 +392,71 @@ The following remain build-specific or source-incomplete and must be treated as 
 - AnimalClusterSystem/cluster implementation: ID generation, persistence stability, merge/split/removal behavior.
 - Exact callback order for our own specialization relative to native Sprayer and optional third-party specializations.
 - Exact modSettings read/write path behavior on a dedicated server and how host settings are distributed to connected clients.
+
+
+## Release, platform, and test strategy
+
+### Current toolchain compatibility
+
+The GDN downloads page lists:
+- Farming Simulator 25 TestRunner v0.9.23 for FS25 1.25.0+ (20 October 2026).
+- TestRunner v0.9.22 for FS25 1.24.0+ (29 September 2026).
+- Icon Generator v10.0.5 for FS25 1.24.0+.
+
+This establishes that the current official test toolchain has moved to the 1.25 generation, while the surfaced GDN scripting reference still labels its API Script/Engine v1.20.0.0. Do not assume that the API documentation version number is the same as the current game patch. Record both separately in research and test reports.
+
+**Release requirement:** run the matching GIANTS TestRunner on each unpacked mod folder before creating the release ZIP, then test the final ZIP in the actual game. TestRunner is a validation gate, not a substitute for runtime, multiplayer, savegame migration, or compatibility testing.
+
+### Platform consequences
+
+These AgriSystems mods require Lua script code. External script mods are a PC/Mac target; they are not suitable for console distribution/crossplay under the current FS25 script-mod restrictions. The project should declare PC/MAC as the intended platform and must not promise PS5/Xbox support.
+
+Multiplayer and dedicated-server support remain achievable on PC/Mac, but every client must use the same mod version and the server must own authoritative simulation. Test a true dedicated server, not only a locally hosted listen server.
+
+### ModHub-facing package requirements
+
+GIANTS' ModHub guidelines state that mod filenames should use the `FS25_` prefix, avoid version numbers and non-English characters in the filename, and preserve the published filename for updates (using the prescribed update suffix for submission packages). The `modDesc` version should match the game version targeted by the submission. Descriptions must be clear and detailed in supported languages.
+
+For this project:
+- Technical ZIP names: `FS25_AgriSystems_SprayHygiene.zip` and `FS25_AgriSystems_FarmBiosecurity.zip` (final exact technical naming to be fixed before the first public build).
+- Keep the two mods independent and separately selectable.
+- Use separate version histories/changelogs even though they share a repository.
+- Do not bundle source repository documentation, tests, Git files, or development assets into the player ZIP.
+- Verify the final ZIP has `modDesc.xml` at archive root, not in an extra wrapper directory.
+
+### Minimum test matrix
+
+**Single-player**
+- Fresh save, existing save, save/reload, mod disabled and re-enabled.
+- Default map and at least one complex community map.
+- Base-game sprayers across different configurations (self tank, external tank, variable work width, different nozzle/effect setups).
+- Empty tank, partially filled tank, external purchase/source, AI helper use, implement attach/detach, fill-type change.
+- Settings defaults, changed settings, reset, invalid/missing config values.
+
+**Multiplayer / dedicated server**
+- Host and remote client join while the mod is active.
+- Late join while equipment/animal/field state already exists.
+- Two clients operating different sprayers/vehicles simultaneously.
+- Client disconnect/reconnect and server restart.
+- Permission and farm ownership validation for actions.
+- Ensure no client-only duplicate simulation, double consumption, divergent state, or save corruption.
+
+**Compatibility**
+- Precision Farming present/absent.
+- Courseplay/AI worker present/absent.
+- External fill tanks and common sprayer source configurations.
+- Map with unusual farmland/field geometry.
+- Other script mods that add settings pages or modify sprayer behavior.
+- Mod load order changed; no hard dependency on another AgriSystems ZIP.
+
+**Performance**
+- Large map with many fields/farmlands.
+- High number of animals/husbandries.
+- Many active sprayers and attached implements.
+- Ensure no full-table or full-map scans every frame; use event-driven updates, bounded sampling and dirty-state replication.
+- Log only state transitions/errors by default; detailed traces behind a debug setting.
+
+**Regression**
+- Confirm native crop application and native fill-unit consumption remain unchanged when optional realism modules are disabled.
+- Confirm disabling one module does not disable unrelated modules.
+- Confirm uninstalling a mod does not corrupt the save; define whether orphaned mod-owned XML is retained or safely ignored.
