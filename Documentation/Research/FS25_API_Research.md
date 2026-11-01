@@ -201,3 +201,43 @@ The mirrored FS25 `PlaceableHusbandryAnimals.lua` confirms:
 - The public source mirror is not the official GDN and its index does not include all FS25 classes. It is valuable for concrete implementation paths, but not enough to claim every file reflects the latest live game patch.
 - The official GDN is the primary API contract. The installed game's own `dataS` scripts are the final source of truth for a given game build.
 - The official FS25 API page currently surfaced in this research identifies Script/Engine v1.20.0.0, while the game's public changelog lists later patch updates. Before release, record the exact local game build and re-check source-sensitive hooks against that build.
+
+
+## Weather access and mod configuration – evidence status
+
+### Wind access
+
+- FS25 GDN confirms the callback `PlaceableWindTurbine:setWindValues(windDirX, windDirZ, windVelocity, cirrusCloudSpeedFactor)`; it uses the direction components for turbine orientation and passes velocity into rotor-speed calculation. This confirms the engine's wind system supplies these values to at least one FS25 specialization.
+- The FS22 GDN explicitly shows `g_currentMission.environment.weather.windUpdater`, `addWindChangedListener(self)`, and `getCurrentValues()`. This remains older-version evidence only.
+- A publicly indexed FS25 weather mod source excerpt calls `self.windUpdater:getCurrentValues()` and passes the returned values into weather objects. This is community-mod source evidence, not a complete proof of a stable public API or its multiplayer semantics.
+- The official FS25 GDN Weather category still does not expose a general documented `Weather` / `WindUpdater` class or getter in the material inspected. The selected public FS25 source mirror also does not include the weather updater implementation.
+- A recent FS25 ModHub mod, Dynamic Wind, confirms that other mods can modify the active map's wind speed/direction behavior and provides a settings control, but its public ModHub description does not document its internal API.
+
+**Decision:** wind is a supported design target but remains an integration risk until checked against the installed FS25 `dataS` weather scripts and a dedicated-server test. Build the drift calculation behind a `WindProvider` adapter. The adapter must report unavailable/invalid values cleanly and use a configurable fallback (no drift or a clearly labelled neutral wind), rather than reading an assumed global path throughout gameplay code. Read wind authoritatively on the server; replicate only the resulting drift state/summary needed by clients. Confirm direction sign convention empirically with a known wind vane/turbine orientation and a test sprayer before using it for downwind contamination.
+
+### Settings and persistence separation
+
+The FS25 modding references inspected describe two different configuration lifetimes:
+
+1. **Global mod options:** the game writes per-mod settings under the user's FS25 `modSettings/<modName>/` directory. These are appropriate for defaults and player/server configuration such as enabling modules, realism multipliers, debug logging, and UI preferences. Community references show this folder is used by established mods, but exact read/write helper APIs and dedicated-server ownership must be verified against the chosen implementation.
+2. **Savegame simulation state:** state that belongs to a farm/save (equipment condition, field contamination, livestock quarantine, outbreak history, cleaning records) must be stored with the savegame or a savegame-associated XML file, not solely in global modSettings. Otherwise two saves on one profile could leak state into one another.
+3. **Multiplayer authority:** global settings must be loaded consistently by the server and validated; simulation state must be loaded and saved by the server. Clients receive the state they need through initial streams and subsequent events. Do not let each client independently persist authoritative simulation state.
+
+A separate in-game settings tab is feasible, but it is a larger UI integration task. The first implementation should prefer a robust XML configuration with safe defaults and a compact in-game settings surface only after the simulation is stable. Avoid relying on direct edits to the base game's SettingsModel; a custom settings UI should integrate through supported menu extension patterns and be optional.
+
+### Mod packaging and metadata
+
+- Every mod package needs its own root `modDesc.xml`, unique technical mod name, version, title/description, icon, script load list, localization reference, and multiplayer declaration.
+- The two AgriSystems mods must have separate technical names and independent ZIP packages. They must not depend on each other being installed.
+- Keep shared source concepts in the repository's common design layer, but compile/copy only the required common files into each distributable mod package. Do not require a third shared ZIP unless a hard technical dependency is deliberately introduced and accepted.
+- Keep the mod folder root flat at package level: `modDesc.xml` must be at the ZIP root, not nested one folder deeper. This is consistent with FS25 mod loading conventions documented by community tooling and the official mod packaging model.
+- Localization should be external and complete for English and German from the first public build. Internal documentation remains English, as agreed for the public repository.
+
+### Unresolved implementation verification
+
+The following cannot be honestly closed from public documentation alone and need a local FS25 installation/runtime test:
+- Exact wind updater object path, listener registration/removal, units and direction convention in the user's current game patch.
+- Whether wind state is already synchronized in a way accessible to server-only gameplay logic, and whether weather changes expose an event suitable for sampling.
+- Exact modSettings XML read/write helper and path behavior on dedicated servers.
+- Actual callback ordering when multiple specializations observe sprayer work-area processing, especially with Precision Farming, AI workers, externally supplied fertilizer and attached tanks.
+- Exact field lookup API and cluster-system internal ID lifecycle, since the public source mirror is incomplete.
