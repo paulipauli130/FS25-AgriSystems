@@ -49,19 +49,24 @@ The most promising server-authoritative observation point for a real application
 
 The reviewed official API material does not establish a built-in nozzle-wear model, clogging model, or hydraulic pressure simulation. Those would therefore be custom AgriSystems simulation systems, not existing FS25 values we can simply read. We must investigate the base `Sprayer` usage calculation and effect setup further before choosing an extension point. Avoid modifying the game's actual fill-level consumption in a way that conflicts with its normal server processing.
 
-## Animals and husbandry – initial FS25 findings
+## Animals and husbandry – FS25-confirmed versus older-version clues
 
 ### Confirmed in the FS25 GDN
 
-- The FS25 Animals API category includes `AnimalLoadingTrigger`. It resolves supported animal type names through `g_currentMission.animalSystem:getTypeIndexByName()` and exposes the trigger's configured animal types through `getAnimals()`. This is trigger/type selection, not a complete husbandry-health interface.
-- FS25 has animal-related network events, including `AnimalCleanEvent` and `AnimalNameEvent`. `AnimalCleanEvent` identifies a husbandry object and animal cluster ID, then applies a dirt change to that cluster. This confirms that at least some animal state is represented per cluster and changed through network events.
-- FS25 `PlaceableHusbandryMilk` and `PlaceableHusbandryStraw` expose `onHusbandryAnimalsUpdate(clusters)`. Their implementations iterate animal clusters, read each cluster's subtype and age, resolve subtype data through `g_currentMission.animalSystem`, and calculate production/consumption values. This is evidence for an animal-cluster update lifecycle and subtype-based animal data.
+- `AnimalCleanEvent` carries a husbandry object reference, a `clusterId`, and a dirt delta. On receipt, it resolves the cluster through `husbandry:getClusterById(clusterId)` and applies `cluster:changeDirt(-delta)` when the cluster and method exist. This proves that FS25 has a husbandry-scoped cluster lookup used by a network event. It does not prove that every animal type exposes the same cleanliness or health properties.
+- `PlaceableHusbandryMilk:onHusbandryAnimalsUpdate(clusters)` iterates the supplied cluster list, resolves each `subTypeIndex` through `g_currentMission.animalSystem:getSubTypeByIndex()`, reads `cluster:getAge()` and `cluster:getNumAnimals()`, and derives production. `PlaceableHusbandryStraw` uses the same cluster callback pattern for feed/manure calculations.
+
+### Older-version implementation clue – not an FS25 API guarantee
+
+- The detailed `PlaceableHusbandryAnimals` page currently found through GDN search is explicitly FS22. It shows methods such as `getClusters()`, `getClusterById(id)`, `getClusterSystem()`, `addCluster(cluster)`, and `addAnimals(...)`; it creates `AnimalClusterSystem.new(self.isServer, self)`, subscribes to `AnimalClusterUpdateEvent`, and delegates save/load and stream synchronization to the cluster system.
+- The same FS22 implementation serializes cluster data via `clusterSystem:saveToXMLFile(...)` and `clusterSystem:loadFromXMLFile(...)`, and synchronizes it through `clusterSystem:writeStream(...)` / `readStream(...)`. This is a strong architecture clue but must be rechecked against FS25 before using exact names or behavior.
+- The FS22 implementation also demonstrates that cluster membership can change: animals may be added, removed, reproduced into new clusters, or cloned/adjusted when a rideable animal is loaded. This reinforces why custom disease state must not be keyed only by animal count or cluster array index.
 
 ### Current conclusion and limitations
 
-The FS25 API provides animal clusters, subtype/age information in husbandry update callbacks, and networked animal actions. This gives Farm Biosecurity a plausible foundation for tracking livestock groups and attaching custom health/quarantine state to a husbandry/cluster identity.
+FS25 itself confirms cluster-ID lookup in an animal network event and cluster iteration in husbandry update callbacks. This is enough to justify further investigation of cluster-level biosecurity, but not enough yet to define a persistent cluster identity model.
 
-The reviewed FS25 documentation does **not** establish a built-in disease, infection, vaccination, or quarantine system. Those mechanics must be custom. We have not yet verified the base FS25 husbandry specialization's full public API, stable cluster identifiers/lifecycle, animal movement between husbandries, or savegame persistence strategy. Those are required before deciding whether disease state belongs to a cluster, a husbandry, or a separate registry.
+Disease, infection, vaccination, and quarantine are not documented as built-in FS25 systems in the reviewed references. These mechanics would be custom. Before implementation, we must inspect the FS25 husbandry/cluster source to verify stable identifiers, cluster replacement/merge/split behavior, movement between husbandries, and save/load semantics. A cluster's array position is not a safe persistent key. A cluster ID is promising, but its uniqueness scope and lifecycle must be confirmed.
 
 ## Farmland, work areas, persistence, and networking
 
@@ -74,6 +79,7 @@ The reviewed FS25 documentation does **not** establish a built-in disease, infec
 - FS25 specializations expose lifecycle callbacks such as `onLoad`, `onPostLoad`, `onReadStream`, `onWriteStream`, `onReadUpdateStream`, and `onWriteUpdateStream`. GDN examples explicitly describe `onWriteStream` as server-side on join and `onReadStream` as client-side on join.
 - FS25 placeable specializations can register savegame XML paths with `registerSavegameXMLPaths(schema, basePath)` and persist values with `saveToXMLFile(xmlFile, key, usedModNames)`. The GDN `PlaceableFarmhouse` is one documented example. Other specializations register update-stream callbacks separately, demonstrating that save persistence and live network synchronization are distinct concerns.
 - `FillUnit` registers the event `onFillUnitFillLevelChanged` as well as fill-type and filling-state events. This can be used as an event-driven signal for tank state changes rather than polling every frame, subject to the exact callback signature documented above.
+- The FS25 `FieldManager` is a separate manager with its own `fields` collection, `farmlandIdFieldMapping`, `loadFromXMLFile()`, and `saveToXMLFile()`. This supports treating crop-field identity separately from farmland parcel ownership. Its exact position-to-field lookup methods still need inspection.
 
 ### Current conclusion
 
@@ -101,15 +107,16 @@ For Spray & Hygiene, farmland association is feasible from world coordinates, bu
 
 ### Animals and husbandry
 
-1. Inspect the base FS25 husbandry and cluster-system source for exact methods and lifecycle.
-2. Verify stable cluster IDs, cluster add/remove/move events, and how animals transferred between husbandries are represented.
-3. Inspect savegame serialization and network events before selecting a persistence model for quarantine/disease status.
-4. Determine what stock animal dirt/cleanliness state can be reused and what must remain custom disease/biosecurity state.
+1. Inspect the FS25 husbandry and cluster-system source for exact methods and lifecycle.
+2. Verify stable cluster IDs, cluster add/remove/merge/split behavior, and how animals transferred between husbandries are represented.
+3. Inspect FS25 cluster savegame serialization and network events before selecting a persistence model for quarantine/disease status.
+4. Determine which stock animal dirt/cleanliness state is available across animal types and what must remain custom disease/biosecurity state.
 
 ### Field and persistence integration
 
-1. Inspect whether FS25 exposes a distinct crop-field identity API and how it differs from farmland parcel lookup.
+1. Inspect exact `FieldManager` position-to-field lookup methods and field object semantics.
 2. Select the persistence host for each mod's custom state and document save/load behavior under dedicated server restart and client join.
+3. Decide how global registries are loaded, saved, versioned, and migrated without conflicting with existing game save data.
 
 ## General research rules
 
