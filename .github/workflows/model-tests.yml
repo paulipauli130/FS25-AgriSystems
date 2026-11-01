@@ -18,6 +18,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y lua5.1
 
+      - name: Check Lua syntax in all project scripts
+        run: |
+          find . -type f -name '*.lua' -print0 | xargs -0 -r -n1 luac5.1 -p
+
       - name: Run Spray & Hygiene model tests
         run: lua5.1 Testing/Model_Tests/Run_Spray_Hygiene.lua
 
