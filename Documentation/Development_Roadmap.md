@@ -2,7 +2,7 @@
 
 ## Current status — models, state container and early Sprayer specialization
 
-Spray & Hygiene now contains four pure gameplay models, a server-gated engine-independent state container, a Sprayer-only vehicle specialization, a read-only native spray callback observer and a per-vehicle XML save/load implementation. This is source-reviewed but not runtime-tested. No gameplay penalties or native spray changes are active.
+Spray & Hygiene contains four pure gameplay models, a server-gated state container, Sprayer-only specialization registration, per-vehicle XML save/load code, a read-only native callback observer and an initial server-to-client snapshot. All engine-facing work remains source-reviewed and untested in FS25. No gameplay penalties or native spray changes are active.
 
 ## Phase 1 — Research and specifications (complete)
 - [x] Project structure and contribution conventions.
@@ -27,10 +27,11 @@ Spray & Hygiene now contains four pure gameplay models, a server-gated engine-in
 - [x] Sprayer specialization registration restricted to base Sprayer types (source-reviewed).
 - [x] Read-only native spray callback observer (diagnostic count only).
 - [x] Per-vehicle XML schema and save/load code (runtime reload not yet tested).
+- [x] Initial server-to-client snapshot for per-vehicle condition and cleaning state.
 - [ ] Runtime-load validation and GIANTS log review.
 - [ ] Validate registration hook on exact target patch and mod load order.
-- [ ] Test per-vehicle save/reload and schema migration in game.
-- [ ] Server networking and dirty-state replication.
+- [ ] Test per-vehicle save/reload and stream serialization in game.
+- [ ] Incremental dirty-state replication.
 - [ ] Connect condition/coverage model to measured successful spraying work.
 - [ ] Cleaning actions, costs and in-game UI.
 - [ ] Wind provider and drift model behind runtime validation gate.

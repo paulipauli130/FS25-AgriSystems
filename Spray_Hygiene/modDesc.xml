@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <modDesc descVersion="104">
     <author>Paul</author>
-    <version>0.6.0.0</version>
+    <version>0.7.0.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
@@ -9,11 +9,11 @@
     <description>
         <en><![CDATA[
 Development build with sprayer condition, cleaning, spray drift and farmland contamination models.
-Sprayer specialization and per-vehicle state persistence are in early development.
+Sprayer specialization, per-vehicle persistence and initial state synchronization are in early development.
         ]]></en>
         <de><![CDATA[
 Entwicklungsversion mit Datenmodellen für Sprühgeräte-Zustand, Reinigung, Abdrift und Feldkontamination.
-Spezialisierung und fahrzeugbezogene Speicherung befinden sich in früher Entwicklung.
+Spezialisierung, fahrzeugbezogene Speicherung und erste Synchronisierung befinden sich in früher Entwicklung.
         ]]></de>
     </description>
     <multiplayer supported="true"/>

@@ -1,37 +1,31 @@
 # Spray & Hygiene — Implementation Notes
 
-## Development build 0.6.0.0
+## Development build 0.7.0.0
 
 The development foundation includes:
-- Validated configuration and four pure Lua gameplay models.
+- Four pure Lua gameplay models and validated configuration.
 - Engine-independent server-gated state container.
-- Registered vehicle specialization restricted to vehicle types that already contain base-game Sprayer.
-- Per-vehicle savegame XML schema for condition, wear, calibration, nozzle-group blockage and tank/line/filter residues.
-- Server-only save/load of the per-vehicle model state.
-- Read-only observer on the native onEndWorkAreaProcessing callback. It records a diagnostic work-cycle count only; it does not change native spray application, work-area parameters or fill consumption.
-- Manual test plans.
+- Sprayer-only specialization registration and per-vehicle XML save/load code.
+- Read-only native spray callback observer (diagnostic work-cycle count only).
+- Initial server-to-client stream snapshot for sprayer condition and cleaning residues.
+- Client snapshot values are validated and client-side code does not write authoritative state.
+- Manual model and runtime test plans.
 
 ## Official API basis
-The public GIANTS Developer Network FS25 LUADOC (Script v1.20.0.0) documents:
-- SpecializationManager:addSpecialization and TypeManager:addSpecialization.
-- TypeManager:validateTypes and TypeManager:finalizeTypes as separate lifecycle stages.
-- SpecializationUtil.registerEventListener and its duplicate-listener checks.
-- Vehicle.xmlSchemaSavegame registration, per-vehicle savegame keys, and specialization saveToXMLFile serialization.
-
-The registration hook adds the specialization to Sprayer types during type validation, before finalization registers the specialization callbacks. This ordering is source-reviewed against the documented TypeManager implementation; it still requires in-game validation against the user's installed patch and mod load order.
+The public GIANTS Developer Network FS25 LUADOC (Script v1.20.0.0) documents specialization registration, TypeManager validation/finalization, per-vehicle savegame XML schema, specialization saveToXMLFile serialization, and initial onWriteStream/onReadStream callbacks.
 
 ## Explicit limitations
-- No runtime test has been performed in FS25 or on a dedicated server.
-- The specialization is not yet proven to load successfully with every mod type manager/load order.
-- The observer currently counts active native spray work cycles only. It does not calculate worked hectares or degrade equipment condition.
-- Vehicle condition and cleaning data are now saved per vehicle through the specialization save path, but reload persistence still needs an actual save/reload test.
-- Farmland contamination is not yet written to a mission-level savegame file.
-- No multiplayer state replication or client UI exists.
-- Drift and field contamination remain disconnected from engine callbacks.
-- No native spray application or fill consumption is modified.
+- No FS25 runtime or dedicated-server test has been performed.
+- Registration hook and save/reload need validation against the installed game patch and other mods.
+- The observer only counts native active spray cycles; it does not calculate worked hectares or degrade condition.
+- Initial network snapshot is implemented; incremental dirty-state replication is not.
+- No in-game UI or player actions exist.
+- Farmland contamination is not yet persisted to a mission-level savegame file.
+- Drift and field contamination are not connected to engine callbacks.
+- Native spray application, fill consumption and work-area parameters remain untouched.
 
 ## Safety boundary
-The observer must remain read-only. Never override Sprayer or ExtendedSprayer processing, deduct fill, or mutate workAreaParameters. Only server-side state may be saved. Unsupported schema versions fall back to default state.
+The observer remains read-only. Never override Sprayer or ExtendedSprayer processing, deduct fill, or mutate workAreaParameters. The server owns savegame state; clients only receive an initial snapshot.
 
 ## Next implementation gate
-Run a real FS25 load/save/reload cycle and inspect log.txt. Then add server-authoritative replication for the per-vehicle state and implement the mission-level farmland contamination persistence adapter.
+Add a bounded, server-authoritative dirty-state update path for condition and cleaning, then implement mission-level farmland contamination persistence. Both require dedicated-server validation.
