@@ -44,7 +44,10 @@ assert(store:setVehicleState("sprayer-A",record.condition,record.cleaning))
 local exported=store:exportState()
 exported.vehicles["sprayer-A"].condition.condition=1
 near(store:getVehicleState("sprayer-A").condition.condition,75)
-assert(store:ensureVehicleState("sprayer-B")==nil)
+for index=2,root.StateStore.MAX_VEHICLES do
+    assert(store:ensureVehicleState("sprayer-" .. tostring(index))~=nil)
+end
+assert(store:ensureVehicleState("sprayer-overflow")==nil)
 assert(root.StateStore.new(false,1):ensureVehicleState("client-write")==nil)
 
 print("Spray & Hygiene model tests: PASS")
