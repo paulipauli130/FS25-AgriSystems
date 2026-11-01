@@ -49,6 +49,27 @@ foreach ($mod in $mods) {
         }
     }
 
+    $l10nPrefix = [string]$descriptor.modDesc.l10n.filenamePrefix
+    if (-not [string]::IsNullOrWhiteSpace($l10nPrefix)) {
+        foreach ($language in @("en", "de")) {
+            $translationPath = Join-Path $sourceRoot ("{0}_{1}.xml" -f $l10nPrefix, $language)
+            if (-not (Test-Path $translationPath -PathType Leaf)) {
+                throw "Missing declared localization file: $translationPath"
+            }
+        }
+    }
+
+    $registrationFile = Join-Path $sourceRoot "scripts/register.lua"
+    if (Test-Path $registrationFile -PathType Leaf) {
+        $registrationContent = Get-Content -LiteralPath $registrationFile -Raw
+        foreach ($match in [regex]::Matches($registrationContent, 'Utils\.getFilename\("([^"]+)"')) {
+            $registeredScript = Join-Path $sourceRoot $match.Groups[1].Value
+            if (-not (Test-Path $registeredScript -PathType Leaf)) {
+                throw "Specialization registration references missing script: $registeredScript"
+            }
+        }
+    }
+
     Copy-Item -LiteralPath $modDescPath -Destination $stage
     foreach ($runtimeDirectory in @("scripts", "translations", "config", "assets", "store")) {
         $candidate = Join-Path $sourceRoot $runtimeDirectory
