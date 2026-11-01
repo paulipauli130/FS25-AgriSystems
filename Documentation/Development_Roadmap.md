@@ -1,8 +1,8 @@
 # Development Roadmap
 
-## Current status — four pure gameplay models committed
+## Current status — four gameplay models and state container committed
 
-Research and design are complete at source-review level. Spray & Hygiene now contains a bootstrap, validated configuration, sprayer-condition, cleaning/residue, spray-drift and farmland-contamination data models. These are not connected to FS25 callbacks, persistence or networking. No gameplay effect is active and no in-game validation has been performed.
+Research and design are complete at source-review level. Spray & Hygiene contains a bootstrap, validated configuration, sprayer-condition, cleaning/residue, spray-drift and farmland-contamination data models, plus an engine-independent server-gated state container. These are not connected to FS25 callbacks, savegame XML or networking. No gameplay effect is active and no in-game validation has been performed.
 
 ## Phase 1 — Research and specifications (complete)
 - [x] Project structure and contribution conventions.
@@ -26,9 +26,11 @@ Research and design are complete at source-review level. Spray & Hygiene now con
 - [x] Pure Lua condition and cleaning/residue models committed (not engine-integrated).
 - [x] Pure Lua bounded spray-drift risk estimator committed (not engine-integrated or calibrated).
 - [x] Pure Lua farmland-level contamination model committed (not engine-integrated).
+- [x] Server-gated engine-independent state container committed (not savegame-persistent).
 - [ ] Runtime-load validation and GIANTS log review.
 - [ ] Sprayer specialization registration and non-invasive observation.
-- [ ] Server persistence/configuration and networking.
+- [ ] Per-vehicle savegame XML persistence and separate mission-level farmland persistence.
+- [ ] Server networking and dirty-state replication.
 - [ ] Connect condition/coverage model to verified successful spraying events.
 - [ ] Cleaning actions, costs and in-game UI.
 - [ ] Wind provider and drift model behind runtime validation gate.

@@ -4,8 +4,9 @@ local Mod = AgriSystemsSprayHygiene
 
 Mod.MOD_NAME = g_currentModName or "FS25_AgriSystems_SprayHygiene"
 Mod.MOD_DIRECTORY = g_currentModDirectory or ""
-Mod.VERSION = "0.4.0.0"
+Mod.VERSION = "0.5.0.0"
 Mod.CONFIG = nil
+Mod.STATE_STORE = nil
 
 local function log(message)
     print(string.format("[%s] %s", Mod.MOD_NAME, message))
@@ -21,23 +22,34 @@ function Mod:loadMap()
     self.CONFIG = self.Config.validate(nil)
 
     if self.SprayerCondition == nil or self.SprayerCleaning == nil
-        or self.SprayDrift == nil or self.FieldContamination == nil then
-        log("ERROR: one or more gameplay model modules are missing; gameplay remains inactive.")
+        or self.SprayDrift == nil or self.FieldContamination == nil
+        or self.StateStore == nil then
+        log("ERROR: one or more gameplay modules are missing; gameplay remains inactive.")
         return
     end
 
+    self.STATE_STORE = self.StateStore.new(
+        g_server ~= nil,
+        self.CONFIG.contamination.maximumLoad
+    )
+
     log(string.format(
-        "Development foundation loaded (version %s). Condition, cleaning, drift and field contamination models are available; engine integration is inactive.",
+        "Development foundation loaded (version %s). Four gameplay models and the state container are available; engine integration and savegame persistence are inactive.",
         self.VERSION
     ))
 end
 
 function Mod:deleteMap()
+    self.STATE_STORE = nil
     self.CONFIG = nil
 end
 
 function Mod:getConfiguration()
     return self.CONFIG
+end
+
+function Mod:getStateStore()
+    return self.STATE_STORE
 end
 
 if type(addModEventListener) == "function" then
