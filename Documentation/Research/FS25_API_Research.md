@@ -574,3 +574,19 @@ The official FS25 GDN documents both `ExtendedSprayer` and `WeedSpotSpray`:
 - Test the exact chain with Precision Farming installed and absent, with WeedSpotSpray enabled and disabled, with AI, and with an external tank. The presence of `ExtendedSprayer` must remain optional.
 
 This materially improves confidence in the observer-based integration path: the base work-area state is shared with Precision Farming and its spot-spray extension, but callback order and final values still require an in-game test on the current patch.
+
+
+## Final pre-implementation gate – local game source required
+
+Public GDN documentation and the available public FS25 script mirror are not sufficient to close the remaining build-specific questions. The public mirror does not contain the implementations of `WindUpdater`, `AnimalClusterSystem`, or the animal cluster class. The official FS25 GDN Weather category currently exposes only `Twister`, not the general weather manager. The official FieldManager class reference does not document `getFieldAtWorldPosition`, despite a community mod changelog claiming to use it.
+
+To complete the API audit without guessing, inspect the exact local game-source archive for the game build that will be targeted. Required source areas:
+- `dataS/scripts/environment/` and `dataS/scripts/environment/weather/`: weather manager, wind updater, units, listeners and server/client lifecycle.
+- `dataS/scripts/animals/`: AnimalClusterSystem, cluster classes, AnimalClusterUpdateEvent, persistence and stream methods.
+- `dataS/scripts/field/`: FieldManager, Field, field geometry lookup and farmland mapping.
+- `dataS/scripts/vehicles/specializations/Sprayer.lua`: exact current build callback ordering and fill-source behavior.
+- `dataS/scripts/specialization/`: SpecializationManager, TypeManager and injection lifecycle.
+
+The local source must be from the same FS25 patch as the planned development/testing build. Record the game patch and archive provenance in the research log. If the archive is unavailable, the affected features must remain behind adapters/fallbacks and cannot be marked fully verified.
+
+**No implementation should begin until these local-source checks are completed or the project owner explicitly accepts the listed fallback behavior.** This is the last research dependency that cannot be resolved from public documentation with sufficient confidence.
