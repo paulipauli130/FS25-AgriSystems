@@ -554,3 +554,23 @@ Use three separate configuration/state layers:
 Do not put shared gameplay rules only in each player's local `modSettings`: host and client values could differ. If the server has no save-specific configuration file yet, create defaults on the server, then send the authoritative values to each joining client. A client changing a server gameplay option must send a request and pass admin/permission checks.
 
 This separation is important for dedicated servers, where the server's user-profile directory is not the same as each player's local settings directory.
+
+
+## Precision Farming compatibility – confirmed FS25 extension points
+
+The official FS25 GDN documents both `ExtendedSprayer` and `WeedSpotSpray`:
+
+- `ExtendedSprayer` exposes `getFillTypeSourceVehicle`, `getValidSprayerToUse`, `getSprayerUsage`, `onEndWorkAreaProcessing`, and network update-stream callbacks.
+- `ExtendedSprayer:getSprayerUsage(superFunc, fillType, dt)` calls the native `superFunc` first, then applies its own precision/soil-dependent usage logic.
+- `ExtendedSprayer:processSprayerArea(superFunc, workArea, dt)` also wraps native processing and has its own server-side precision-farming work-area logic.
+- `WeedSpotSpray:getSprayerUsage(superFunc, fillType, dt)` calls its supplied `superFunc`, stores the regular usage, then applies a spot-spray scaling factor.
+- `WeedSpotSpray:onEndWorkAreaProcessing(dt)` reads `self.spec_sprayer.workAreaParameters` on the server to update herbicide statistics.
+
+**Compatibility decision:**
+- Do not replace `Sprayer:getSprayerUsage` or `Sprayer:processSprayerArea` in the first release. Both are already valid extension-chain points used by Precision Farming; a new overwrite can change call order or bypass a mod's previous override.
+- Do not modify `workAreaParameters.usage` or deduct fill volume separately.
+- Observe the final native work-area state and apply independent AgriSystems condition/contamination state after successful processing.
+- For spot spraying, `usage` and active nozzle/effect fraction may be lower than a full-width application. If per-nozzle coverage is not exposed, the initial AgriSystems model should use the aggregate processed area/usage and avoid claiming nozzle-by-nozzle physical accuracy.
+- Test the exact chain with Precision Farming installed and absent, with WeedSpotSpray enabled and disabled, with AI, and with an external tank. The presence of `ExtendedSprayer` must remain optional.
+
+This materially improves confidence in the observer-based integration path: the base work-area state is shared with Precision Farming and its spot-spray extension, but callback order and final values still require an in-game test on the current patch.
