@@ -1,17 +1,18 @@
 # Farm Biosecurity — Implementation Notes
 
-## Development build 0.2.0.0
+## Development build 0.2.1.0
 - Independent modDesc and bootstrap listener.
 - Validated configuration.
 - Group-level disease progression and explicit contact-based exposure model.
 - Conservative disease-state helpers for split and merge operations.
 - Quarantine model with elapsed in-game hours, release request and hygiene-compliance gate.
-- Surface hygiene model with separate dirt cleaning and disinfection.
+- Surface hygiene model with separate dirt cleaning and disinfection contact-time window. Contamination is reduced only after the configured contact time elapses.
 - Derived Biosecurity Score.
 - Server-gated engine-independent StateStore for husbandry/group records.
-- Transient engine-cluster-to-mod-group mapping is memory-only and is cleared on load.
-- Split helper copies disease/quarantine state to child groups; merge helper preserves the most advanced disease state and strictest quarantine.
-- Manual gameplay model test plan.
+- Transient engine-cluster-to-mod-group mapping is memory-only and cleared on load.
+- Split helper copies disease/quarantine state to child groups and preflights record capacity.
+- Merge helper preserves the most advanced disease state and strictest quarantine; invalid/duplicate source IDs are rejected.
+- Manual model test plan and standalone Lua assertion suite.
 
 ## Explicit limitations
 - No placeable specialization or actual AnimalClusterSystem callback integration.
@@ -23,6 +24,3 @@
 
 ## Safety boundary
 Engine cluster IDs are transient references only and are never serialized. Ambiguous cluster reconciliation must not clear disease or quarantine. Exposure remains restricted to explicit server-confirmed contact opportunities.
-
-## Next implementation gate
-Verify the current FS25 PlaceableHusbandryAnimals callbacks and type-manager lifecycle, then implement the placeable adapter and savegame schema.

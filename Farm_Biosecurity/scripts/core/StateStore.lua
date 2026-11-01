@@ -60,6 +60,14 @@ function Store:splitGroup(husbandryId,parentGroupId,childGroupIds)
  local parent=self:getGroup(husbandryId,parentGroupId)
  if parent==nil or type(childGroupIds)~="table" then return false end
  local children=AgriSystemsFarmBiosecurity.DiseaseModel.splitState(parent.disease,childGroupIds)
+ local target=self.state.husbandries[husbandryId]
+ local needed,seen=0,{}
+ for _,child in ipairs(children) do
+  if seen[child.groupId] then return false end
+  seen[child.groupId]=true
+  if child.groupId~=parentGroupId and target.groups[child.groupId]==nil then needed=needed+1 end
+ end
+ if count(target.groups)+needed>self.maximumGroups then return false end
  for i,child in ipairs(children) do
   local q=parent.quarantine and AgriSystemsFarmBiosecurity.Quarantine.validateState(parent.quarantine) or nil
   if q~=nil then q.groupId=child.groupId end
@@ -70,8 +78,12 @@ end
 function Store:mergeGroups(husbandryId,sourceGroupIds,newGroupId)
  if not self.isServer or type(sourceGroupIds)~="table" or not validId(newGroupId) then return false end
  local h=self.state.husbandries[husbandryId]; if h==nil then return false end
+ if h.groups[newGroupId]~=nil then return false end
  local diseaseStates,quarantines={},{}
+ local seen={}
  for _,id in ipairs(sourceGroupIds) do
+  if not validId(id) or id==newGroupId or seen[id] then return false end
+  seen[id]=true
   local record=h.groups[id]
   if record~=nil then table.insert(diseaseStates,record.disease); if record.quarantine~=nil then table.insert(quarantines,record.quarantine) end end
  end

@@ -5,6 +5,11 @@ All notable project changes are documented here.
 ## [Unreleased]
 - Continue engine integration, persistence, networking and runtime validation.
 
+## [Farm Biosecurity 0.2.1.0] - 2026-11-01
+### Changed
+- Disinfection now has an explicit contact-time window; contamination is reduced only after the required time elapses.
+- Group split capacity is preflighted; merge rejects duplicate or invalid IDs.
+
 ## [Farm Biosecurity 0.2.0.0] - 2026-11-01
 ### Added
 - Bounded server-gated group StateStore.

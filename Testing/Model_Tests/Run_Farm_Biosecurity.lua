@@ -42,6 +42,12 @@ assert(not disinfected)
 hygiene=root.Hygiene.cleanDirt(hygiene,"barn-door",0.8,1)
 hygiene,disinfected=root.Hygiene.disinfect(hygiene,"barn-door",0.75,0.2,10,0.25,1)
 assert(disinfected)
+near(root.Hygiene.getSurface(hygiene,"barn-door",1).contamination,0.8)
+local completed
+hygiene,completed=root.Hygiene.completeDisinfection(hygiene,"barn-door",10.24,1)
+assert(not completed)
+hygiene,completed=root.Hygiene.completeDisinfection(hygiene,"barn-door",10.25,1)
+assert(completed)
 near(root.Hygiene.getSurface(hygiene,"barn-door",1).contamination,0.2)
 
 local score=root.BiosecurityScore.calculate({quarantine=1,disease=1,barnHygiene=1,equipmentHygiene=1,visitorControl=1},config.scoreWeights)
