@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import argparse
+import math
 import re
 import shutil
+import struct
 import sys
 import xml.etree.ElementTree as ET
 import zipfile
@@ -16,6 +18,51 @@ MODS = (
     ("Farm_Biosecurity", "FS25_AgriSystems_FarmBiosecurity.zip"),
 )
 RUNTIME_DIRS = ("scripts", "translations", "Config", "Assets", "store")
+ICON_SIZE = 128
+
+
+def make_icon(kind: str) -> bytes:
+    """Create a small uncompressed BGRA DDS icon using only the Python standard library."""
+    pixels = bytearray()
+    for y in range(ICON_SIZE):
+        for x in range(ICON_SIZE):
+            nx = (x - 63.5) / 63.5
+            ny = (y - 63.5) / 63.5
+            radius = math.sqrt(nx * nx + ny * ny)
+            if radius > 0.94:
+                r, g, b = 22, 29, 36
+            elif kind == "spray":
+                # Blue-green field with a white spray boom and droplet.
+                r, g, b = 28, 105, 94
+                if abs(ny + 0.12) < 0.075 and abs(nx) < 0.62:
+                    r, g, b = 235, 244, 239
+                if (nx - 0.25) ** 2 + (ny - 0.43) ** 2 < 0.055:
+                    r, g, b = 110, 205, 239
+                if (nx + 0.25) ** 2 + (ny - 0.43) ** 2 < 0.055:
+                    r, g, b = 110, 205, 239
+            else:
+                # Deep green field with a simple white shield and green cross.
+                r, g, b = 43, 112, 67
+                shield = abs(nx) < 0.55 and -0.58 < ny < 0.35 + 0.25 * (1 - abs(nx) / 0.55)
+                if shield:
+                    r, g, b = 235, 242, 228
+                if shield and (abs(nx) < 0.09 or abs(ny + 0.12) < 0.09):
+                    r, g, b = 43, 112, 67
+            pixels.extend((b, g, r, 255))
+
+    flags = 0x00000001 | 0x00000002 | 0x00000004 | 0x00001000
+    pf_flags = 0x00000040 | 0x00000001  # RGB | ALPHAPIXELS
+    header = struct.pack(
+        "<7I11I",
+        124, flags, ICON_SIZE, ICON_SIZE, ICON_SIZE * 4, 0, 0,
+        *([0] * 11),
+    )
+    pixel_format = struct.pack(
+        "<8I", 32, pf_flags, 0, 32, 0x00FF0000, 0x0000FF00,
+        0x000000FF, 0xFF000000,
+    )
+    caps = struct.pack("<5I", 0x00001000, 0, 0, 0, 0)
+    return b"DDS " + header + pixel_format + caps + bytes(pixels)
 
 
 def validate(mod_root: Path) -> str:
@@ -26,7 +73,10 @@ def validate(mod_root: Path) -> str:
     desc = tree.getroot()
     version = desc.findtext("version")
     if not version:
-        version = desc.findtext("version") or desc.findtext("./version")
+        version = desc.findtext("./version")
+    icon_filename = desc.get("iconFilename")
+    if icon_filename != "icon.dds":
+        raise RuntimeError(f"modDesc must declare iconFilename=\"icon.dds\": {desc_path}")
     for node in desc.findall("./extraSourceFiles/sourceFile"):
         filename = node.get("filename")
         if not filename:
@@ -48,7 +98,7 @@ def validate(mod_root: Path) -> str:
     register = mod_root / "scripts" / "register.lua"
     if register.is_file():
         text = register.read_text(encoding="utf-8")
-        for relative in re.findall(r'Utils\.getFilename\("([^"]+)"', text):
+        for relative in re.findall(r'Utils\\.getFilename\\("([^"]+)"', text):
             target = mod_root / relative
             if not target.is_file():
                 raise RuntimeError(f"Specialization registration references missing script: {target}")
@@ -81,6 +131,8 @@ def build(output: Path, clean: bool) -> list[Path]:
                     stage / directory,
                     ignore=shutil.ignore_patterns(".gitkeep", "__pycache__", "*.pyc"),
                 )
+        icon_kind = "spray" if folder == "Spray_Hygiene" else "biosecurity"
+        (stage / "icon.dds").write_bytes(make_icon(icon_kind))
 
         archive = output / archive_name
         if archive.exists():
@@ -106,6 +158,7 @@ def build(output: Path, clean: bool) -> list[Path]:
                 required.update(
                     f"{prefix}_{language}.xml" for language in ("en", "de")
                 )
+            required.add(descriptor.get("iconFilename"))
             missing = sorted(path for path in required if path not in names)
             if missing:
                 raise RuntimeError(
