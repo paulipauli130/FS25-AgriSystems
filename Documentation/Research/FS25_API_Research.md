@@ -539,3 +539,18 @@ The server then applies the state change and broadcasts the accepted state. A cl
 Use object references via `NetworkUtil.writeNodeObject/readNodeObject` when the referenced game object is network-synchronized. Serialize compact numeric identifiers and values with explicit bounds. For custom records not represented by a game network object, use mod-owned IDs scoped to the owning save/husbandry/implement and validate them against the server's registry. Do not serialize arbitrary Lua tables or assume a local object pointer is meaningful on another peer.
 
 For initial join, send a compact authoritative snapshot; for later changes, send delta events or dirty-state updates. Avoid broadcasting the full farm/animal/field database every tick.
+
+
+### Configuration ownership – final separation
+
+A further source cross-check shows FS25 script mods commonly receive `g_currentModSettingsDirectory` and use it for XML files under the per-mod `modSettings` folder. This is a local user-profile path, not automatically a shared multiplayer configuration store.
+
+Use three separate configuration/state layers:
+
+1. **Server gameplay configuration (save-specific):** drift difficulty, enabled simulation modules, disease rates, quarantine duration, cleaning realism, and other rules that affect shared gameplay. Store this with the savegame (for example a mod-owned XML in `missionInfo.savegameDirectory`) and let the server distribute the validated configuration to clients.
+2. **Local player preferences:** HUD visibility, display scale, notifications, local debug overlay and UI preferences. Store under `g_currentModSettingsDirectory`; do not synchronize these as authoritative gameplay settings.
+3. **Simulation state:** equipment condition, contamination, animal exposure/disease, quarantine timers, cleaning history and other changing world state. Persist with the savegame and write only from the server.
+
+Do not put shared gameplay rules only in each player's local `modSettings`: host and client values could differ. If the server has no save-specific configuration file yet, create defaults on the server, then send the authoritative values to each joining client. A client changing a server gameplay option must send a request and pass admin/permission checks.
+
+This separation is important for dedicated servers, where the server's user-profile directory is not the same as each player's local settings directory.
