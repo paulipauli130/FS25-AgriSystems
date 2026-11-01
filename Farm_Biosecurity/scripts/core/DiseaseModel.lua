@@ -60,4 +60,43 @@ function Disease.advance(state,elapsed)
  end
  return r
 end
+function Disease.splitState(parentState, childGroupIds)
+ local parent=Disease.validateGroupState(parentState)
+ local result={}
+ if parent==nil or type(childGroupIds)~="table" then return result end
+ for _,id in ipairs(childGroupIds) do
+  local child=Disease.validateGroupState({
+   groupId=id,status=parent.status,diseaseId=parent.diseaseId,elapsedHours=parent.elapsedHours,
+   exposureLoad=parent.exposureLoad,severity=parent.severity
+  })
+  if child~=nil then table.insert(result,child) end
+ end
+ return result
+end
+
+-- Conservative merge: retain the most advanced disease state and highest severity.
+function Disease.mergeStates(states,newGroupId)
+ if type(states)~="table" or #states==0 then return Disease.createGroupState(newGroupId) end
+ local rank={susceptible=0,recovered=1,incubating=2,infectious=3,recovering=4}
+ local chosen=nil
+ for _,candidate in ipairs(states) do
+  local state=Disease.validateGroupState(candidate)
+  if state~=nil and (chosen==nil
+   or (rank[state.status] or 0)>(rank[chosen.status] or 0)
+   or ((rank[state.status] or 0)==(rank[chosen.status] or 0) and state.severity>chosen.severity)) then
+   chosen=state
+  end
+ end
+ if chosen==nil then return Disease.createGroupState(newGroupId) end
+ chosen.groupId=newGroupId
+ for _,candidate in ipairs(states) do
+  local state=Disease.validateGroupState(candidate)
+  if state~=nil then
+   chosen.exposureLoad=math.max(chosen.exposureLoad,state.exposureLoad)
+   chosen.severity=math.max(chosen.severity,state.severity)
+  end
+ end
+ return chosen
+end
+
 function Disease.getProfileIds() return {"respiratory","digestive","generic"} end

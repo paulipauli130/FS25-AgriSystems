@@ -2,32 +2,32 @@
 
 ## Disease
 1. New group starts susceptible.
-2. Exposure is evaluated only after a confirmed contact event.
-3. Zero risk never infects; a roll below risk accepts exposure.
-4. A roll equal to or above risk rejects exposure.
-5. Exposure moves susceptible to incubation; repeat exposure does not reset progression.
-6. Incubation advances to infectious, then recovering, then recovered.
-7. Invalid profiles and malformed state fail safely.
-8. Time and risk inputs are bounded.
+2. Exposure is evaluated only after confirmed contact.
+3. Zero risk never infects; roll below risk accepts exposure; roll equal/above rejects.
+4. Exposure moves susceptible to incubation; repeated exposure does not reset progression.
+5. Incubation advances to infectious, then recovering, then recovered.
+6. Split copies disease state to every child group.
+7. Merge retains the most advanced disease state and highest severity/exposure.
+8. Invalid profiles and malformed state fail safely.
 
 ## Quarantine
 1. New/returning group starts quarantined.
 2. Duration alone does not release without request and hygiene compliance.
-3. Early release request remains active until duration expires.
-4. Release occurs only when every gate passes.
+3. Split copies quarantine restrictions.
+4. Merge keeps quarantine active if any source group remains quarantined.
+5. Merged quarantine uses the earliest start, longest duration and conservative compliance.
 
-## Hygiene
-1. Surface records are bounded and validated.
-2. Dirt cleaning reduces dirt only.
-3. Disinfection fails while dirt exceeds threshold.
-4. Disinfection reduces contamination only after dirt is sufficiently low.
-5. Invalid IDs and loads are rejected or clamped.
+## Hygiene and score
+1. Dirt cleaning reduces dirt only.
+2. Disinfection fails while dirt exceeds threshold.
+3. Score components clamp to 0..1; weights normalize; score does not mutate source state.
 
-## Score
-1. Components clamp to 0..1.
-2. Weights normalize through configuration.
-3. Zero total weight returns score 0.
-4. Score is derived and does not mutate source records.
+## StateStore
+1. Client instances reject mutations and loading.
+2. Group count cap is enforced per husbandry.
+3. Engine cluster bindings are transient and cleared on load.
+4. Exported state is detached from live state.
+5. Malformed records are skipped; valid disease/quarantine state survives round-trip.
 
 ## Runtime gates
-No engine integration, save/load or multiplayer tests are included. Validate cluster split/merge, server authority and dedicated-server behavior before enabling gameplay.
+No engine integration, save/load or multiplayer tests are included. Verify exact FS25 split/merge callbacks and stable mod-owned IDs before using these helpers in gameplay.

@@ -1,22 +1,28 @@
 # Farm Biosecurity — Implementation Notes
 
-## Development build 0.1.0.0
+## Development build 0.2.0.0
 - Independent modDesc and bootstrap listener.
-- Validated configuration with module toggles, quarantine, disease progression, hygiene and normalized score weights.
-- Group-level disease model with susceptible, incubating, infectious, recovering and recovered states.
-- Explicit exposure calculation requiring a caller-confirmed contact opportunity and server-supplied deterministic roll. No spontaneous infection is generated.
+- Validated configuration.
+- Group-level disease progression and explicit contact-based exposure model.
+- Conservative disease-state helpers for split and merge operations.
 - Quarantine model with elapsed in-game hours, release request and hygiene-compliance gate.
-- Surface hygiene model with separate dirt cleaning and disinfection. Disinfection is rejected while dirt exceeds its threshold.
-- Derived Biosecurity Score with weighted components and breakdown.
-- Manual model test plan.
+- Surface hygiene model with separate dirt cleaning and disinfection.
+- Derived Biosecurity Score.
+- Server-gated engine-independent StateStore for husbandry/group records.
+- Transient engine-cluster-to-mod-group mapping is memory-only and is cleared on load.
+- Split helper copies disease/quarantine state to child groups; merge helper preserves the most advanced disease state and strictest quarantine.
+- Manual gameplay model test plan.
 
 ## Explicit limitations
-- Not connected to PlaceableHusbandryAnimals, AnimalClusterSystem or actual animal groups.
-- No engine cluster ID is used as persistent identity.
-- No husbandry/group persistence, network events, UI, costs or action triggers.
+- No placeable specialization or actual AnimalClusterSystem callback integration.
+- Mod-owned husbandry/group IDs must be supplied by a future adapter and persisted by the future placeable specialization.
+- Split/merge helpers require explicit, verified parent/child relationships from the engine adapter.
+- No group/husbandry savegame XML, network events, UI, costs or action triggers.
 - No disease or quarantine gameplay effect is active.
-- Profiles are abstract gameplay parameters, not veterinary or pathogen-accuracy claims.
 - No FS25 runtime or GIANTS TestRunner validation has been performed.
 
+## Safety boundary
+Engine cluster IDs are transient references only and are never serialized. Ambiguous cluster reconciliation must not clear disease or quarantine. Exposure remains restricted to explicit server-confirmed contact opportunities.
+
 ## Next implementation gate
-Implement placeable specialization and mod-owned husbandry/group identity after validating exact FS25 cluster update/save/load callbacks. Then add versioned persistence and server-to-client snapshots.
+Verify the current FS25 PlaceableHusbandryAnimals callbacks and type-manager lifecycle, then implement the placeable adapter and savegame schema.
