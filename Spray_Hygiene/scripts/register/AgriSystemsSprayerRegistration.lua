@@ -3,15 +3,17 @@
 local modName = g_currentModName or "FS25_AgriSystems_SprayHygiene"
 local specializationName = modName .. ".agriSystemsSprayer"
 
-local registered = g_specializationManager:addSpecialization(
+g_specializationManager:addSpecialization(
     "agriSystemsSprayer",
     "AgriSystemsSprayer",
     Utils.getFilename("scripts/vehicle/AgriSystemsSprayer.lua", g_currentModDirectory),
     nil
 )
 
-if not registered then
-    Logging.error("[AgriSystems Spray & Hygiene] Failed to register sprayer specialization '%s'.", specializationName)
+-- addSpecialization does not provide a reliable boolean success result on all
+-- FS25 builds; verify the resulting registry entry instead of testing its return.
+if g_specializationManager:getSpecializationObjectByName(specializationName) == nil then
+    Logging.error("[AgriSystems Spray & Hygiene] Specialization '%s' is missing after registration.", specializationName)
 end
 
 local function injectIntoVehicleTypes(typeManager)
