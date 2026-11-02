@@ -158,14 +158,15 @@ def validate(mod_root: Path) -> str:
             raise RuntimeError(f"Missing sprayer menu page script: {menu_script}")
         menu_text = menu_script.read_text(encoding="utf-8")
         required_menu_markers = (
-            'mission.vehicles',
-            'mission.vehicleSystem.vehicles',
-            'findMissionSprayer(mission, visited)',
+            'type(player.getCurrentVehicle)',
+            'self._lastControlledVehicle ~= controlledVehicle',
             'spec_" .. (g_currentModName or "FS25_AgriSystems_SprayHygiene")',
         )
         missing_menu_markers = [marker for marker in required_menu_markers if marker not in menu_text]
         if missing_menu_markers:
-            raise RuntimeError("Sprayer menu discovery fallback is incomplete: " + "; ".join(missing_menu_markers))
+            raise RuntimeError("Current controlled sprayer selection is incomplete: " + "; ".join(missing_menu_markers))
+        if "findMissionSprayer" in menu_text or "mission.vehicleSystem.vehicles" in menu_text:
+            raise RuntimeError("Menu must not fall back to a mission-wide sprayer search")
 
     return version or "unknown"
 
