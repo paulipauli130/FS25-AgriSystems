@@ -4,7 +4,7 @@ local Mod = AgriSystemsSprayHygiene
 
 Mod.MOD_NAME = g_currentModName or "FS25_AgriSystems_SprayHygiene"
 Mod.MOD_DIRECTORY = g_currentModDirectory or ""
-Mod.VERSION = "0.8.0.0"
+Mod.VERSION = "0.8.1.0"
 Mod.CONFIG = nil
 Mod.STATE_STORE = nil
 
@@ -34,7 +34,7 @@ function Mod:loadMap()
     )
 
     log(string.format(
-        "Development foundation loaded (version %s). In-game status page is enabled; automatic gameplay effects and savegame persistence remain inactive.",
+        "Development foundation loaded (version %s). In-game menu registration uses the native TabbedMenu page lifecycle; automatic gameplay effects and savegame persistence remain inactive.",
         self.VERSION
     ))
 end
@@ -52,8 +52,4 @@ function Mod:getStateStore()
     return self.STATE_STORE
 end
 
-if type(addModEventListener) == "function" then
-    addModEventListener(Mod)
-else
-    log("WARNING: addModEventListener is unavailable; bootstrap listener was not registered.")
-end
+addModEventListener(Mod)
