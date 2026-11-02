@@ -153,6 +153,19 @@ def validate(mod_root: Path) -> str:
             )
         if "self.spec_agriSystemsSprayer" in sprayer_text:
             raise RuntimeError("Sprayer specialization still uses the unqualified spec table")
+        menu_script = mod_root / "scripts" / "gui" / "AgriSystemsSprayHygieneMenuPage.lua"
+        if not menu_script.is_file():
+            raise RuntimeError(f"Missing sprayer menu page script: {menu_script}")
+        menu_text = menu_script.read_text(encoding="utf-8")
+        required_menu_markers = (
+            'mission.vehicles',
+            'mission.vehicleSystem.vehicles',
+            'findMissionSprayer(mission, visited)',
+            'spec_" .. (g_currentModName or "FS25_AgriSystems_SprayHygiene")',
+        )
+        missing_menu_markers = [marker for marker in required_menu_markers if marker not in menu_text]
+        if missing_menu_markers:
+            raise RuntimeError("Sprayer menu discovery fallback is incomplete: " + "; ".join(missing_menu_markers))
 
     return version or "unknown"
 
