@@ -1,17 +1,17 @@
 local modName = g_currentModName
 local modDirectory = g_currentModDirectory
-local specializationName = "agriSystemsSprayer"
+local specializationName = modName .. ".agriSystemsSprayer"
 
 if g_specializationManager:getSpecializationByName(specializationName) == nil then
     local success = g_specializationManager:addSpecialization(
-        "agriSystemsSprayer",
+        specializationName,
         "AgriSystemsSprayer",
         Utils.getFilename("scripts/vehicle/AgriSystemsSprayer.lua", modDirectory),
         nil
     )
 
     if not success then
-        Logging.error("[%s] Failed to register sprayer specialization", modName)
+        Logging.error("[%s] Failed to register sprayer specialization '%s'", modName, specializationName)
     end
 end
 
@@ -22,16 +22,14 @@ local function injectIntoSprayerTypes(typeManager)
 
     for typeName, typeEntry in pairs(typeManager:getTypes()) do
         if SpecializationUtil.hasSpecialization(Sprayer, typeEntry.specializations)
-            and typeEntry.specializationsByName[specializationName] == nil then
-            if AgriSystemsSprayer.prerequisitesPresent(typeEntry.specializations) then
-                typeManager:addSpecialization(typeName, specializationName)
-            end
+            and typeEntry.specializationsByName[specializationName] == nil
+            and AgriSystemsSprayer.prerequisitesPresent(typeEntry.specializations) then
+            typeManager:addSpecialization(typeName, specializationName)
         end
     end
 end
 
--- Type validation schedules its checks as async tasks. The appended injection
--- runs before those tasks execute and before finalizeTypes registers listeners.
+-- Inject before TypeManager's queued validation tasks execute.
 if not AgriSystemsSprayHygiene.registrationHookInstalled then
     TypeManager.validateTypes = Utils.appendedFunction(
         TypeManager.validateTypes,
