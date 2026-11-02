@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <l10n>
     <texts>
-        <text name="ags_modName"><de>AgriSystems Spritzen &amp; Hygiene</de></text>
-        <text name="ags_status_development"><de>Entwicklungsgrundlage</de></text>
-        <text name="ags_menu_title"><de>AgriSystems Spritzen &amp; Hygiene</de></text>
-        <text name="ags_menu_vehicle"><de>Aktuelles Spritzgerät</de></text>
-        <text name="ags_menu_no_vehicle"><de>Kein Fahrzeug ausgewählt</de></text>
-        <text name="ags_menu_unknown_vehicle"><de>Unbekanntes Fahrzeug</de></text>
-        <text name="ags_menu_condition"><de>Gerätezustand</de></text>
-        <text name="ags_menu_wear"><de>Verschleiß</de></text>
-        <text name="ags_menu_calibration"><de>Kalibrierung</de></text>
-        <text name="ags_menu_blockage"><de>Durchschnittliche Düsenverstopfung</de></text>
-        <text name="ags_menu_residues"><de>Rückstandsindex (Modellwert)</de></text>
-        <text name="ags_menu_unavailable"><de>Nicht verfügbar</de></text>
-        <text name="ags_menu_select_sprayer"><de>Kein AgriSystems-fähiges Spritzgerät ausgewählt.</de></text>
-        <text name="ags_menu_no_nozzle_data"><de>Keine Düsendaten erfasst</de></text>
-        <text name="ags_menu_status_model_only"><de>Hinweis: Die Anzeige liest den Gerätezustand. Automatische Änderungen durch Sprüh- und Reinigungsvorgänge sind noch nicht aktiviert.</de></text>
+        <text name="ags_modName" text="AgriSystems Spritzen &amp; Hygiene"/>
+        <text name="ags_status_development" text="Entwicklungsgrundlage"/>
+        <text name="ags_menu_title" text="AgriSystems Spritzen &amp; Hygiene"/>
+        <text name="ags_menu_vehicle" text="Aktuelles Spritzgerät"/>
+        <text name="ags_menu_no_vehicle" text="Kein Fahrzeug ausgewählt"/>
+        <text name="ags_menu_unknown_vehicle" text="Unbekanntes Fahrzeug"/>
+        <text name="ags_menu_condition" text="Gerätezustand"/>
+        <text name="ags_menu_wear" text="Verschleiß"/>
+        <text name="ags_menu_calibration" text="Kalibrierung"/>
+        <text name="ags_menu_blockage" text="Durchschnittliche Düsenverstopfung"/>
+        <text name="ags_menu_residues" text="Rückstandsindex (Modellwert)"/>
+        <text name="ags_menu_unavailable" text="Nicht verfügbar"/>
+        <text name="ags_menu_select_sprayer" text="Kein AgriSystems-fähiges Spritzgerät ausgewählt."/>
+        <text name="ags_menu_no_nozzle_data" text="Keine Düsendaten erfasst"/>
+        <text name="ags_menu_status_model_only" text="Hinweis: Die Anzeige liest den Gerätezustand. Automatische Änderungen durch Sprüh- und Reinigungsvorgänge sind noch nicht aktiviert."/>
     </texts>
 </l10n>

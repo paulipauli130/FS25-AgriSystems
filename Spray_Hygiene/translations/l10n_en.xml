@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
 <l10n>
     <texts>
-        <text name="ags_modName"><en>AgriSystems Spray &amp; Hygiene</en></text>
-        <text name="ags_status_development"><en>Development foundation</en></text>
-        <text name="ags_menu_title"><en>AgriSystems Spray &amp; Hygiene</en></text>
-        <text name="ags_menu_vehicle"><en>Current sprayer</en></text>
-        <text name="ags_menu_no_vehicle"><en>No vehicle selected</en></text>
-        <text name="ags_menu_unknown_vehicle"><en>Unknown vehicle</en></text>
-        <text name="ags_menu_condition"><en>Equipment condition</en></text>
-        <text name="ags_menu_wear"><en>Wear</en></text>
-        <text name="ags_menu_calibration"><en>Calibration</en></text>
-        <text name="ags_menu_blockage"><en>Average nozzle blockage</en></text>
-        <text name="ags_menu_residues"><en>Residue index (model value)</en></text>
-        <text name="ags_menu_unavailable"><en>Unavailable</en></text>
-        <text name="ags_menu_select_sprayer"><en>No AgriSystems-compatible sprayer selected.</en></text>
-        <text name="ags_menu_no_nozzle_data"><en>No nozzle data recorded</en></text>
-        <text name="ags_menu_status_model_only"><en>Note: This page reads the equipment state. Automatic changes from spraying and cleaning operations are not active yet.</en></text>
+        <text name="ags_modName" text="AgriSystems Spray &amp; Hygiene"/>
+        <text name="ags_status_development" text="Development foundation"/>
+        <text name="ags_menu_title" text="AgriSystems Spray &amp; Hygiene"/>
+        <text name="ags_menu_vehicle" text="Current sprayer"/>
+        <text name="ags_menu_no_vehicle" text="No vehicle selected"/>
+        <text name="ags_menu_unknown_vehicle" text="Unknown vehicle"/>
+        <text name="ags_menu_condition" text="Equipment condition"/>
+        <text name="ags_menu_wear" text="Wear"/>
+        <text name="ags_menu_calibration" text="Calibration"/>
+        <text name="ags_menu_blockage" text="Average nozzle blockage"/>
+        <text name="ags_menu_residues" text="Residue index (model value)"/>
+        <text name="ags_menu_unavailable" text="Unavailable"/>
+        <text name="ags_menu_select_sprayer" text="No AgriSystems-compatible sprayer selected."/>
+        <text name="ags_menu_no_nozzle_data" text="No nozzle data recorded"/>
+        <text name="ags_menu_status_model_only" text="Note: This page reads the equipment state. Automatic changes from spraying and cleaning operations are not active yet."/>
     </texts>
 </l10n>
