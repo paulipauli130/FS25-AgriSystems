@@ -42,10 +42,9 @@ local function getControlledVehicle()
         return nil
     end
 
-    if mission.controlledVehicle ~= nil then
-        return mission.controlledVehicle
-    end
-
+    -- The player API is the authoritative source for enter/exit transitions.
+    -- mission.controlledVehicle can briefly retain the previous vehicle while
+    -- the player is on foot, which caused the menu to keep showing stale data.
     local player = mission.player
     if player ~= nil and type(player.getCurrentVehicle) == "function" then
         local ok, vehicle = pcall(player.getCurrentVehicle, player)
@@ -54,7 +53,11 @@ local function getControlledVehicle()
         end
     end
 
-    return nil
+    if player ~= nil and player.currentVehicle ~= nil then
+        return player.currentVehicle
+    end
+
+    return mission.controlledVehicle
 end
 
 -- Search the controlled vehicle and its attached implements. A player normally
@@ -116,32 +119,6 @@ local function findAgriSystemsSprayer(vehicle, visited, depth)
     return nil, nil
 end
 
--- Some FS25 menu states do not expose the currently controlled vehicle through
--- mission.controlledVehicle (and some implement chains are not traversable from
--- the tractor). Fall back to the mission vehicle registry so an attached or
--- independently controlled sprayer can still be found.
-local function findMissionSprayer(mission, visited)
-    if mission == nil then
-        return nil, nil
-    end
-
-    local vehicleCollections = {
-        mission.vehicles,
-        mission.vehicleSystem ~= nil and mission.vehicleSystem.vehicles or nil
-    }
-    for _, vehicles in pairs(vehicleCollections) do
-        if type(vehicles) == "table" then
-            for _, vehicle in pairs(vehicles) do
-                local foundVehicle, foundSpec = findAgriSystemsSprayer(vehicle, visited, 0)
-                if foundSpec ~= nil then
-                    return foundVehicle, foundSpec
-                end
-            end
-        end
-    end
-
-    return nil, nil
-end
 
 local function getVehicleName(vehicle)
     if vehicle == nil then
@@ -178,36 +155,48 @@ function Page:update(dt)
 end
 
 function Page:refresh()
-    local mission = g_currentMission
     local controlledVehicle = getControlledVehicle()
     local visited = {}
     local vehicle, spec = findAgriSystemsSprayer(controlledVehicle, visited, 0)
-    local discoverySource = "controlledVehicle"
 
-    if spec == nil then
-        vehicle, spec = findMissionSprayer(mission, visited)
-        discoverySource = "missionVehicleRegistry"
+    -- Never scan mission.vehicles for a fallback: that returns the first
+    -- sprayer loaded in the savegame (often the last one used), not the
+    -- sprayer belonging to the vehicle the player currently controls.
+    if self._lastControlledVehicle ~= controlledVehicle then
+        self._lastControlledVehicle = controlledVehicle
+        self._lastSelectedSprayer = vehicle
+        Logging.info(string.format(
+            "[AgriSystems Spray & Hygiene][DIAG] controlled vehicle changed: vehicle=%s sprayer=%s",
+            tostring(controlledVehicle ~= nil and (controlledVehicle.configFileName or controlledVehicle.typeName or "unknown") or "none"),
+            tostring(vehicle ~= nil and (vehicle.configFileName or vehicle.typeName or "unknown") or "none")
+        ))
+    elseif self._lastSelectedSprayer ~= vehicle then
+        self._lastSelectedSprayer = vehicle
+        Logging.info(string.format(
+            "[AgriSystems Spray & Hygiene][DIAG] selected sprayer changed: vehicle=%s",
+            tostring(vehicle ~= nil and (vehicle.configFileName or vehicle.typeName or "unknown") or "none")
+        ))
     end
 
-    if spec == nil and not self._loggedEmptyScan then
+    if spec == nil and controlledVehicle ~= nil and not self._loggedEmptyScan then
         self._loggedEmptyScan = true
-        local vehicleCount = 0
-        if mission ~= nil and type(mission.vehicles) == "table" then
-            for _ in pairs(mission.vehicles) do vehicleCount = vehicleCount + 1 end
-        end
         Logging.info(string.format(
-            "[AgriSystems Spray & Hygiene][DIAG] menu scan found no sprayer: controlledVehicle=%s missionVehicles=%d specKey=%s",
-            tostring(controlledVehicle ~= nil), vehicleCount, Page.SPRAYER_SPEC_TABLE
+            "[AgriSystems Spray & Hygiene][DIAG] no AgriSystems sprayer on currently controlled vehicle: vehicle=%s specKey=%s",
+            tostring(controlledVehicle.configFileName or controlledVehicle.typeName or "unknown"),
+            Page.SPRAYER_SPEC_TABLE
         ))
     elseif spec ~= nil then
         self._loggedEmptyScan = false
-        if not self._loggedFoundSprayer then
-            self._loggedFoundSprayer = true
+        if self._lastLoggedFoundSprayer ~= vehicle then
+            self._lastLoggedFoundSprayer = vehicle
             Logging.info(string.format(
-                "[AgriSystems Spray & Hygiene][DIAG] menu scan found sprayer: vehicle=%s source=%s",
-                tostring(vehicle.configFileName or vehicle.typeName or "unknown"), discoverySource
+                "[AgriSystems Spray & Hygiene][DIAG] menu selected current sprayer: vehicle=%s",
+                tostring(vehicle.configFileName or vehicle.typeName or "unknown")
             ))
         end
+    else
+        self._loggedEmptyScan = false
+        self._lastLoggedFoundSprayer = nil
     end
 
     local displayVehicle = vehicle or controlledVehicle
