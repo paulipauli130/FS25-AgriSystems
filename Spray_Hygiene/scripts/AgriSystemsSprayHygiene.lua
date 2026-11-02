@@ -4,7 +4,7 @@ local Mod = AgriSystemsSprayHygiene
 
 Mod.MOD_NAME = g_currentModName or "FS25_AgriSystems_SprayHygiene"
 Mod.MOD_DIRECTORY = g_currentModDirectory or ""
-Mod.VERSION = "0.8.5.0"
+Mod.VERSION = "0.8.6.0"
 Mod.CONFIG = nil
 Mod.STATE_STORE = nil
 
