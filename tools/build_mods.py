@@ -116,13 +116,24 @@ def validate(mod_root: Path) -> str:
             )
 
     if mod_root.name == "Spray_Hygiene":
-        expected_name = "FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"
-        extensions = desc.findall("./vehicleTypeExtensions/vehicleTypeExtension/specialization")
-        if not extensions or any(node.get("name") != expected_name for node in extensions):
-            raise RuntimeError(
-                "Every Spray & Hygiene vehicleTypeExtension must use the mod-qualified "
-                f"specialization name {expected_name}"
-            )
+        registration_script = mod_root / "scripts" / "register" / "AgriSystemsSprayerRegistration.lua"
+        if not registration_script.is_file():
+            raise RuntimeError(f"Missing explicit sprayer registration script: {registration_script}")
+        registration_text = registration_script.read_text(encoding="utf-8")
+        required_registration = (
+            'g_specializationManager:addSpecialization(',
+            'modName .. ".agriSystemsSprayer"',
+            'SpecializationUtil.hasSpecialization(Sprayer, typeEntry.specializations)',
+            'TypeManager.validateTypes = Utils.prependedFunction(TypeManager.validateTypes, injectIntoVehicleTypes)',
+        )
+        missing_registration = [marker for marker in required_registration if marker not in registration_text]
+        if missing_registration:
+            raise RuntimeError("Explicit sprayer registration is incomplete: " + "; ".join(missing_registration))
+        if desc.findall("./vehicleTypeExtensions/vehicleTypeExtension"):
+            raise RuntimeError("Spray & Hygiene must not use passive vehicleTypeExtensions for sprayer registration")
+        if not any(node.get("filename") == "scripts/register/AgriSystemsSprayerRegistration.lua"
+                   for node in desc.findall("./extraSourceFiles/sourceFile")):
+            raise RuntimeError("modDesc does not load the explicit sprayer registration script")
         sprayer_script = mod_root / "scripts" / "vehicle" / "AgriSystemsSprayer.lua"
         if not sprayer_script.is_file():
             raise RuntimeError(f"Missing sprayer specialization script: {sprayer_script}")

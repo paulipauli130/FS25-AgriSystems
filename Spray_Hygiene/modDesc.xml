@@ -2,7 +2,7 @@
 <modDesc descVersion="104">
     <author>Paul</author>
     <iconFilename>icon.dds</iconFilename>
-    <version>0.8.4.0</version>
+    <version>0.8.5.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
@@ -19,30 +19,8 @@ Automatische Gameplay-Effekte und Speicherstand-Persistenz befinden sich weiterh
     </description>
     <multiplayer supported="true"/>
     <l10n filenamePrefix="translations/l10n"/>
-
-    <specializations>
-        <specialization name="agriSystemsSprayer"
-                        className="AgriSystemsSprayer"
-                        filename="scripts/vehicle/AgriSystemsSprayer.lua"/>
-    </specializations>
-
-    <vehicleTypeExtensions>
-        <vehicleTypeExtension typeName="basegame.spreader"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.fertilizingCultivator"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.fertilizingCultivatorRoller"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.weederFertilizing"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.spreaderCraneTool"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.manureSpreader"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.selfPropelledSprayer"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.weederFertilizingSowingmachine"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.selfPropelledSowingMachineConsumable"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.sprayer"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.selfPropelledManureBarrel"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.manureBarrel"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="basegame.fertilizingSowingMachine"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
-    </vehicleTypeExtensions>
-
-    <extraSourceFiles>
+<extraSourceFiles>
+        <sourceFile filename="scripts/register/AgriSystemsSprayerRegistration.lua"/>
         <sourceFile filename="scripts/core/Config.lua"/>
         <sourceFile filename="scripts/core/SprayerCondition.lua"/>
         <sourceFile filename="scripts/core/SprayerCleaning.lua"/>
