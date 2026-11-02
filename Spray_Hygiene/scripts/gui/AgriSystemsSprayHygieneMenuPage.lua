@@ -1,36 +1,23 @@
 AgriSystemsSprayHygieneMenuPage = AgriSystemsSprayHygieneMenuPage or {}
-AgriSystemsSprayHygieneMenuPage.CLASS_NAME = "AgriSystemsSprayHygieneMenuPage"
-AgriSystemsSprayHygieneMenuPage.MENU_PAGE_NAME = "menuAgriSystemsSprayHygiene"
-
-local MOD_DIR = g_currentModDirectory or ""
 
 local Page = AgriSystemsSprayHygieneMenuPage
-local Page_mt = Class(Page, TabbedMenuFrameElement)
-
-function Page.getXmlFilename()
-    return Utils.getFilename("gui/AgriSystemsSprayHygieneMenuPage.xml", MOD_DIR)
-end
+Page.CLASS_NAME = "AgriSystemsSprayHygieneMenuPage"
+Page.MENU_PAGE_NAME = "menuAgriSystemsSprayHygiene"
+Page_mt = Class(Page, TabbedMenuFrameElement)
 
 function Page.new()
     local self = Page:superClass().new(nil, Page_mt)
-    self.name = Page.CLASS_NAME
-    self.className = Page.CLASS_NAME
-    self.menuButtonInfo = {}
-    self._refreshTimer = 0
+    self.name = Page.MENU_PAGE_NAME
+    self.btnBack = {
+        inputAction = InputAction.MENU_BACK
+    }
+    self:setMenuButtonInfo({self.btnBack})
     return self
-end
-
-function Page:onGuiSetupFinished()
-    Page:superClass().onGuiSetupFinished(self)
 end
 
 function Page:initialize()
     Page:superClass().initialize(self)
-    self.btnBack = {
-        inputAction = InputAction.MENU_BACK,
-        text = g_i18n:getText("button_back")
-    }
-    self.menuButtonInfo = {self.btnBack}
+    self:refresh()
 end
 
 local function formatPercent(value)
@@ -95,7 +82,7 @@ end
 
 function Page:update(dt)
     Page:superClass().update(self, dt)
-    self._refreshTimer = self._refreshTimer + (dt or 0)
+    self._refreshTimer = (self._refreshTimer or 0) + (dt or 0)
     if self._refreshTimer >= 500 then
         self._refreshTimer = 0
         self:refresh()
@@ -110,8 +97,8 @@ function Page:refresh()
         self.txtVehicleName:setText(getVehicleName(vehicle))
     end
 
+    local unavailable = g_i18n:getText("ags_menu_unavailable")
     if spec == nil then
-        local unavailable = g_i18n:getText("ags_menu_unavailable")
         if self.txtCondition ~= nil then self.txtCondition:setText(unavailable) end
         if self.txtWear ~= nil then self.txtWear:setText(unavailable) end
         if self.txtCalibration ~= nil then self.txtCalibration:setText(unavailable) end
@@ -164,8 +151,4 @@ function Page:refresh()
     if self.txtStatus ~= nil then
         self.txtStatus:setText(g_i18n:getText("ags_menu_status_model_only"))
     end
-end
-
-function Page:getMenuButtonInfo()
-    return self.menuButtonInfo
 end
