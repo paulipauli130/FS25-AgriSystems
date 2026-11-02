@@ -49,8 +49,8 @@ Both independent mods have pure gameplay models, bootstraps, standalone Lua mode
 - [ ] Vehicle/equipment/visitor/barn integration and UI.
 
 ## Phase 5 — Validation and release
-- [ ] Execute pure Lua model tests in GitHub Actions.
-- [ ] Run PowerShell packaging script and inspect ZIP contents.
+- [x] Execute pure Lua model tests in GitHub Actions.
+- [x] Run PowerShell packaging script in GitHub Actions and generate both mod ZIP artifacts.\n- [ ] Manually inspect package contents and test installation in FS25.
 - [ ] Test each mod separately in the actual FS25 patch.
 - [ ] GIANTS TestRunner matching installed patch.
 - [ ] Single-player save migration/regression.
