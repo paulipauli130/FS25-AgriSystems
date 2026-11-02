@@ -8,7 +8,7 @@ The project contains two independent FS25 script mods. Each mod is designed to i
 
 > **Project status: Early implementation**
 >
-> Spray & Hygiene has four pure gameplay models, a Sprayer-only specialization, per-vehicle save/load foundation and initial server-to-client snapshot. Farm Biosecurity has disease, quarantine, hygiene and score models, a husbandry specialization, subtype cohorts, per-placeable persistence, hourly progression and initial state snapshot. Engine-facing code has not yet been tested in FS25. No public release is available.
+> Spray & Hygiene has four pure gameplay models, a Sprayer-only specialization, per-vehicle save/load foundation and initial server-to-client snapshot. Farm Biosecurity has disease, quarantine, hygiene and score models, a husbandry specialization, subtype cohorts, per-placeable persistence, hourly progression and initial state snapshot. Engine-facing code has not yet been validated in FS25 gameplay. The latest CI build passes, but the sprayer-selection issue remains open. No public release is available.
 
 ## Projects
 
@@ -36,8 +36,8 @@ Logical cohorts are aggregated by configured animal subtype within each husbandr
 | Spray & Hygiene specialization/save/network foundation | Early implementation; runtime test pending |
 | Farm Biosecurity gameplay models and state store | Implemented |
 | Farm Biosecurity placeable persistence/hourly progression/snapshot | Early implementation; runtime test pending |
-| Standalone Lua model tests | Added; execution pending |
-| Independent ZIP packaging script | Added; execution pending |
+| Standalone Lua model tests | Executed successfully in GitHub Actions CI |
+| Independent ZIP packaging script | Executed successfully in GitHub Actions CI; build artifacts generated |
 | GIANTS TestRunner / in-game validation | Pending |
 | Public releases | None |
 
