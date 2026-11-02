@@ -42,22 +42,30 @@ local function getControlledVehicle()
         return nil
     end
 
-    -- The player API is the authoritative source for enter/exit transitions.
-    -- mission.controlledVehicle can briefly retain the previous vehicle while
-    -- the player is on foot, which caused the menu to keep showing stale data.
-    local player = mission.player
-    if player ~= nil and type(player.getCurrentVehicle) == "function" then
-        local ok, vehicle = pcall(player.getCurrentVehicle, player)
-        if ok then
-            return vehicle
-        end
+    -- In FS25 the mission-level controlledVehicle is the live gameplay
+    -- reference. Player:getCurrentVehicle() may legitimately return nil in
+    -- this context even while the player is driving; never let that nil
+    -- suppress the mission reference.
+    if mission.controlledVehicle ~= nil then
+        return mission.controlledVehicle
     end
 
+    local player = mission.player
     if player ~= nil and player.currentVehicle ~= nil then
         return player.currentVehicle
     end
 
-    return mission.controlledVehicle
+    -- Use the player method only as a last fallback and only accept a
+    -- non-nil result. A successful nil return is not proof that the player
+    -- is on foot.
+    if player ~= nil and type(player.getCurrentVehicle) == "function" then
+        local ok, vehicle = pcall(player.getCurrentVehicle, player)
+        if ok and vehicle ~= nil then
+            return vehicle
+        end
+    end
+
+    return nil
 end
 
 -- Search the controlled vehicle and its attached implements. A player normally
