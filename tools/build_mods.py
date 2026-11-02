@@ -106,6 +106,43 @@ def validate(mod_root: Path) -> str:
             if not target.is_file():
                 raise RuntimeError(f"Specialization registration references missing script: {target}")
 
+    # Keep the version reported by Lua in sync with the version shown by the game.
+    for runtime_script in (mod_root / "scripts").glob("AgriSystems*.lua"):
+        runtime_text = runtime_script.read_text(encoding="utf-8")
+        runtime_version = re.search(r"\bMod\.VERSION\s*=\s*[\"']([^\"']+)[\"']", runtime_text)
+        if runtime_version and version and runtime_version.group(1) != version:
+            raise RuntimeError(
+                f"Lua version {runtime_version.group(1)} does not match modDesc version {version}: {runtime_script}"
+            )
+
+    if mod_root.name == "Spray_Hygiene":
+        expected_name = "FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"
+        extensions = desc.findall("./vehicleTypeExtensions/vehicleTypeExtension/specialization")
+        if not extensions or any(node.get("name") != expected_name for node in extensions):
+            raise RuntimeError(
+                "Every Spray & Hygiene vehicleTypeExtension must use the mod-qualified "
+                f"specialization name {expected_name}"
+            )
+        sprayer_script = mod_root / "scripts" / "vehicle" / "AgriSystemsSprayer.lua"
+        if not sprayer_script.is_file():
+            raise RuntimeError(f"Missing sprayer specialization script: {sprayer_script}")
+        sprayer_text = sprayer_script.read_text(encoding="utf-8")
+        required_markers = (
+            'local ROOT_KEY = MOD_NAME .. ".agriSystemsSprayer"',
+            'local SPEC_TABLE_NAME = "spec_" .. ROOT_KEY',
+            'local base = "vehicles.vehicle(?)." .. ROOT_KEY',
+            'local base = savegame.key .. "." .. ROOT_KEY',
+            'self[SPEC_TABLE_NAME] = spec',
+        )
+        missing_markers = [marker for marker in required_markers if marker not in sprayer_text]
+        if missing_markers:
+            raise RuntimeError(
+                "Sprayer specialization namespace/savegame schema regression: "
+                + "; ".join(missing_markers)
+            )
+        if "self.spec_agriSystemsSprayer" in sprayer_text:
+            raise RuntimeError("Sprayer specialization still uses the unqualified spec table")
+
     return version or "unknown"
 
 
