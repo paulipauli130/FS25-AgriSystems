@@ -2,7 +2,7 @@
 <modDesc descVersion="104">
     <author>Paul</author>
     <iconFilename>icon.dds</iconFilename>
-    <version>0.8.1.0</version>
+    <version>0.8.2.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
@@ -27,19 +27,19 @@ Automatische Gameplay-Effekte und Speicherstand-Persistenz befinden sich weiterh
     </specializations>
 
     <vehicleTypeExtensions>
-        <vehicleTypeExtension typeName="spreader"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="fertilizingCultivator"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="fertilizingCultivatorRoller"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="weederFertilizing"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="spreaderCraneTool"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="manureSpreader"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="selfPropelledSprayer"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="weederFertilizingSowingmachine"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="selfPropelledSowingMachineConsumable"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="sprayer"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="selfPropelledManureBarrel"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="manureBarrel"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
-        <vehicleTypeExtension typeName="fertilizingSowingMachine"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="spreader"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingCultivator"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingCultivatorRoller"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="weederFertilizing"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="spreaderCraneTool"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="manureSpreader"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledSprayer"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="weederFertilizingSowingmachine"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledSowingMachineConsumable"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="sprayer"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledManureBarrel"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="manureBarrel"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingSowingMachine"><specialization name="FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"/></vehicleTypeExtension>
     </vehicleTypeExtensions>
 
     <extraSourceFiles>

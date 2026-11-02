@@ -1,7 +1,9 @@
 AgriSystemsSprayer = {}
 
 local Spec = AgriSystemsSprayer
-local ROOT_KEY = "agriSystemsSprayer"
+local MOD_NAME = g_currentModName or "FS25_AgriSystems_SprayHygiene"
+local ROOT_KEY = MOD_NAME .. ".agriSystemsSprayer"
+local SPEC_TABLE_NAME = "spec_" .. ROOT_KEY
 local MAX_RESIDUE_ENTRIES = 48
 local MAX_NOZZLE_GROUPS = 32
 
@@ -42,7 +44,7 @@ end
 
 function Spec:onLoad(savegame)
     local spec = {}
-    self.spec_agriSystemsSprayer = spec
+    self[SPEC_TABLE_NAME] = spec
     spec.condition = AgriSystemsSprayHygiene.SprayerCondition.createState()
     spec.cleaning = AgriSystemsSprayHygiene.SprayerCleaning.createState()
     spec.successfulWorkCycles = 0
@@ -106,8 +108,8 @@ function Spec:onEndWorkAreaProcessing(dt, hasProcessed)
     local spraySpec = self.spec_sprayer
     if spraySpec ~= nil and spraySpec.workAreaParameters ~= nil
         and spraySpec.workAreaParameters.isActive == true then
-        self.spec_agriSystemsSprayer.successfulWorkCycles =
-            self.spec_agriSystemsSprayer.successfulWorkCycles + 1
+        self[SPEC_TABLE_NAME].successfulWorkCycles =
+            self[SPEC_TABLE_NAME].successfulWorkCycles + 1
     end
 end
 
@@ -118,7 +120,7 @@ function Spec:onWriteStream(streamId, connection)
         return
     end
 
-    local spec = self.spec_agriSystemsSprayer
+    local spec = self[SPEC_TABLE_NAME]
     streamWriteFloat32(streamId, spec.condition.condition)
     streamWriteFloat32(streamId, spec.condition.wear)
     streamWriteFloat32(streamId, spec.condition.calibration)
@@ -162,7 +164,7 @@ function Spec:onReadStream(streamId, connection)
         return
     end
 
-    local spec = self.spec_agriSystemsSprayer
+    local spec = self[SPEC_TABLE_NAME]
     local condition = {
         condition = streamReadFloat32(streamId),
         wear = streamReadFloat32(streamId),
@@ -199,7 +201,7 @@ function Spec:saveToXMLFile(xmlFile, key, usedModNames)
         return
     end
 
-    local spec = self.spec_agriSystemsSprayer
+    local spec = self[SPEC_TABLE_NAME]
     if spec == nil then
         return
     end
