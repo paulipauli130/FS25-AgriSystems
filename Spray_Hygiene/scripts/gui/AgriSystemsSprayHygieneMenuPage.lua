@@ -3,6 +3,7 @@ AgriSystemsSprayHygieneMenuPage = AgriSystemsSprayHygieneMenuPage or {}
 local Page = AgriSystemsSprayHygieneMenuPage
 Page.CLASS_NAME = "AgriSystemsSprayHygieneMenuPage"
 Page.MENU_PAGE_NAME = "menuAgriSystemsSprayHygiene"
+Page.SPRAYER_SPEC_TABLE = "spec_FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"
 Page_mt = Class(Page, TabbedMenuFrameElement)
 
 function Page.new()
@@ -55,6 +56,51 @@ local function getControlledVehicle()
     return nil
 end
 
+-- Search the controlled vehicle and its attached implements. A player normally
+-- controls the tractor, while the sprayer is one or more attachment levels below.
+local function getAttachedImplements(vehicle)
+    if vehicle == nil then
+        return {}
+    end
+
+    if type(vehicle.getAttachedImplements) == "function" then
+        local ok, implements = pcall(vehicle.getAttachedImplements, vehicle)
+        if ok and type(implements) == "table" then
+            return implements
+        end
+    end
+
+    if type(vehicle.attachedImplements) == "table" then
+        return vehicle.attachedImplements
+    end
+
+    return {}
+end
+
+local function findAgriSystemsSprayer(vehicle, visited, depth)
+    if vehicle == nil or depth > 8 or visited[vehicle] then
+        return nil, nil
+    end
+    visited[vehicle] = true
+
+    local spec = vehicle[Page.SPRAYER_SPEC_TABLE]
+    if spec ~= nil then
+        return vehicle, spec
+    end
+
+    for _, attachment in pairs(getAttachedImplements(vehicle)) do
+        local implement = attachment ~= nil and attachment.object or nil
+        if implement ~= nil then
+            local foundVehicle, foundSpec = findAgriSystemsSprayer(implement, visited, depth + 1)
+            if foundSpec ~= nil then
+                return foundVehicle, foundSpec
+            end
+        end
+    end
+
+    return nil, nil
+end
+
 local function getVehicleName(vehicle)
     if vehicle == nil then
         return g_i18n:getText("ags_menu_no_vehicle")
@@ -90,11 +136,12 @@ function Page:update(dt)
 end
 
 function Page:refresh()
-    local vehicle = getControlledVehicle()
-    local spec = vehicle ~= nil and vehicle.spec_agriSystemsSprayer or nil
+    local controlledVehicle = getControlledVehicle()
+    local vehicle, spec = findAgriSystemsSprayer(controlledVehicle, {}, 0)
+    local displayVehicle = vehicle or controlledVehicle
 
     if self.txtVehicleName ~= nil then
-        self.txtVehicleName:setText(getVehicleName(vehicle))
+        self.txtVehicleName:setText(getVehicleName(displayVehicle))
     end
 
     local unavailable = g_i18n:getText("ags_menu_unavailable")
