@@ -2,7 +2,7 @@
 <modDesc descVersion="104">
     <author>Paul</author>
     <iconFilename>icon.dds</iconFilename>
-    <version>0.7.3.0</version>
+    <version>0.7.4.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
@@ -10,15 +10,66 @@
     <description>
         <en><![CDATA[
 Development build with sprayer condition, cleaning, spray drift and farmland contamination models.
-Sprayer specialization, per-vehicle persistence and initial state synchronization are in early development.
+Native vehicle specialization registration is enabled; engine integration and savegame validation remain in development.
         ]]></en>
         <de><![CDATA[
 Entwicklungsversion mit Datenmodellen für Sprühgeräte-Zustand, Reinigung, Abdrift und Feldkontamination.
-Spezialisierung, fahrzeugbezogene Speicherung und erste Synchronisierung befinden sich in früher Entwicklung.
+Die native Registrierung der Fahrzeugspezialisierung ist aktiviert; Engine-Integration und Speicherstandprüfung befinden sich weiter in Entwicklung.
         ]]></de>
     </description>
     <multiplayer supported="true"/>
     <l10n filenamePrefix="translations/l10n"/>
+
+    <!-- Register the specialization through the native FS25 manager. -->
+    <specializations>
+        <specialization name="agriSystemsSprayer"
+                        className="AgriSystemsSprayer"
+                        filename="scripts/vehicle/AgriSystemsSprayer.lua"/>
+    </specializations>
+
+    <!-- Extend only base vehicle types that already provide Sprayer. -->
+    <vehicleTypeExtensions>
+        <vehicleTypeExtension typeName="spreader">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingCultivator">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingCultivatorRoller">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="weederFertilizing">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="spreaderCraneTool">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="manureSpreader">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledSprayer">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="weederFertilizingSowingmachine">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledSowingMachineConsumable">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="sprayer">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledManureBarrel">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="manureBarrel">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingSowingMachine">
+            <specialization name="agriSystemsSprayer"/>
+        </vehicleTypeExtension>
+    </vehicleTypeExtensions>
+
     <extraSourceFiles>
         <sourceFile filename="scripts/core/Config.lua"/>
         <sourceFile filename="scripts/core/SprayerCondition.lua"/>
@@ -26,7 +77,6 @@ Spezialisierung, fahrzeugbezogene Speicherung und erste Synchronisierung befinde
         <sourceFile filename="scripts/core/SprayDrift.lua"/>
         <sourceFile filename="scripts/core/FieldContamination.lua"/>
         <sourceFile filename="scripts/core/StateStore.lua"/>
-        <sourceFile filename="scripts/register.lua"/>
         <sourceFile filename="scripts/AgriSystemsSprayHygiene.lua"/>
     </extraSourceFiles>
 </modDesc>
