@@ -3,7 +3,7 @@ AgriSystemsSprayHygieneMenuPage = AgriSystemsSprayHygieneMenuPage or {}
 local Page = AgriSystemsSprayHygieneMenuPage
 Page.CLASS_NAME = "AgriSystemsSprayHygieneMenuPage"
 Page.MENU_PAGE_NAME = "menuAgriSystemsSprayHygiene"
-Page.SPRAYER_SPEC_TABLE = "spec_FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"
+Page.SPRAYER_SPEC_TABLE = "spec_" .. (g_currentModName or "FS25_AgriSystems_SprayHygiene") .. ".agriSystemsSprayer"
 Page._diagnosedVehicles = setmetatable({}, {__mode = "k"})
 Page_mt = Class(Page, TabbedMenuFrameElement)
 
@@ -104,11 +104,38 @@ local function findAgriSystemsSprayer(vehicle, visited, depth)
     end
 
     for _, attachment in pairs(attachments) do
-        local implement = attachment ~= nil and attachment.object or nil
-        if implement ~= nil then
+        local implement = attachment ~= nil and (attachment.object or attachment) or nil
+        if type(implement) == "table" or type(implement) == "userdata" then
             local foundVehicle, foundSpec = findAgriSystemsSprayer(implement, visited, depth + 1)
             if foundSpec ~= nil then
                 return foundVehicle, foundSpec
+            end
+        end
+    end
+
+    return nil, nil
+end
+
+-- Some FS25 menu states do not expose the currently controlled vehicle through
+-- mission.controlledVehicle (and some implement chains are not traversable from
+-- the tractor). Fall back to the mission vehicle registry so an attached or
+-- independently controlled sprayer can still be found.
+local function findMissionSprayer(mission, visited)
+    if mission == nil then
+        return nil, nil
+    end
+
+    local vehicleCollections = {
+        mission.vehicles,
+        mission.vehicleSystem ~= nil and mission.vehicleSystem.vehicles or nil
+    }
+    for _, vehicles in pairs(vehicleCollections) do
+        if type(vehicles) == "table" then
+            for _, vehicle in pairs(vehicles) do
+                local foundVehicle, foundSpec = findAgriSystemsSprayer(vehicle, visited, 0)
+                if foundSpec ~= nil then
+                    return foundVehicle, foundSpec
+                end
             end
         end
     end
@@ -151,8 +178,38 @@ function Page:update(dt)
 end
 
 function Page:refresh()
+    local mission = g_currentMission
     local controlledVehicle = getControlledVehicle()
-    local vehicle, spec = findAgriSystemsSprayer(controlledVehicle, {}, 0)
+    local visited = {}
+    local vehicle, spec = findAgriSystemsSprayer(controlledVehicle, visited, 0)
+    local discoverySource = "controlledVehicle"
+
+    if spec == nil then
+        vehicle, spec = findMissionSprayer(mission, visited)
+        discoverySource = "missionVehicleRegistry"
+    end
+
+    if spec == nil and not self._loggedEmptyScan then
+        self._loggedEmptyScan = true
+        local vehicleCount = 0
+        if mission ~= nil and type(mission.vehicles) == "table" then
+            for _ in pairs(mission.vehicles) do vehicleCount = vehicleCount + 1 end
+        end
+        Logging.info(string.format(
+            "[AgriSystems Spray & Hygiene][DIAG] menu scan found no sprayer: controlledVehicle=%s missionVehicles=%d specKey=%s",
+            tostring(controlledVehicle ~= nil), vehicleCount, Page.SPRAYER_SPEC_TABLE
+        ))
+    elseif spec ~= nil then
+        self._loggedEmptyScan = false
+        if not self._loggedFoundSprayer then
+            self._loggedFoundSprayer = true
+            Logging.info(string.format(
+                "[AgriSystems Spray & Hygiene][DIAG] menu scan found sprayer: vehicle=%s source=%s",
+                tostring(vehicle.configFileName or vehicle.typeName or "unknown"), discoverySource
+            ))
+        end
+    end
+
     local displayVehicle = vehicle or controlledVehicle
 
     if self.txtVehicleName ~= nil then
