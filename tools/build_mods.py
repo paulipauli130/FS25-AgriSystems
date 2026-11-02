@@ -17,7 +17,7 @@ MODS = (
     ("Spray_Hygiene", "FS25_AgriSystems_SprayHygiene.zip"),
     ("Farm_Biosecurity", "FS25_AgriSystems_FarmBiosecurity.zip"),
 )
-RUNTIME_DIRS = ("scripts", "translations", "Config", "Assets", "store")
+RUNTIME_DIRS = ("scripts", "translations", "Config", "Assets", "store", "gui")
 ICON_SIZE = 128
 
 
@@ -32,7 +32,6 @@ def make_icon(kind: str) -> bytes:
             if radius > 0.94:
                 r, g, b = 22, 29, 36
             elif kind == "spray":
-                # Blue-green field with a white spray boom and droplet.
                 r, g, b = 28, 105, 94
                 if abs(ny + 0.12) < 0.075 and abs(nx) < 0.62:
                     r, g, b = 235, 244, 239
@@ -41,7 +40,6 @@ def make_icon(kind: str) -> bytes:
                 if (nx + 0.25) ** 2 + (ny - 0.43) ** 2 < 0.055:
                     r, g, b = 110, 205, 239
             else:
-                # Deep green field with a simple white shield and green cross.
                 r, g, b = 43, 112, 67
                 shield = abs(nx) < 0.55 and -0.58 < ny < 0.35 + 0.25 * (1 - abs(nx) / 0.55)
                 if shield:
@@ -51,7 +49,7 @@ def make_icon(kind: str) -> bytes:
             pixels.extend((b, g, r, 255))
 
     flags = 0x00000001 | 0x00000002 | 0x00000004 | 0x00001000
-    pf_flags = 0x00000040 | 0x00000001  # RGB | ALPHAPIXELS
+    pf_flags = 0x00000040 | 0x00000001
     header = struct.pack(
         "<7I11I",
         124, flags, ICON_SIZE, ICON_SIZE, ICON_SIZE * 4, 0, 0,
@@ -94,6 +92,11 @@ def validate(mod_root: Path) -> str:
                 if not target.is_file():
                     raise RuntimeError(f"Missing declared localization file: {target}")
                 ET.parse(target)
+
+    gui_root = mod_root / "gui"
+    if gui_root.is_dir():
+        for gui_file in gui_root.rglob("*.xml"):
+            ET.parse(gui_file)
 
     register = mod_root / "scripts" / "register.lua"
     if register.is_file():

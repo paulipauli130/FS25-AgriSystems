@@ -2,72 +2,44 @@
 <modDesc descVersion="104">
     <author>Paul</author>
     <iconFilename>icon.dds</iconFilename>
-    <version>0.7.4.0</version>
+    <version>0.8.0.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
     </title>
     <description>
         <en><![CDATA[
-Development build with sprayer condition, cleaning, spray drift and farmland contamination models.
-Native vehicle specialization registration is enabled; engine integration and savegame validation remain in development.
+Development build with a native in-game status page for sprayer condition, wear, calibration, nozzle blockage and residues.
+Automatic gameplay effects and savegame persistence remain in development.
         ]]></en>
         <de><![CDATA[
-Entwicklungsversion mit Datenmodellen für Sprühgeräte-Zustand, Reinigung, Abdrift und Feldkontamination.
-Die native Registrierung der Fahrzeugspezialisierung ist aktiviert; Engine-Integration und Speicherstandprüfung befinden sich weiter in Entwicklung.
+Entwicklungsversion mit einer nativen Spielmenü-Übersicht für Gerätezustand, Verschleiß, Kalibrierung, Düsenverstopfung und Rückstände.
+Automatische Gameplay-Effekte und Speicherstand-Persistenz befinden sich weiterhin in Entwicklung.
         ]]></de>
     </description>
     <multiplayer supported="true"/>
     <l10n filenamePrefix="translations/l10n"/>
 
-    <!-- Register the specialization through the native FS25 manager. -->
     <specializations>
         <specialization name="agriSystemsSprayer"
                         className="AgriSystemsSprayer"
                         filename="scripts/vehicle/AgriSystemsSprayer.lua"/>
     </specializations>
 
-    <!-- Extend only base vehicle types that already provide Sprayer. -->
     <vehicleTypeExtensions>
-        <vehicleTypeExtension typeName="spreader">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="fertilizingCultivator">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="fertilizingCultivatorRoller">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="weederFertilizing">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="spreaderCraneTool">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="manureSpreader">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="selfPropelledSprayer">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="weederFertilizingSowingmachine">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="selfPropelledSowingMachineConsumable">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="sprayer">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="selfPropelledManureBarrel">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="manureBarrel">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
-        <vehicleTypeExtension typeName="fertilizingSowingMachine">
-            <specialization name="agriSystemsSprayer"/>
-        </vehicleTypeExtension>
+        <vehicleTypeExtension typeName="spreader"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingCultivator"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingCultivatorRoller"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="weederFertilizing"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="spreaderCraneTool"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="manureSpreader"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledSprayer"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="weederFertilizingSowingmachine"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledSowingMachineConsumable"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="sprayer"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="selfPropelledManureBarrel"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="manureBarrel"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
+        <vehicleTypeExtension typeName="fertilizingSowingMachine"><specialization name="agriSystemsSprayer"/></vehicleTypeExtension>
     </vehicleTypeExtensions>
 
     <extraSourceFiles>
@@ -78,5 +50,7 @@ Die native Registrierung der Fahrzeugspezialisierung ist aktiviert; Engine-Integ
         <sourceFile filename="scripts/core/FieldContamination.lua"/>
         <sourceFile filename="scripts/core/StateStore.lua"/>
         <sourceFile filename="scripts/AgriSystemsSprayHygiene.lua"/>
+        <sourceFile filename="scripts/gui/AgriSystemsSprayHygieneMenuPage.lua"/>
+        <sourceFile filename="scripts/gui/AgriSystemsSprayHygieneGui.lua"/>
     </extraSourceFiles>
 </modDesc>
