@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="no" ?>
+<GUI name="AgriSystemsSprayHygieneMenuPage">
+    <GuiElement profile="uiInGameMenuFrame">
+        <GuiElement profile="fs25_menuHeaderPanel">
+            <Bitmap profile="fs25_menuHeaderIconBg"/>
+            <Text profile="fs25_menuHeaderTitle" text="$l10n_ags_menu_title"/>
+        </GuiElement>
+
+        <GuiElement profile="fs25_subCategorySelectorTabbedContainer" position="0px -80px">
+            <ThreePartBitmap profile="fs25_primaryMenuContainerBg" width="1040px" height="480px" position="0px 20px">
+                <Bitmap profile="fs25_menuContainerArrow"/>
+                <GuiElement profile="fs25_subCategoryContainer" width="1000px">
+                    <Text profile="fs25_textDefault" position="20px -12px" size="900px 28px" text="$l10n_ags_menu_vehicle"/>
+                    <Text profile="fs25_textDefault" id="txtVehicleName" position="20px -48px" size="900px 30px"/>
+
+                    <ThreePartBitmap profile="fs25_lineSeparatorTop" position="10px -92px" width="960px"/>
+                    <Text profile="fs25_textDefault" position="20px -112px" size="430px 28px" text="$l10n_ags_menu_condition"/>
+                    <Text profile="fs25_textDefault" id="txtCondition" position="480px -112px" size="450px 28px"/>
+                    <Text profile="fs25_textDefault" position="20px -158px" size="430px 28px" text="$l10n_ags_menu_wear"/>
+                    <Text profile="fs25_textDefault" id="txtWear" position="480px -158px" size="450px 28px"/>
+
+                    <ThreePartBitmap profile="fs25_lineSeparatorTop" position="10px -198px" width="960px"/>
+                    <Text profile="fs25_textDefault" position="20px -220px" size="430px 28px" text="$l10n_ags_menu_calibration"/>
+                    <Text profile="fs25_textDefault" id="txtCalibration" position="480px -220px" size="450px 28px"/>
+                    <Text profile="fs25_textDefault" position="20px -266px" size="430px 28px" text="$l10n_ags_menu_blockage"/>
+                    <Text profile="fs25_textDefault" id="txtBlockage" position="480px -266px" size="450px 28px"/>
+
+                    <ThreePartBitmap profile="fs25_lineSeparatorTop" position="10px -306px" width="960px"/>
+                    <Text profile="fs25_textDefault" position="20px -328px" size="430px 28px" text="$l10n_ags_menu_residues"/>
+                    <Text profile="fs25_textDefault" id="txtResidues" position="480px -328px" size="450px 28px"/>
+
+                    <Text profile="fs25_textDefault" id="txtStatus" position="20px -390px" size="940px 58px" textMaxNumLines="3"/>
+                </GuiElement>
+            </ThreePartBitmap>
+        </GuiElement>
+    </GuiElement>
+</GUI>

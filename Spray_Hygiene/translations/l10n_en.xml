@@ -3,5 +3,18 @@
     <texts>
         <text name="ags_modName"><en>AgriSystems Spray &amp; Hygiene</en></text>
         <text name="ags_status_development"><en>Development foundation</en></text>
+        <text name="ags_menu_title"><en>AgriSystems Spray &amp; Hygiene</en></text>
+        <text name="ags_menu_vehicle"><en>Current sprayer</en></text>
+        <text name="ags_menu_no_vehicle"><en>No vehicle selected</en></text>
+        <text name="ags_menu_unknown_vehicle"><en>Unknown vehicle</en></text>
+        <text name="ags_menu_condition"><en>Equipment condition</en></text>
+        <text name="ags_menu_wear"><en>Wear</en></text>
+        <text name="ags_menu_calibration"><en>Calibration</en></text>
+        <text name="ags_menu_blockage"><en>Average nozzle blockage</en></text>
+        <text name="ags_menu_residues"><en>Residue index (model value)</en></text>
+        <text name="ags_menu_unavailable"><en>Unavailable</en></text>
+        <text name="ags_menu_select_sprayer"><en>No AgriSystems-compatible sprayer selected.</en></text>
+        <text name="ags_menu_no_nozzle_data"><en>No nozzle data recorded</en></text>
+        <text name="ags_menu_status_model_only"><en>Note: This page reads the equipment state. Automatic changes from spraying and cleaning operations are not active yet.</en></text>
     </texts>
 </l10n>
