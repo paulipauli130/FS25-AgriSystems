@@ -1,20 +1,18 @@
 local modName = g_currentModName
 local modDirectory = g_currentModDirectory
 local specializationKey = "agriSystemsHusbandry"
-local specializationName = modName .. "." .. specializationKey
 
--- Placeable specializations belong to the dedicated placeable manager.
--- As with vehicle specializations, the manager stores the short key while
--- placeable types use the mod-qualified name.
+-- Placeable specializations use their dedicated manager. The manager stores
+-- the exact key supplied here, which must also be used by placeable types.
 if g_placeableSpecializationManager:getSpecializationByName(specializationKey) == nil then
-    local success = g_placeableSpecializationManager:addSpecialization(
+    g_placeableSpecializationManager:addSpecialization(
         specializationKey,
         "AgriSystemsHusbandry",
         Utils.getFilename("scripts/placeable/AgriSystemsHusbandry.lua", modDirectory),
         nil
     )
 
-    if not success then
+    if g_placeableSpecializationManager:getSpecializationByName(specializationKey) == nil then
         Logging.error("[%s] Failed to register husbandry specialization '%s'", modName, specializationKey)
     end
 end
@@ -26,9 +24,9 @@ local function injectIntoHusbandryTypes(typeManager)
 
     for typeName, typeEntry in pairs(typeManager:getTypes()) do
         if SpecializationUtil.hasSpecialization(PlaceableHusbandryAnimals, typeEntry.specializations)
-            and typeEntry.specializationsByName[specializationName] == nil
+            and typeEntry.specializationsByName[specializationKey] == nil
             and AgriSystemsHusbandry.prerequisitesPresent(typeEntry.specializations) then
-            typeManager:addSpecialization(typeName, specializationName)
+            typeManager:addSpecialization(typeName, specializationKey)
         end
     end
 end
