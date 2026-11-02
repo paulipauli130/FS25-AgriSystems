@@ -109,7 +109,7 @@ def validate(mod_root: Path) -> str:
     # Keep the version reported by Lua in sync with the version shown by the game.
     for runtime_script in (mod_root / "scripts").glob("AgriSystems*.lua"):
         runtime_text = runtime_script.read_text(encoding="utf-8")
-        runtime_version = re.search(r"\bMod\.VERSION\s*=\s*[\"']([^\"']+)[\"']", runtime_text)
+        runtime_version = re.search(r'\bMod\.VERSION\s*=\s*"([^"]+)"', runtime_text)
         if runtime_version and version and runtime_version.group(1) != version:
             raise RuntimeError(
                 f"Lua version {runtime_version.group(1)} does not match modDesc version {version}: {runtime_script}"
