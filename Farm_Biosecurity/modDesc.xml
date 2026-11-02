@@ -2,7 +2,7 @@
 <modDesc descVersion="104">
  <author>Paul</author>
     <iconFilename>icon.dds</iconFilename>
- <version>0.4.2.0</version>
+ <version>0.4.3.0</version>
  <title><en>AgriSystems Farm Biosecurity</en><de>AgriSystems Hof-Biosicherheit</de></title>
  <description>
   <en><![CDATA[Development foundation with group disease, quarantine, hygiene, score and server-gated state models. Initial placeable integration is in development; gameplay and multiplayer validation are pending.]]></en>

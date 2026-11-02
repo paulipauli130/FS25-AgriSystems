@@ -1,17 +1,20 @@
 local modName = g_currentModName
 local modDirectory = g_currentModDirectory
-local specializationName = modName .. ".agriSystemsSprayer"
+local specializationKey = "agriSystemsSprayer"
+local specializationName = modName .. "." .. specializationKey
 
-if g_specializationManager:getSpecializationByName(specializationName) == nil then
+-- SpecializationManager stores the short key. The mod-qualified name is used
+-- only when adding the specialization to vehicle types.
+if g_specializationManager:getSpecializationByName(specializationKey) == nil then
     local success = g_specializationManager:addSpecialization(
-        specializationName,
+        specializationKey,
         "AgriSystemsSprayer",
         Utils.getFilename("scripts/vehicle/AgriSystemsSprayer.lua", modDirectory),
         nil
     )
 
     if not success then
-        Logging.error("[%s] Failed to register sprayer specialization '%s'", modName, specializationName)
+        Logging.error("[%s] Failed to register sprayer specialization '%s'", modName, specializationKey)
     end
 end
 
