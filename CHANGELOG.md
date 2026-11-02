@@ -1,7 +1,28 @@
 # Changelog
 
 ## [Unreleased]
-- Continue engine integration and runtime validation.
+- Continue FS25 runtime integration and validation; the sprayer selection issue remains unresolved in the current in-game test.
+
+## [Farm Biosecurity 0.4.3.0] - 2026-11-02
+### Changed
+- Advanced the independent Farm Biosecurity development build to 0.4.3.0.
+- Current foundation includes husbandry specialization, subtype-level cohorts, per-placeable persistence, hourly server-side progression and an initial client snapshot.
+- Runtime callback order, save/reload and multiplayer behavior remain unverified in FS25.
+
+## [Spray & Hygiene 0.8.6.0] - 2026-11-02
+### Added
+- Native in-game status page for sprayer condition, wear, calibration, nozzle blockage and residue model values.
+- Runtime diagnostics for specialization loading and sprayer discovery.
+
+### Changed
+- Corrected external localization XML format and specialization registration.
+- Added the Sprayer specialization to eligible base-game vehicle types before type validation.
+- Updated menu vehicle resolution to prioritize the mission-controlled vehicle, with player vehicle references as fallbacks.
+- Removed the mission-wide first-sprayer fallback to avoid selecting an unrelated sprayer.
+
+### Validation
+- GitHub Actions CI/build completed successfully on main (run 41477064419).
+- The current in-game test still reports that the menu does not recognize the selected vehicle. This remains an open runtime issue; no working fix is claimed.
 
 ## [Farm Biosecurity 0.4.1.0] - 2026-11-01
 ### Changed
