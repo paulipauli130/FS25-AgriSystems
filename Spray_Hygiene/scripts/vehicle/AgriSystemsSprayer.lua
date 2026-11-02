@@ -49,6 +49,14 @@ function Spec:onLoad(savegame)
     spec.cleaning = AgriSystemsSprayHygiene.SprayerCleaning.createState()
     spec.successfulWorkCycles = 0
 
+    Logging.info(string.format(
+        "[AgriSystems Spray & Hygiene][DIAG] specialization onLoad: vehicle=%s typeName=%s specKey=%s nativeSprayerSpec=%s",
+        tostring(self.getName ~= nil and self:getName() or self.configFileName or "unknown"),
+        tostring(self.typeName or "unknown"),
+        SPEC_TABLE_NAME,
+        tostring(self.spec_sprayer ~= nil)
+    ))
+
     if not self.isServer or savegame == nil or savegame.resetVehicles then
         return
     end

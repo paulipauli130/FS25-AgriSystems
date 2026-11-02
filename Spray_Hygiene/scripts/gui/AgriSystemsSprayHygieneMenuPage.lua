@@ -4,6 +4,7 @@ local Page = AgriSystemsSprayHygieneMenuPage
 Page.CLASS_NAME = "AgriSystemsSprayHygieneMenuPage"
 Page.MENU_PAGE_NAME = "menuAgriSystemsSprayHygiene"
 Page.SPRAYER_SPEC_TABLE = "spec_FS25_AgriSystems_SprayHygiene.agriSystemsSprayer"
+Page._diagnosedVehicles = setmetatable({}, {__mode = "k"})
 Page_mt = Class(Page, TabbedMenuFrameElement)
 
 function Page.new()
@@ -84,11 +85,25 @@ local function findAgriSystemsSprayer(vehicle, visited, depth)
     visited[vehicle] = true
 
     local spec = vehicle[Page.SPRAYER_SPEC_TABLE]
+    local attachments = getAttachedImplements(vehicle)
+    if not Page._diagnosedVehicles[vehicle] then
+        Page._diagnosedVehicles[vehicle] = true
+        local attachmentCount = 0
+        for _ in pairs(attachments) do attachmentCount = attachmentCount + 1 end
+        Logging.info(string.format(
+            "[AgriSystems Spray & Hygiene][DIAG] menu scan: vehicle=%s typeName=%s agriSpec=%s nativeSprayerSpec=%s attachments=%d",
+            tostring(vehicle.configFileName or vehicle.typeName or "unknown"),
+            tostring(vehicle.typeName or "unknown"),
+            tostring(spec ~= nil),
+            tostring(vehicle.spec_sprayer ~= nil),
+            attachmentCount
+        ))
+    end
     if spec ~= nil then
         return vehicle, spec
     end
 
-    for _, attachment in pairs(getAttachedImplements(vehicle)) do
+    for _, attachment in pairs(attachments) do
         local implement = attachment ~= nil and attachment.object or nil
         if implement ~= nil then
             local foundVehicle, foundSpec = findAgriSystemsSprayer(implement, visited, depth + 1)
