@@ -9,6 +9,10 @@ Config.SCHEMA_VERSION = 1
 Config.DEFAULTS = {
     schemaVersion = Config.SCHEMA_VERSION,
     debug = false,
+    enabled = true,
+    wearEnabled = true,
+    calibrationEnabled = true,
+    wearRateMultiplier = 1.0,
     modules = {
         sprayDrift = false,
         sprayerEngineering = false,
@@ -22,6 +26,7 @@ Config.DEFAULTS = {
     },
     engineering = {
         conditionLossPerHectare = 0.02,
+        wearPerHour = 0.75,
         minimumCoverage = 0.5
     },
     cleaning = {
@@ -55,6 +60,10 @@ function Config.createDefaults()
     return {
         schemaVersion = defaults.schemaVersion,
         debug = defaults.debug,
+        enabled = defaults.enabled,
+        wearEnabled = defaults.wearEnabled,
+        calibrationEnabled = defaults.calibrationEnabled,
+        wearRateMultiplier = defaults.wearRateMultiplier,
         modules = {
             sprayDrift = defaults.modules.sprayDrift,
             sprayerEngineering = defaults.modules.sprayerEngineering,
@@ -68,6 +77,7 @@ function Config.createDefaults()
         },
         engineering = {
             conditionLossPerHectare = defaults.engineering.conditionLossPerHectare,
+            wearPerHour = defaults.engineering.wearPerHour,
             minimumCoverage = defaults.engineering.minimumCoverage
         },
         cleaning = {
@@ -89,6 +99,10 @@ function Config.validate(candidate)
     end
 
     result.debug = candidate.debug == true
+    result.enabled = candidate.enabled ~= false
+    result.wearEnabled = candidate.wearEnabled ~= false
+    result.calibrationEnabled = candidate.calibrationEnabled ~= false
+    result.wearRateMultiplier = clampNumber(candidate.wearRateMultiplier, 0, 3, result.wearRateMultiplier)
 
     if type(candidate.modules) == "table" then
         for moduleName, _ in pairs(result.modules) do
@@ -104,6 +118,7 @@ function Config.validate(candidate)
 
     if type(candidate.engineering) == "table" then
         result.engineering.conditionLossPerHectare = clampNumber(candidate.engineering.conditionLossPerHectare, 0, 10, result.engineering.conditionLossPerHectare)
+        result.engineering.wearPerHour = clampNumber(candidate.engineering.wearPerHour, 0, 10, result.engineering.wearPerHour)
         result.engineering.minimumCoverage = clampNumber(candidate.engineering.minimumCoverage, 0, 1, result.engineering.minimumCoverage)
     end
 

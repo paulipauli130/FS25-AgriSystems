@@ -16,5 +16,12 @@
         <text name="ags_menu_select_sprayer" text="No AgriSystems-compatible sprayer selected."/>
         <text name="ags_menu_no_nozzle_data" text="No nozzle data recorded"/>
         <text name="ags_menu_status_model_only" text="Note: This page reads the equipment state. Automatic changes from spraying and cleaning operations are not active yet."/>
+        <text name="ags_menu_status_live_wear" text="Wear and calibration are updated server-side during successful spray work"/>
+        <text name="ags_settings_title" text="Mod settings (host only)"/>
+        <text name="ags_setting_on" text="On"/><text name="ags_setting_off" text="Off"/>
+        <text name="ags_setting_mod_enabled" text="AgriSystems enabled"/><text name="ags_setting_wear_enabled" text="Wear"/>
+        <text name="ags_setting_calibration_enabled" text="Calibration degradation"/><text name="ags_setting_wear_rate" text="Wear rate"/>
+        <text name="ags_settings_host_only" text="Only the host can change these settings"/>
+        <text name="ags_settings_session_only" text="Setting applies until this game session ends"/>
     </texts>
 </l10n>

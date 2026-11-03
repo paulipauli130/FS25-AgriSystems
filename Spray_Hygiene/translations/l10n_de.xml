@@ -16,5 +16,12 @@
         <text name="ags_menu_select_sprayer" text="Kein AgriSystems-fähiges Spritzgerät ausgewählt."/>
         <text name="ags_menu_no_nozzle_data" text="Keine Düsendaten erfasst"/>
         <text name="ags_menu_status_model_only" text="Hinweis: Die Anzeige liest den Gerätezustand. Automatische Änderungen durch Sprüh- und Reinigungsvorgänge sind noch nicht aktiviert."/>
+        <text name="ags_menu_status_live_wear" text="Verschleiß und Kalibrierung werden serverseitig während erfolgreicher Spritzarbeit aktualisiert"/>
+        <text name="ags_settings_title" text="Mod-Einstellungen (nur Host)"/>
+        <text name="ags_setting_on" text="Ein"/><text name="ags_setting_off" text="Aus"/>
+        <text name="ags_setting_mod_enabled" text="AgriSystems aktiv"/><text name="ags_setting_wear_enabled" text="Verschleiß"/>
+        <text name="ags_setting_calibration_enabled" text="Kalibrierungsabnahme"/><text name="ags_setting_wear_rate" text="Verschleißrate"/>
+        <text name="ags_settings_host_only" text="Nur der Host kann diese Einstellungen ändern"/>
+        <text name="ags_settings_session_only" text="Einstellung gilt bis zum Ende dieser Spielsitzung"/>
     </texts>
 </l10n>

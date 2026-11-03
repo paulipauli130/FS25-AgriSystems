@@ -20,7 +20,52 @@ end
 function Page:initialize()
     Page:superClass().initialize(self)
     self:refresh()
+    self:refreshSettings()
 end
+
+local function getConfig()
+    return AgriSystemsSprayHygiene ~= nil and AgriSystemsSprayHygiene.CONFIG or nil
+end
+local function setButtonState(element, label, value)
+    if element ~= nil then
+        element:setText(string.format("%s: %s", label, value and g_i18n:getText("ags_setting_on") or g_i18n:getText("ags_setting_off")))
+    end
+end
+function Page:refreshSettings()
+    local c = getConfig()
+    if c == nil then return end
+    setButtonState(self.btnModEnabled, g_i18n:getText("ags_setting_mod_enabled"), c.enabled)
+    setButtonState(self.btnWearEnabled, g_i18n:getText("ags_setting_wear_enabled"), c.wearEnabled)
+    setButtonState(self.btnCalibrationEnabled, g_i18n:getText("ags_setting_calibration_enabled"), c.calibrationEnabled)
+    if self.btnWearRate ~= nil then self.btnWearRate:setText(string.format("%s: %.1fx", g_i18n:getText("ags_setting_wear_rate"), c.wearRateMultiplier or 1)) end
+end
+function Page:changeSetting(key)
+    if g_server == nil then
+        if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_host_only")) end
+        return
+    end
+    local c = getConfig()
+    if c == nil then return end
+    c[key] = not (c[key] ~= false)
+    self:refreshSettings()
+    if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_session_only")) end
+end
+function Page:onClickToggleMod() self:changeSetting("enabled") end
+function Page:onClickToggleWear() self:changeSetting("wearEnabled") end
+function Page:onClickToggleCalibration() self:changeSetting("calibrationEnabled") end
+function Page:onClickWearRate()
+    if g_server == nil then
+        if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_host_only")) end
+        return
+    end
+    local c = getConfig()
+    if c == nil then return end
+    local rate = (c.wearRateMultiplier or 1) + 0.5
+    c.wearRateMultiplier = rate > 3 and 0.5 or rate
+    self:refreshSettings()
+    if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_session_only")) end
+end
+
 
 local function formatPercent(value)
     if type(value) ~= "number" then
@@ -166,6 +211,7 @@ function Page:update(dt)
 end
 
 function Page:refresh()
+    self:refreshSettings()
     local controlledVehicle, vehicleSource = getControlledVehicle()
     if not self._loggedInitialVehicleState then
         self._loggedInitialVehicleState = true
@@ -287,6 +333,6 @@ function Page:refresh()
     end
 
     if self.txtStatus ~= nil then
-        self.txtStatus:setText(g_i18n:getText("ags_menu_status_model_only"))
+        self.txtStatus:setText(g_i18n:getText("ags_menu_status_live_wear"))
     end
 end

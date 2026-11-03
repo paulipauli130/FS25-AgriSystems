@@ -48,6 +48,7 @@ function Spec:onLoad(savegame)
     spec.condition = AgriSystemsSprayHygiene.SprayerCondition.createState()
     spec.cleaning = AgriSystemsSprayHygiene.SprayerCleaning.createState()
     spec.successfulWorkCycles = 0
+    spec.lastWorkUpdateMs = 0
 
     Logging.info(string.format(
         "[AgriSystems Spray & Hygiene][DIAG] specialization onLoad: vehicle=%s typeName=%s specKey=%s nativeSprayerSpec=%s",
@@ -109,16 +110,29 @@ end
 
 -- Observe the native callback only. Do not modify workAreaParameters or fill usage.
 function Spec:onEndWorkAreaProcessing(dt, hasProcessed)
-    if not self.isServer then
+    if not self.isServer then return end
+    local config = AgriSystemsSprayHygiene ~= nil and AgriSystemsSprayHygiene.CONFIG or nil
+    local spec = self[SPEC_TABLE_NAME]
+    local spraySpec = self.spec_sprayer
+    if config == nil or config.enabled == false or spec == nil
+        or spraySpec == nil or spraySpec.workAreaParameters == nil
+        or spraySpec.workAreaParameters.isActive ~= true or hasProcessed ~= true then
         return
     end
-
-    local spraySpec = self.spec_sprayer
-    if spraySpec ~= nil and spraySpec.workAreaParameters ~= nil
-        and spraySpec.workAreaParameters.isActive == true then
-        self[SPEC_TABLE_NAME].successfulWorkCycles =
-            self[SPEC_TABLE_NAME].successfulWorkCycles + 1
-    end
+    spec.successfulWorkCycles = spec.successfulWorkCycles + 1
+    if config.wearEnabled == false then return end
+    local elapsedMs = safeNumber(dt, 0, 60000, 0)
+    if elapsedMs <= 0 then return end
+    spec.lastWorkUpdateMs = spec.lastWorkUpdateMs + elapsedMs
+    if spec.lastWorkUpdateMs < 1000 then return end
+    local updateMs = math.min(spec.lastWorkUpdateMs, 10000)
+    spec.lastWorkUpdateMs = spec.lastWorkUpdateMs - updateMs
+    local rate = safeNumber(config.engineering and config.engineering.wearPerHour, 0, 10, 0.75)
+        * safeNumber(config.wearRateMultiplier, 0, 3, 1)
+    local calibrationFactor = config.calibrationEnabled ~= false and 0.5 or 0
+    spec.condition = AgriSystemsSprayHygiene.SprayerCondition.applyOperatingTime(
+        spec.condition, updateMs, rate, calibrationFactor
+    )
 end
 
 

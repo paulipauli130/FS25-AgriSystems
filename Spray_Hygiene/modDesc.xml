@@ -2,19 +2,19 @@
 <modDesc descVersion="104">
     <author>Paul</author>
     <iconFilename>icon.dds</iconFilename>
-    <version>0.8.7.0</version>
+    <version>0.8.8.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
     </title>
     <description>
         <en><![CDATA[
-Development build with a native in-game status page for sprayer condition, wear, calibration, nozzle blockage and residues.
-Automatic gameplay effects and savegame persistence remain in development.
+Development build with a native in-game status and host settings page. Server-side operating wear and calibration degradation are tracked after successful native spray work.
+Drift, nozzle blockage simulation, residue accumulation and cleaning actions remain in development.
         ]]></en>
         <de><![CDATA[
-Entwicklungsversion mit einer nativen Spielmenü-Übersicht für Gerätezustand, Verschleiß, Kalibrierung, Düsenverstopfung und Rückstände.
-Automatische Gameplay-Effekte und Speicherstand-Persistenz befinden sich weiterhin in Entwicklung.
+Entwicklungsversion mit nativer Spielmenü-Übersicht und Einstellungsbereich. Geräteverschleiß und Kalibrierungsabnahme werden serverseitig nach erfolgreicher Spritzarbeit erfasst.
+Abdrift, Düsenverstopfungssimulation, Rückstandsaufbau und Reinigungsaktionen befinden sich weiterhin in Entwicklung.
         ]]></de>
     </description>
     <multiplayer supported="true"/>

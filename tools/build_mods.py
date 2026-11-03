@@ -32,13 +32,17 @@ def make_icon(kind: str) -> bytes:
             if radius > 0.94:
                 r, g, b = 22, 29, 36
             elif kind == "spray":
-                r, g, b = 28, 105, 94
-                if abs(ny + 0.12) < 0.075 and abs(nx) < 0.62:
-                    r, g, b = 235, 244, 239
-                if (nx - 0.25) ** 2 + (ny - 0.43) ** 2 < 0.055:
-                    r, g, b = 110, 205, 239
-                if (nx + 0.25) ** 2 + (ny - 0.43) ** 2 < 0.055:
-                    r, g, b = 110, 205, 239
+                # Monochrome sprayer pictogram: tank, boom, chassis and wheels.
+                r, g, b = 25, 34, 39
+                tank = -0.34 < nx < 0.12 and -0.48 < ny < 0.05
+                boom = abs(ny - 0.12) < 0.035 and -0.76 < nx < 0.76
+                chassis = abs(ny - 0.34) < 0.035 and -0.48 < nx < 0.52
+                wl = (nx + 0.30) ** 2 + (ny - 0.48) ** 2
+                wr = (nx - 0.35) ** 2 + (ny - 0.48) ** 2
+                wheel = (0.09 < wl < 0.16) or (0.09 < wr < 0.16)
+                tractor = -0.52 < nx < -0.32 and -0.20 < ny < 0.12
+                if tank or boom or chassis or wheel or tractor:
+                    r, g, b = 238, 242, 232
             else:
                 r, g, b = 43, 112, 67
                 shield = abs(nx) < 0.55 and -0.58 < ny < 0.35 + 0.25 * (1 - abs(nx) / 0.55)

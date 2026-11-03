@@ -3,6 +3,15 @@
 ## [Unreleased]
 - Continue FS25 runtime integration and validation.
 
+## [Spray & Hygiene 0.8.8.0] - 2026-11-03
+### Added
+- Host-only in-game controls for the mod master switch, wear, calibration degradation and wear-rate multiplier.
+- Server-side operating-time wear and calibration degradation after successful native spray work.
+- Updated generated ESC menu icon with a monochrome sprayer pictogram.
+
+### Validation
+- Settings are session-only; savegame persistence, multiplayer synchronization and in-game callback/UI validation remain open.
+
 ## [Spray & Hygiene 0.8.7.0] - 2026-11-03
 ### Fixed
 - Resolve the locally controlled vehicle through the documented FS25 `g_localPlayer:getCurrentVehicle()` API before mission/player compatibility fallbacks.

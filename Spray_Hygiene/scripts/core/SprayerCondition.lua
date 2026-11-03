@@ -50,6 +50,17 @@ end
 
 -- Called by a future server-side observer after successful native spraying.
 -- This model never reads or changes native fill levels or spray usage.
+function Condition.applyOperatingTime(state, elapsedMs, wearPerHour, calibrationFactor)
+    local result = Condition.validateState(state)
+    local elapsedHours = clamp(elapsedMs, 0, 3600000, 0) / 3600000
+    local loss = clamp(wearPerHour, 0, 10, 0) * elapsedHours
+    local calibrationLoss = clamp(calibrationFactor, 0, 10, 0.5) * loss
+    result.condition = math.max(0, result.condition - loss)
+    result.wear = math.min(100, result.wear + loss)
+    result.calibration = math.max(0, result.calibration - calibrationLoss)
+    return result
+end
+
 function Condition.applyWork(state, workedAreaHa, lossPerHectare)
     local result = Condition.validateState(state)
     local area = clamp(workedAreaHa, 0, 1000000, 0)

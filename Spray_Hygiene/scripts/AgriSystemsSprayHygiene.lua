@@ -4,7 +4,7 @@ local Mod = AgriSystemsSprayHygiene
 
 Mod.MOD_NAME = g_currentModName or "FS25_AgriSystems_SprayHygiene"
 Mod.MOD_DIRECTORY = g_currentModDirectory or ""
-Mod.VERSION = "0.8.7.0"
+Mod.VERSION = "0.8.8.0"
 Mod.CONFIG = nil
 Mod.STATE_STORE = nil
 
@@ -34,7 +34,7 @@ function Mod:loadMap()
     )
 
     log(string.format(
-        "Development foundation loaded (version %s). In-game menu registration uses the native TabbedMenu page lifecycle; automatic gameplay effects and savegame persistence remain inactive.",
+        "Development foundation loaded (version %s). Server-side wear tracking and host-side session settings are active; other engine integrations remain gated.",
         self.VERSION
     ))
 end
