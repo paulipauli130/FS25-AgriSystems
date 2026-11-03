@@ -37,35 +37,38 @@ local function formatAmount(value)
 end
 
 local function getControlledVehicle()
-    local mission = g_currentMission
-    if mission == nil then
-        return nil
-    end
-
-    -- In FS25 the mission-level controlledVehicle is the live gameplay
-    -- reference. Player:getCurrentVehicle() may legitimately return nil in
-    -- this context even while the player is driving; never let that nil
-    -- suppress the mission reference.
-    if mission.controlledVehicle ~= nil then
-        return mission.controlledVehicle
-    end
-
-    local player = mission.player
-    if player ~= nil and player.currentVehicle ~= nil then
-        return player.currentVehicle
-    end
-
-    -- Use the player method only as a last fallback and only accept a
-    -- non-nil result. A successful nil return is not proof that the player
-    -- is on foot.
-    if player ~= nil and type(player.getCurrentVehicle) == "function" then
-        local ok, vehicle = pcall(player.getCurrentVehicle, player)
+    -- GIANTS' FS25 scripts use g_localPlayer as the local driver's Player
+    -- instance. mission.player is not the reliable local-player reference.
+    local localPlayer = g_localPlayer
+    if localPlayer ~= nil and type(localPlayer.getCurrentVehicle) == "function" then
+        local ok, vehicle = pcall(localPlayer.getCurrentVehicle, localPlayer)
         if ok and vehicle ~= nil then
-            return vehicle
+            return vehicle, "g_localPlayer:getCurrentVehicle"
         end
     end
 
-    return nil
+    -- Keep mission/player fields as compatibility fallbacks only.
+    local mission = g_currentMission
+    if mission ~= nil then
+        if mission.controlledVehicle ~= nil then
+            return mission.controlledVehicle, "mission.controlledVehicle"
+        end
+
+        local player = mission.player
+        if player ~= nil then
+            if player.currentVehicle ~= nil then
+                return player.currentVehicle, "mission.player.currentVehicle"
+            end
+            if type(player.getCurrentVehicle) == "function" then
+                local ok, vehicle = pcall(player.getCurrentVehicle, player)
+                if ok and vehicle ~= nil then
+                    return vehicle, "mission.player:getCurrentVehicle"
+                end
+            end
+        end
+    end
+
+    return nil, "none"
 end
 
 -- Search the controlled vehicle and its attached implements. A player normally
@@ -163,7 +166,25 @@ function Page:update(dt)
 end
 
 function Page:refresh()
-    local controlledVehicle = getControlledVehicle()
+    local controlledVehicle, vehicleSource = getControlledVehicle()
+    if not self._loggedInitialVehicleState then
+        self._loggedInitialVehicleState = true
+        local localPlayer = g_localPlayer
+        local isInVehicle = "unavailable"
+        if localPlayer ~= nil and type(localPlayer.getIsInVehicle) == "function" then
+            local ok, value = pcall(localPlayer.getIsInVehicle, localPlayer)
+            if ok then isInVehicle = tostring(value) end
+        end
+        Logging.info(string.format(
+            "[AgriSystems Spray & Hygiene][DIAG] initial vehicle state: localPlayer=%s isInVehicle=%s controlledVehicle=%s source=%s missionControlledVehicle=%s missionPlayer=%s",
+            tostring(localPlayer ~= nil),
+            isInVehicle,
+            tostring(controlledVehicle ~= nil and (controlledVehicle.configFileName or controlledVehicle.typeName or "unknown") or "none"),
+            tostring(vehicleSource),
+            tostring(g_currentMission ~= nil and g_currentMission.controlledVehicle ~= nil),
+            tostring(g_currentMission ~= nil and g_currentMission.player ~= nil)
+        ))
+    end
     local visited = {}
     local vehicle, spec = findAgriSystemsSprayer(controlledVehicle, visited, 0)
 
@@ -174,8 +195,9 @@ function Page:refresh()
         self._lastControlledVehicle = controlledVehicle
         self._lastSelectedSprayer = vehicle
         Logging.info(string.format(
-            "[AgriSystems Spray & Hygiene][DIAG] controlled vehicle changed: vehicle=%s sprayer=%s",
+            "[AgriSystems Spray & Hygiene][DIAG] controlled vehicle changed: vehicle=%s source=%s sprayer=%s",
             tostring(controlledVehicle ~= nil and (controlledVehicle.configFileName or controlledVehicle.typeName or "unknown") or "none"),
+            tostring(vehicleSource),
             tostring(vehicle ~= nil and (vehicle.configFileName or vehicle.typeName or "unknown") or "none")
         ))
     elseif self._lastSelectedSprayer ~= vehicle then
