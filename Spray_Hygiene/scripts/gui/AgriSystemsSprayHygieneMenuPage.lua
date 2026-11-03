@@ -7,12 +7,12 @@ Page.SPRAYER_SPEC_TABLE = "spec_" .. (g_currentModName or "FS25_AgriSystems_Spra
 Page._diagnosedVehicles = setmetatable({}, {__mode = "k"})
 Page_mt = Class(Page, TabbedMenuFrameElement)
 
+local WEAR_RATE_VALUES = {0.5, 1.0, 1.5, 2.0, 2.5, 3.0}
+
 function Page.new()
     local self = Page:superClass().new(nil, Page_mt)
     self.name = Page.MENU_PAGE_NAME
-    self.btnBack = {
-        inputAction = InputAction.MENU_BACK
-    }
+    self.btnBack = {inputAction = InputAction.MENU_BACK}
     self:setMenuButtonInfo({self.btnBack})
     return self
 end
@@ -26,123 +26,118 @@ end
 local function getConfig()
     return AgriSystemsSprayHygiene ~= nil and AgriSystemsSprayHygiene.CONFIG or nil
 end
-local function setButtonState(element, label, value)
-    if element ~= nil then
-        element:setText(string.format("%s: %s", label, value and g_i18n:getText("ags_setting_on") or g_i18n:getText("ags_setting_off")))
+
+local function setBinaryOption(element, value)
+    if element ~= nil and type(element.setIsChecked) == "function" then
+        element:setIsChecked(value == true, true)
     end
 end
+
+local function getWearRateIndex(value)
+    local bestIndex, bestDistance = 1, math.huge
+    for index, rate in ipairs(WEAR_RATE_VALUES) do
+        local distance = math.abs((tonumber(value) or 1) - rate)
+        if distance < bestDistance then
+            bestIndex, bestDistance = index, distance
+        end
+    end
+    return bestIndex
+end
+
 function Page:refreshSettings()
     local c = getConfig()
     if c == nil then return end
-    setButtonState(self.btnModEnabled, g_i18n:getText("ags_setting_mod_enabled"), c.enabled)
-    setButtonState(self.btnWearEnabled, g_i18n:getText("ags_setting_wear_enabled"), c.wearEnabled)
-    setButtonState(self.btnCalibrationEnabled, g_i18n:getText("ags_setting_calibration_enabled"), c.calibrationEnabled)
-    if self.btnWearRate ~= nil then self.btnWearRate:setText(string.format("%s: %.1fx", g_i18n:getText("ags_setting_wear_rate"), c.wearRateMultiplier or 1)) end
+    setBinaryOption(self.optModEnabled, c.enabled ~= false)
+    setBinaryOption(self.optWearEnabled, c.wearEnabled ~= false)
+    setBinaryOption(self.optCalibrationEnabled, c.calibrationEnabled ~= false)
+    if self.optWearRate ~= nil then
+        self.optWearRate:setState(getWearRateIndex(c.wearRateMultiplier or 1))
+    end
 end
-function Page:changeSetting(key)
+
+function Page:changeSetting(key, element)
     if g_server == nil then
         if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_host_only")) end
+        self:refreshSettings()
         return
     end
     local c = getConfig()
     if c == nil then return end
-    c[key] = not (c[key] ~= false)
+    if element ~= nil then
+        c[key] = element.state == BinaryOptionElement.STATE_RIGHT
+    end
     self:refreshSettings()
     if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_session_only")) end
 end
-function Page:onClickToggleMod() self:changeSetting("enabled") end
-function Page:onClickToggleWear() self:changeSetting("wearEnabled") end
-function Page:onClickToggleCalibration() self:changeSetting("calibrationEnabled") end
+
+function Page:onClickToggleMod()
+    self:changeSetting("enabled", self.optModEnabled)
+end
+
+function Page:onClickToggleWear()
+    self:changeSetting("wearEnabled", self.optWearEnabled)
+end
+
+function Page:onClickToggleCalibration()
+    self:changeSetting("calibrationEnabled", self.optCalibrationEnabled)
+end
+
 function Page:onClickWearRate()
     if g_server == nil then
         if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_host_only")) end
+        self:refreshSettings()
         return
     end
     local c = getConfig()
-    if c == nil then return end
-    local rate = (c.wearRateMultiplier or 1) + 0.5
-    c.wearRateMultiplier = rate > 3 and 0.5 or rate
-    self:refreshSettings()
+    if c == nil or self.optWearRate == nil then return end
+    c.wearRateMultiplier = WEAR_RATE_VALUES[self.optWearRate.state] or 1.0
     if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_session_only")) end
 end
 
-
 local function formatPercent(value)
-    if type(value) ~= "number" then
-        return "-"
-    end
+    if type(value) ~= "number" then return "-" end
     return string.format("%.1f %%", value):gsub("%.", ",")
 end
 
 local function formatAmount(value)
-    if type(value) ~= "number" then
-        return "-"
-    end
+    if type(value) ~= "number" then return "-" end
     return string.format("%.3f", value):gsub("%.", ",")
 end
 
 local function getControlledVehicle()
-    -- GIANTS' FS25 scripts use g_localPlayer as the local driver's Player
-    -- instance. mission.player is not the reliable local-player reference.
     local localPlayer = g_localPlayer
     if localPlayer ~= nil and type(localPlayer.getCurrentVehicle) == "function" then
         local ok, vehicle = pcall(localPlayer.getCurrentVehicle, localPlayer)
-        if ok and vehicle ~= nil then
-            return vehicle, "g_localPlayer:getCurrentVehicle"
-        end
+        if ok and vehicle ~= nil then return vehicle, "g_localPlayer:getCurrentVehicle" end
     end
-
-    -- Keep mission/player fields as compatibility fallbacks only.
     local mission = g_currentMission
     if mission ~= nil then
-        if mission.controlledVehicle ~= nil then
-            return mission.controlledVehicle, "mission.controlledVehicle"
-        end
-
+        if mission.controlledVehicle ~= nil then return mission.controlledVehicle, "mission.controlledVehicle" end
         local player = mission.player
         if player ~= nil then
-            if player.currentVehicle ~= nil then
-                return player.currentVehicle, "mission.player.currentVehicle"
-            end
+            if player.currentVehicle ~= nil then return player.currentVehicle, "mission.player.currentVehicle" end
             if type(player.getCurrentVehicle) == "function" then
                 local ok, vehicle = pcall(player.getCurrentVehicle, player)
-                if ok and vehicle ~= nil then
-                    return vehicle, "mission.player:getCurrentVehicle"
-                end
+                if ok and vehicle ~= nil then return vehicle, "mission.player:getCurrentVehicle" end
             end
         end
     end
-
     return nil, "none"
 end
 
--- Search the controlled vehicle and its attached implements. A player normally
--- controls the tractor, while the sprayer is one or more attachment levels below.
 local function getAttachedImplements(vehicle)
-    if vehicle == nil then
-        return {}
-    end
-
+    if vehicle == nil then return {} end
     if type(vehicle.getAttachedImplements) == "function" then
         local ok, implements = pcall(vehicle.getAttachedImplements, vehicle)
-        if ok and type(implements) == "table" then
-            return implements
-        end
+        if ok and type(implements) == "table" then return implements end
     end
-
-    if type(vehicle.attachedImplements) == "table" then
-        return vehicle.attachedImplements
-    end
-
+    if type(vehicle.attachedImplements) == "table" then return vehicle.attachedImplements end
     return {}
 end
 
 local function findAgriSystemsSprayer(vehicle, visited, depth)
-    if vehicle == nil or depth > 8 or visited[vehicle] then
-        return nil, nil
-    end
+    if vehicle == nil or depth > 8 or visited[vehicle] then return nil, nil end
     visited[vehicle] = true
-
     local spec = vehicle[Page.SPRAYER_SPEC_TABLE]
     local attachments = getAttachedImplements(vehicle)
     if not Page._diagnosedVehicles[vehicle] then
@@ -152,42 +147,27 @@ local function findAgriSystemsSprayer(vehicle, visited, depth)
         Logging.info(string.format(
             "[AgriSystems Spray & Hygiene][DIAG] menu scan: vehicle=%s typeName=%s agriSpec=%s nativeSprayerSpec=%s attachments=%d",
             tostring(vehicle.configFileName or vehicle.typeName or "unknown"),
-            tostring(vehicle.typeName or "unknown"),
-            tostring(spec ~= nil),
-            tostring(vehicle.spec_sprayer ~= nil),
-            attachmentCount
+            tostring(vehicle.typeName or "unknown"), tostring(spec ~= nil),
+            tostring(vehicle.spec_sprayer ~= nil), attachmentCount
         ))
     end
-    if spec ~= nil then
-        return vehicle, spec
-    end
-
+    if spec ~= nil then return vehicle, spec end
     for _, attachment in pairs(attachments) do
         local implement = attachment ~= nil and (attachment.object or attachment) or nil
         if type(implement) == "table" or type(implement) == "userdata" then
             local foundVehicle, foundSpec = findAgriSystemsSprayer(implement, visited, depth + 1)
-            if foundSpec ~= nil then
-                return foundVehicle, foundSpec
-            end
+            if foundSpec ~= nil then return foundVehicle, foundSpec end
         end
     end
-
     return nil, nil
 end
 
-
 local function getVehicleName(vehicle)
-    if vehicle == nil then
-        return g_i18n:getText("ags_menu_no_vehicle")
-    end
-
+    if vehicle == nil then return g_i18n:getText("ags_menu_no_vehicle") end
     if type(vehicle.getName) == "function" then
         local ok, name = pcall(vehicle.getName, vehicle)
-        if ok and type(name) == "string" and name ~= "" then
-            return name
-        end
+        if ok and type(name) == "string" and name ~= "" then return name end
     end
-
     return vehicle.typeName or g_i18n:getText("ags_menu_unknown_vehicle")
 end
 
@@ -223,52 +203,38 @@ function Page:refresh()
         end
         Logging.info(string.format(
             "[AgriSystems Spray & Hygiene][DIAG] initial vehicle state: localPlayer=%s isInVehicle=%s controlledVehicle=%s source=%s missionControlledVehicle=%s missionPlayer=%s",
-            tostring(localPlayer ~= nil),
-            isInVehicle,
+            tostring(localPlayer ~= nil), isInVehicle,
             tostring(controlledVehicle ~= nil and (controlledVehicle.configFileName or controlledVehicle.typeName or "unknown") or "none"),
-            tostring(vehicleSource),
-            tostring(g_currentMission ~= nil and g_currentMission.controlledVehicle ~= nil),
+            tostring(vehicleSource), tostring(g_currentMission ~= nil and g_currentMission.controlledVehicle ~= nil),
             tostring(g_currentMission ~= nil and g_currentMission.player ~= nil)
         ))
     end
-    local visited = {}
-    local vehicle, spec = findAgriSystemsSprayer(controlledVehicle, visited, 0)
-
-    -- Never scan mission.vehicles for a fallback: that returns the first
-    -- sprayer loaded in the savegame (often the last one used), not the
-    -- sprayer belonging to the vehicle the player currently controls.
+    local vehicle, spec = findAgriSystemsSprayer(controlledVehicle, {}, 0)
     if self._lastControlledVehicle ~= controlledVehicle then
         self._lastControlledVehicle = controlledVehicle
         self._lastSelectedSprayer = vehicle
         Logging.info(string.format(
             "[AgriSystems Spray & Hygiene][DIAG] controlled vehicle changed: vehicle=%s source=%s sprayer=%s",
             tostring(controlledVehicle ~= nil and (controlledVehicle.configFileName or controlledVehicle.typeName or "unknown") or "none"),
-            tostring(vehicleSource),
-            tostring(vehicle ~= nil and (vehicle.configFileName or vehicle.typeName or "unknown") or "none")
+            tostring(vehicleSource), tostring(vehicle ~= nil and (vehicle.configFileName or vehicle.typeName or "unknown") or "none")
         ))
     elseif self._lastSelectedSprayer ~= vehicle then
         self._lastSelectedSprayer = vehicle
-        Logging.info(string.format(
-            "[AgriSystems Spray & Hygiene][DIAG] selected sprayer changed: vehicle=%s",
-            tostring(vehicle ~= nil and (vehicle.configFileName or vehicle.typeName or "unknown") or "none")
-        ))
+        Logging.info(string.format("[AgriSystems Spray & Hygiene][DIAG] selected sprayer changed: vehicle=%s",
+            tostring(vehicle ~= nil and (vehicle.configFileName or vehicle.typeName or "unknown") or "none")))
     end
-
     if spec == nil and controlledVehicle ~= nil and not self._loggedEmptyScan then
         self._loggedEmptyScan = true
         Logging.info(string.format(
             "[AgriSystems Spray & Hygiene][DIAG] no AgriSystems sprayer on currently controlled vehicle: vehicle=%s specKey=%s",
-            tostring(controlledVehicle.configFileName or controlledVehicle.typeName or "unknown"),
-            Page.SPRAYER_SPEC_TABLE
+            tostring(controlledVehicle.configFileName or controlledVehicle.typeName or "unknown"), Page.SPRAYER_SPEC_TABLE
         ))
     elseif spec ~= nil then
         self._loggedEmptyScan = false
         if self._lastLoggedFoundSprayer ~= vehicle then
             self._lastLoggedFoundSprayer = vehicle
-            Logging.info(string.format(
-                "[AgriSystems Spray & Hygiene][DIAG] menu selected current sprayer: vehicle=%s",
-                tostring(vehicle.configFileName or vehicle.typeName or "unknown")
-            ))
+            Logging.info(string.format("[AgriSystems Spray & Hygiene][DIAG] menu selected current sprayer: vehicle=%s",
+                tostring(vehicle.configFileName or vehicle.typeName or "unknown")))
         end
     else
         self._loggedEmptyScan = false
@@ -276,11 +242,7 @@ function Page:refresh()
     end
 
     local displayVehicle = vehicle or controlledVehicle
-
-    if self.txtVehicleName ~= nil then
-        self.txtVehicleName:setText(getVehicleName(displayVehicle))
-    end
-
+    if self.txtVehicleName ~= nil then self.txtVehicleName:setText(getVehicleName(displayVehicle)) end
     local unavailable = g_i18n:getText("ags_menu_unavailable")
     if spec == nil then
         if self.txtCondition ~= nil then self.txtCondition:setText(unavailable) end
@@ -288,27 +250,16 @@ function Page:refresh()
         if self.txtCalibration ~= nil then self.txtCalibration:setText(unavailable) end
         if self.txtBlockage ~= nil then self.txtBlockage:setText(unavailable) end
         if self.txtResidues ~= nil then self.txtResidues:setText(unavailable) end
-        if self.txtStatus ~= nil then
-            self.txtStatus:setText(g_i18n:getText("ags_menu_select_sprayer"))
-        end
+        if self.txtStatus ~= nil then self.txtStatus:setText(g_i18n:getText("ags_menu_select_sprayer")) end
         return
     end
 
     local condition = spec.condition or {}
     local cleaning = spec.cleaning or {}
-
-    if self.txtCondition ~= nil then
-        self.txtCondition:setText(formatPercent(condition.condition))
-    end
-    if self.txtWear ~= nil then
-        self.txtWear:setText(formatPercent(condition.wear))
-    end
-    if self.txtCalibration ~= nil then
-        self.txtCalibration:setText(formatPercent(condition.calibration))
-    end
-
-    local blockageTotal = 0
-    local blockageCount = 0
+    if self.txtCondition ~= nil then self.txtCondition:setText(formatPercent(condition.condition)) end
+    if self.txtWear ~= nil then self.txtWear:setText(formatPercent(condition.wear)) end
+    if self.txtCalibration ~= nil then self.txtCalibration:setText(formatPercent(condition.calibration)) end
+    local blockageTotal, blockageCount = 0, 0
     for _, blockage in pairs(condition.nozzleBlockage or {}) do
         if type(blockage) == "number" then
             blockageTotal = blockageTotal + blockage
@@ -316,23 +267,12 @@ function Page:refresh()
         end
     end
     if self.txtBlockage ~= nil then
-        if blockageCount > 0 then
-            self.txtBlockage:setText(formatPercent(blockageTotal / blockageCount))
-        else
-            self.txtBlockage:setText(g_i18n:getText("ags_menu_no_nozzle_data"))
-        end
+        self.txtBlockage:setText(blockageCount > 0 and formatPercent(blockageTotal / blockageCount) or g_i18n:getText("ags_menu_no_nozzle_data"))
     end
-
     local residueTotal = 0
-    if AgriSystemsSprayHygiene ~= nil
-        and AgriSystemsSprayHygiene.SprayerCleaning ~= nil then
+    if AgriSystemsSprayHygiene ~= nil and AgriSystemsSprayHygiene.SprayerCleaning ~= nil then
         residueTotal = AgriSystemsSprayHygiene.SprayerCleaning.getTotalResidue(cleaning)
     end
-    if self.txtResidues ~= nil then
-        self.txtResidues:setText(formatAmount(residueTotal))
-    end
-
-    if self.txtStatus ~= nil then
-        self.txtStatus:setText(g_i18n:getText("ags_menu_status_live_wear"))
-    end
+    if self.txtResidues ~= nil then self.txtResidues:setText(formatAmount(residueTotal)) end
+    if self.txtStatus ~= nil then self.txtStatus:setText(g_i18n:getText("ags_menu_status_live_wear")) end
 end

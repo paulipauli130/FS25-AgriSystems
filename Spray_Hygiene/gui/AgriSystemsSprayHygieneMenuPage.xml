@@ -32,13 +32,22 @@
 
             <Text profile="fs25_textDefault" id="txtStatus" position="0px -430px" size="950px 65px" textMaxNumLines="3"/>
         </GuiElement>
+
         <GuiElement profile="fs25_statisticsHeaderBox" position="0px -590px">
             <Text profile="dialogTitle" text="$l10n_ags_settings_title" position="0px -24px"/>
-            <Button profile="buttonActivate" id="btnModEnabled" onClick="onClickToggleMod" position="0px -70px" size="440px 46px" text="$l10n_ags_setting_mod_enabled"/>
-            <Button profile="buttonActivate" id="btnWearEnabled" onClick="onClickToggleWear" position="470px -70px" size="440px 46px" text="$l10n_ags_setting_wear_enabled"/>
-            <Button profile="buttonActivate" id="btnCalibrationEnabled" onClick="onClickToggleCalibration" position="0px -130px" size="440px 46px" text="$l10n_ags_setting_calibration_enabled"/>
-            <Button profile="buttonActivate" id="btnWearRate" onClick="onClickWearRate" position="470px -130px" size="440px 46px" text="$l10n_ags_setting_wear_rate"/>
-            <Text profile="fs25_textDefault" id="txtSettingsStatus" position="0px -190px" size="900px 50px" textMaxNumLines="2"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_mod_enabled" position="0px -78px" size="520px 42px"/>
+            <BinaryOption profile="fs25_binaryOption" id="optModEnabled" onClick="onClickToggleMod" position="610px -70px" size="300px 48px"/>
+
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_wear_enabled" position="0px -138px" size="520px 42px"/>
+            <BinaryOption profile="fs25_binaryOption" id="optWearEnabled" onClick="onClickToggleWear" position="610px -130px" size="300px 48px"/>
+
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_calibration_enabled" position="0px -198px" size="520px 42px"/>
+            <BinaryOption profile="fs25_binaryOption" id="optCalibrationEnabled" onClick="onClickToggleCalibration" position="610px -190px" size="300px 48px"/>
+
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_wear_rate" position="0px -258px" size="520px 42px"/>
+            <MultiTextOption profile="fs25_multiTextOption" id="optWearRate" onClick="onClickWearRate" position="610px -250px" size="300px 48px" texts="0,5x|1,0x|1,5x|2,0x|2,5x|3,0x"/>
+
+            <Text profile="fs25_textDefault" id="txtSettingsStatus" position="0px -320px" size="900px 50px" textMaxNumLines="2"/>
         </GuiElement>
     </GuiElement>
 </GUI>
