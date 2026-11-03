@@ -1,7 +1,15 @@
 # Changelog
 
 ## [Unreleased]
-- Continue FS25 runtime integration and validation; the sprayer selection issue remains unresolved in the current in-game test.
+- Continue FS25 runtime integration and validation.
+
+## [Spray & Hygiene 0.8.7.0] - 2026-11-03
+### Fixed
+- Resolve the locally controlled vehicle through the documented FS25 `g_localPlayer:getCurrentVehicle()` API before mission/player compatibility fallbacks.
+- Add a one-time vehicle-resolution diagnostic, including the selected source and local-player vehicle state, so a missing reference is visible in the log.
+
+### Validation
+- Source change is based on GIANTS FS25 Lua documentation. In-game confirmation is still pending.
 
 ## [Farm Biosecurity 0.4.3.0] - 2026-11-02
 ### Changed
