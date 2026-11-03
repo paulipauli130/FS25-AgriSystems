@@ -100,7 +100,15 @@ def validate(mod_root: Path) -> str:
     gui_root = mod_root / "gui"
     if gui_root.is_dir():
         for gui_file in gui_root.rglob("*.xml"):
-            ET.parse(gui_file)
+            gui_tree = ET.parse(gui_file)
+            if mod_root.name == "Spray_Hygiene" and gui_file.name == "AgriSystemsSprayHygieneMenuPage.xml":
+                for button in gui_tree.getroot().iter("Button"):
+                    profile = button.get("profile")
+                    if profile != "buttonActivate":
+                        raise RuntimeError(
+                            f"Spray Hygiene menu Button must use the FS25 ButtonElement profile "
+                            f"'buttonActivate', found {profile!r} in {gui_file}"
+                        )
 
     register = mod_root / "scripts" / "register.lua"
     if register.is_file():
