@@ -3,7 +3,9 @@ local Gui = AgriSystemsSprayHygieneGui
 
 local MOD_DIR = g_currentModDirectory or ""
 local PAGE_NAME = "menuAgriSystemsSprayHygiene"
-local ICON_UVS = {0, 0, 128, 128}
+-- GuiUtils.getUVs expects pixel coordinates as a string, not a Lua table.
+-- The generated mod icon is a single 128x128 image, so use the full texture.
+local ICON_UVS = "0 0 128 128"
 
 function Gui:loadMap()
     if self.registered then

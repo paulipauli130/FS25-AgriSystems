@@ -34,10 +34,10 @@
         </GuiElement>
         <GuiElement profile="fs25_statisticsHeaderBox" position="0px -590px">
             <Text profile="dialogTitle" text="$l10n_ags_settings_title" position="0px -24px"/>
-            <Button profile="fs25_button" id="btnModEnabled" onClick="onClickToggleMod" position="0px -70px" size="440px 46px" text="$l10n_ags_setting_mod_enabled"/>
-            <Button profile="fs25_button" id="btnWearEnabled" onClick="onClickToggleWear" position="470px -70px" size="440px 46px" text="$l10n_ags_setting_wear_enabled"/>
-            <Button profile="fs25_button" id="btnCalibrationEnabled" onClick="onClickToggleCalibration" position="0px -130px" size="440px 46px" text="$l10n_ags_setting_calibration_enabled"/>
-            <Button profile="fs25_button" id="btnWearRate" onClick="onClickWearRate" position="470px -130px" size="440px 46px" text="$l10n_ags_setting_wear_rate"/>
+            <Button profile="fs25_binaryOption" id="btnModEnabled" onClick="onClickToggleMod" position="0px -70px" size="440px 46px" text="$l10n_ags_setting_mod_enabled"/>
+            <Button profile="fs25_binaryOption" id="btnWearEnabled" onClick="onClickToggleWear" position="470px -70px" size="440px 46px" text="$l10n_ags_setting_wear_enabled"/>
+            <Button profile="fs25_binaryOption" id="btnCalibrationEnabled" onClick="onClickToggleCalibration" position="0px -130px" size="440px 46px" text="$l10n_ags_setting_calibration_enabled"/>
+            <Button profile="fs25_binaryOption" id="btnWearRate" onClick="onClickWearRate" position="470px -130px" size="440px 46px" text="$l10n_ags_setting_wear_rate"/>
             <Text profile="fs25_textDefault" id="txtSettingsStatus" position="0px -190px" size="900px 50px" textMaxNumLines="2"/>
         </GuiElement>
     </GuiElement>
