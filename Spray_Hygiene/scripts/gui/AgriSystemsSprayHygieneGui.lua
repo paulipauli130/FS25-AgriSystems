@@ -35,8 +35,8 @@ function Gui:loadMap()
             return true
         end)
 
-        local iconFilename = Utils.getFilename("tabIcon.png", MOD_DIR)
-        g_inGameMenu:addPageTab(page, iconFilename, GuiUtils.getUVs(ICON_UVS, {128, 128}))
+        local iconFilename = Utils.getFilename("icon.dds", MOD_DIR)
+        g_inGameMenu:addPageTab(page, iconFilename, GuiUtils.getUVs(ICON_UVS))
         g_inGameMenu:rebuildTabList()
 
         page:initialize()
