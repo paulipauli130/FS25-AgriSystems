@@ -280,7 +280,16 @@ def build(output: Path, clean: bool) -> list[Path]:
             if folder == "Spray_Hygiene"
             else "icon_FS25_AgriSystems_FarmBiosecurity.dds"
         )
-        (stage / icon_filename).write_bytes(make_icon(icon_kind))
+        icon_data = make_icon(icon_kind)
+        if icon_data[:4] != b"DDS ":
+            raise RuntimeError(f"Generated mod icon is not a DDS file: {icon_filename}")
+        icon_height, icon_width = struct.unpack_from("<II", icon_data, 12)
+        icon_fourcc = struct.unpack_from("<I", icon_data, 84)[0]
+        if (icon_width, icon_height, icon_fourcc) != (512, 512, 0x31545844):
+            raise RuntimeError(
+                f"Generated mod icon must be 512x512 DXT1, got {icon_width}x{icon_height} FourCC={icon_fourcc:#x}"
+            )
+        (stage / icon_filename).write_bytes(icon_data)
 
         archive = output / archive_name
         if archive.exists():
