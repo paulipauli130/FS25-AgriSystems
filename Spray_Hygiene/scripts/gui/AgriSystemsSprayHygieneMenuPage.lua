@@ -112,8 +112,8 @@ end
 local function getControlledVehicle()
     local localPlayer = g_localPlayer
     if localPlayer ~= nil and type(localPlayer.getCurrentVehicle) == "function" then
-        local ok, vehicle = pcall(localPlayer.getCurrentVehicle, localPlayer)
-        if ok and vehicle ~= nil then return vehicle, "g_localPlayer:getCurrentVehicle" end
+        local vehicle = localPlayer:getCurrentVehicle()
+        if vehicle ~= nil then return vehicle, "g_localPlayer:getCurrentVehicle" end
     end
     local mission = g_currentMission
     if mission ~= nil then
@@ -122,8 +122,8 @@ local function getControlledVehicle()
         if player ~= nil then
             if player.currentVehicle ~= nil then return player.currentVehicle, "mission.player.currentVehicle" end
             if type(player.getCurrentVehicle) == "function" then
-                local ok, vehicle = pcall(player.getCurrentVehicle, player)
-                if ok and vehicle ~= nil then return vehicle, "mission.player:getCurrentVehicle" end
+                local vehicle = player:getCurrentVehicle()
+                if vehicle ~= nil then return vehicle, "mission.player:getCurrentVehicle" end
             end
         end
     end
@@ -133,8 +133,8 @@ end
 local function getAttachedImplements(vehicle)
     if vehicle == nil then return {} end
     if type(vehicle.getAttachedImplements) == "function" then
-        local ok, implements = pcall(vehicle.getAttachedImplements, vehicle)
-        if ok and type(implements) == "table" then return implements end
+        local implements = vehicle:getAttachedImplements()
+        if type(implements) == "table" then return implements end
     end
     if type(vehicle.attachedImplements) == "table" then return vehicle.attachedImplements end
     return {}
@@ -170,8 +170,8 @@ end
 local function getVehicleName(vehicle)
     if vehicle == nil then return g_i18n:getText("ags_menu_no_vehicle") end
     if type(vehicle.getName) == "function" then
-        local ok, name = pcall(vehicle.getName, vehicle)
-        if ok and type(name) == "string" and name ~= "" then return name end
+        local name = vehicle:getName()
+        if type(name) == "string" and name ~= "" then return name end
     end
     return vehicle.typeName or g_i18n:getText("ags_menu_unknown_vehicle")
 end
@@ -203,8 +203,7 @@ function Page:refresh()
         local localPlayer = g_localPlayer
         local isInVehicle = "unavailable"
         if localPlayer ~= nil and type(localPlayer.getIsInVehicle) == "function" then
-            local ok, value = pcall(localPlayer.getIsInVehicle, localPlayer)
-            if ok then isInVehicle = tostring(value) end
+            isInVehicle = tostring(localPlayer:getIsInVehicle())
         end
         Logging.info(string.format(
             "[AgriSystems Spray & Hygiene][DIAG] initial vehicle state: localPlayer=%s isInVehicle=%s controlledVehicle=%s source=%s missionControlledVehicle=%s missionPlayer=%s",
