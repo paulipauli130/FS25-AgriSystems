@@ -1,12 +1,22 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<modDesc descVersion="104">
+<modDesc descVersion="116">
  <author>Paul</author>
-    <iconFilename>icon.dds</iconFilename>
- <version>0.4.3.0</version>
+    <iconFilename>icon_FS25_AgriSystems_FarmBiosecurity.dds</iconFilename>
+ <version>1.0.0.0</version>
  <title><en>AgriSystems Farm Biosecurity</en><de>AgriSystems Hof-Biosicherheit</de></title>
  <description>
-  <en><![CDATA[Development foundation with group disease, quarantine, hygiene, score and server-gated state models. Initial placeable integration is in development; gameplay and multiplayer validation are pending.]]></en>
-  <de><![CDATA[Entwicklungsgrundlage mit Modellen für gruppenbasierte Krankheitsentwicklung, Quarantäne, Hygiene und Biosicherheitsbewertung. Die Gameplay-Integration ist noch nicht aktiv.]]></de>
+  <en><![CDATA[AgriSystems Farm Biosecurity provides modular disease, quarantine, hygiene and biosecurity scoring foundations for realistic farm operations. Gameplay integrations remain in development.
+
+Changelog 1.0.0.0:
+- Updated the mod descriptor and icon to current FS25 TestRunner requirements.
+- Established the first versioned development release for the modular biosecurity foundation.
+]]></en>
+  <de><![CDATA[AgriSystems Farm Biosecurity stellt modulare Grundlagen für Krankheitsmodelle, Quarantäne, Hygiene und Biosicherheitsbewertung für realistische Betriebsabläufe bereit. Die Gameplay-Integration befindet sich weiterhin in Entwicklung.
+
+Changelog 1.0.0.0:
+- Mod-Deskriptor und Icon an die aktuellen FS25-TestRunner-Vorgaben angepasst.
+- Erste versionierte Entwicklungsausgabe der modularen Biosicherheitsgrundlage.
+]]></de>
  </description>
  <multiplayer supported="true"/>
  <l10n filenamePrefix="translations/l10n"/>
