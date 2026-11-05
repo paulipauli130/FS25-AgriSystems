@@ -28,11 +28,13 @@ local function getConfig()
 end
 
 local function setBinaryOption(element, value)
-    if element ~= nil and type(element.setState) == "function" then
-        local state = value == true and BinaryOptionElement.STATE_RIGHT or BinaryOptionElement.STATE_LEFT
-        -- In FS25 setIsChecked forwards its second argument as forceEvent.
-        -- Set the state directly, skip the slider animation and do not fire callbacks.
-        element:setState(state, false, true)
+    if element ~= nil and type(element.setIsChecked) == "function" then
+        -- Native FS25 API: second argument skips animation, third argument would force a callback.
+        element:setIsChecked(value == true, true, false)
+        -- Also refresh both button selections when the requested state already matches the default.
+        if type(element.updateSelection) == "function" then
+            element:updateSelection()
+        end
     end
 end
 
@@ -70,7 +72,7 @@ function Page:changeSetting(key, element)
         c[key] = element.state == BinaryOptionElement.STATE_RIGHT
     end
     self:refreshSettings()
-    if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_session_only")) end
+    if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_saved_on_save")) end
 end
 
 function Page:onClickToggleMod()
@@ -94,7 +96,7 @@ function Page:onClickWearRate()
     local c = getConfig()
     if c == nil or self.optWearRate == nil then return end
     c.wearRateMultiplier = WEAR_RATE_VALUES[self.optWearRate.state] or 1.0
-    if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_session_only")) end
+    if self.txtSettingsStatus ~= nil then self.txtSettingsStatus:setText(g_i18n:getText("ags_settings_saved_on_save")) end
 end
 
 local function formatPercent(value)
