@@ -1,21 +1,27 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
-<modDesc descVersion="104">
+<modDesc descVersion="116">
     <author>Paul</author>
-    <iconFilename>icon.dds</iconFilename>
-    <version>0.8.9.0</version>
+    <iconFilename>icon_FS25_AgriSystems_SprayHygiene.dds</iconFilename>
+    <version>1.0.0.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
     </title>
     <description>
-        <en><![CDATA[
-Development build with a native in-game status and host settings page. Server-side operating wear and calibration degradation are tracked after successful native spray work.
-Drift, nozzle blockage simulation, residue accumulation and cleaning actions remain in development.
-        ]]></en>
-        <de><![CDATA[
-Entwicklungsversion mit nativer Spielmenü-Übersicht und Einstellungsbereich. Geräteverschleiß und Kalibrierungsabnahme werden serverseitig nach erfolgreicher Spritzarbeit erfasst.
-Abdrift, Düsenverstopfungssimulation, Rückstandsaufbau und Reinigungsaktionen befinden sich weiterhin in Entwicklung.
-        ]]></de>
+        <en><![CDATA[AgriSystems Spray & Hygiene adds equipment condition, operating wear and calibration tracking to compatible sprayers. The in-game menu displays live sprayer data and host settings.
+
+Changelog 1.0.0.0:
+- Added savegame-specific persistence for host settings.
+- Improved the in-game status and settings layout.
+- Fixed the native menu icon resource and binary option state refresh.
+]]></en>
+        <de><![CDATA[AgriSystems Spritzen & Hygiene ergänzt kompatible Spritzgeräte um Zustands-, Verschleiß- und Kalibrierungsmodelle. Das Spielmenü zeigt aktuelle Gerätedaten und Host-Einstellungen.
+
+Changelog 1.0.0.0:
+- Host-Einstellungen werden jetzt im jeweiligen Spielstand gespeichert.
+- Menü für Gerätestatus und Einstellungen überarbeitet.
+- Menü-Icon und Aktualisierung der AN/AUS-Auswahl korrigiert.
+]]></de>
     </description>
     <multiplayer supported="true"/>
     <l10n filenamePrefix="translations/l10n"/>
