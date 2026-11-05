@@ -10,7 +10,6 @@ import struct
 import sys
 import xml.etree.ElementTree as ET
 import zipfile
-import zlib
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -66,36 +65,6 @@ def make_icon(kind: str) -> bytes:
     )
     caps = struct.pack("<5I", 0x00001000, 0, 0, 0, 0)
     return b"DDS " + header + pixel_format + caps + bytes(pixels)
-
-def make_tab_icon_png(kind: str) -> bytes:
-    """Create a transparent RGBA PNG for the in-game page tab."""
-    dds = make_icon(kind)
-    source = dds[128:]
-    rows = bytearray()
-    for y in range(ICON_SIZE):
-        rows.append(0)  # PNG filter: None
-        for x in range(ICON_SIZE):
-            offset = (y * ICON_SIZE + x) * 4
-            blue, green, red, alpha = source[offset:offset + 4]
-            # The DDS uses a dark opaque canvas for the mod browser. For the
-            # menu tab, make that canvas transparent and retain only the glyph.
-            if red < 80 and green < 100 and blue < 110:
-                rows.extend((0, 0, 0, 0))
-            else:
-                rows.extend((red, green, blue, alpha))
-
-    def chunk(name: bytes, payload: bytes) -> bytes:
-        body = name + payload
-        return struct.pack(">I", len(payload)) + body + struct.pack(">I", zlib.crc32(body) & 0xFFFFFFFF)
-
-    header = struct.pack(">2I5B", ICON_SIZE, ICON_SIZE, 8, 6, 0, 0, 0)
-    return (
-        b"\\x89PNG\\r\\n\\x1a\\n"
-        + chunk(b"IHDR", header)
-        + chunk(b"IDAT", zlib.compress(bytes(rows), 9))
-        + chunk(b"IEND", b"")
-    )
-
 
 def validate(mod_root: Path) -> str:
     desc_path = mod_root / "modDesc.xml"
@@ -240,7 +209,6 @@ def build(output: Path, clean: bool) -> list[Path]:
                 )
         icon_kind = "spray" if folder == "Spray_Hygiene" else "biosecurity"
         (stage / "icon.dds").write_bytes(make_icon(icon_kind))
-        (stage / "tabIcon.png").write_bytes(make_tab_icon_png(icon_kind))
 
         archive = output / archive_name
         if archive.exists():
@@ -267,8 +235,6 @@ def build(output: Path, clean: bool) -> list[Path]:
                     f"{prefix}_{language}.xml" for language in ("en", "de")
                 )
             required.add(descriptor.findtext("iconFilename"))
-            if folder == "Spray_Hygiene":
-                required.add("tabIcon.png")
             missing = sorted(path for path in required if path not in names)
             if missing:
                 raise RuntimeError(
