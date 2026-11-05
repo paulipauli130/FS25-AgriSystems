@@ -18,21 +18,71 @@ MODS = (
     ("Farm_Biosecurity", "FS25_AgriSystems_FarmBiosecurity.zip"),
 )
 RUNTIME_DIRS = ("scripts", "translations", "Config", "Assets", "store", "gui")
-ICON_SIZE = 128
+ICON_SIZE = 512
+
+
+
+def _rgb565(color: tuple[int, int, int]) -> int:
+    r, g, b = color
+    return ((r * 31 + 127) // 255 << 11) | ((g * 63 + 127) // 255 << 5) | ((b * 31 + 127) // 255)
+
+
+def _decode_rgb565(value: int) -> tuple[int, int, int]:
+    r = (value >> 11) & 31
+    g = (value >> 5) & 63
+    b = value & 31
+    return ((r << 3) | (r >> 2), (g << 2) | (g >> 4), (b << 3) | (b >> 2))
+
+
+def _encode_dxt1_block(block: list[tuple[int, int, int]]) -> bytes:
+    ranges = [
+        max(pixel[channel] for pixel in block) - min(pixel[channel] for pixel in block)
+        for channel in range(3)
+    ]
+    axis = max(range(3), key=lambda channel: ranges[channel])
+    low = min(block, key=lambda pixel: pixel[axis])
+    high = max(block, key=lambda pixel: pixel[axis])
+    color0 = _rgb565(high)
+    color1 = _rgb565(low)
+    if color0 <= color1:
+        color0, color1 = max(color0, color1), min(color0, color1)
+        if color0 == color1:
+            if color0 < 0xFFFF:
+                color0 += 1
+            else:
+                color1 -= 1
+
+    c0 = _decode_rgb565(color0)
+    c1 = _decode_rgb565(color1)
+    palette = (
+        c0,
+        c1,
+        tuple((2 * c0[i] + c1[i]) // 3 for i in range(3)),
+        tuple((c0[i] + 2 * c1[i]) // 3 for i in range(3)),
+    )
+    indices = 0
+    for index, pixel in enumerate(block):
+        selected = min(
+            range(4),
+            key=lambda candidate: sum((pixel[channel] - palette[candidate][channel]) ** 2 for channel in range(3)),
+        )
+        indices |= selected << (2 * index)
+    return struct.pack("<HHI", color0, color1, indices)
 
 
 def make_icon(kind: str) -> bytes:
-    """Create a small uncompressed BGRA DDS icon using only the Python standard library."""
-    pixels = bytearray()
+    """Create a 512x512 opaque DXT1 DDS mod icon using only the Python standard library."""
+    pixels: list[tuple[int, int, int]] = []
+    center = (ICON_SIZE - 1) / 2
+    scale = center
     for y in range(ICON_SIZE):
         for x in range(ICON_SIZE):
-            nx = (x - 63.5) / 63.5
-            ny = (y - 63.5) / 63.5
+            nx = (x - center) / scale
+            ny = (y - center) / scale
             radius = math.sqrt(nx * nx + ny * ny)
             if radius > 0.94:
                 r, g, b = 22, 29, 36
             elif kind == "spray":
-                # Monochrome sprayer pictogram: tank, boom, chassis and wheels.
                 r, g, b = 25, 34, 39
                 tank = -0.34 < nx < 0.12 and -0.48 < ny < 0.05
                 boom = abs(ny - 0.12) < 0.035 and -0.76 < nx < 0.76
@@ -50,21 +100,28 @@ def make_icon(kind: str) -> bytes:
                     r, g, b = 235, 242, 228
                 if shield and (abs(nx) < 0.09 or abs(ny + 0.12) < 0.09):
                     r, g, b = 43, 112, 67
-            pixels.extend((b, g, r, 255))
+            pixels.append((r, g, b))
 
-    flags = 0x00000001 | 0x00000002 | 0x00000004 | 0x00001000
-    pf_flags = 0x00000040 | 0x00000001
+    compressed = bytearray()
+    for block_y in range(0, ICON_SIZE, 4):
+        for block_x in range(0, ICON_SIZE, 4):
+            block = [
+                pixels[(block_y + dy) * ICON_SIZE + block_x + dx]
+                for dy in range(4)
+                for dx in range(4)
+            ]
+            compressed.extend(_encode_dxt1_block(block))
+
+    flags = 0x00000001 | 0x00000002 | 0x00000004 | 0x00001000 | 0x00080000
     header = struct.pack(
         "<7I11I",
-        124, flags, ICON_SIZE, ICON_SIZE, ICON_SIZE * 4, 0, 0,
+        124, flags, ICON_SIZE, ICON_SIZE, len(compressed), 0, 0,
         *([0] * 11),
     )
-    pixel_format = struct.pack(
-        "<8I", 32, pf_flags, 0, 32, 0x00FF0000, 0x0000FF00,
-        0x000000FF, 0xFF000000,
-    )
+    pixel_format = struct.pack("<8I", 32, 0x00000004, 0x31545844, 0, 0, 0, 0, 0)
     caps = struct.pack("<5I", 0x00001000, 0, 0, 0, 0)
-    return b"DDS " + header + pixel_format + caps + bytes(pixels)
+    return b"DDS " + header + pixel_format + caps + bytes(compressed)
+
 
 def validate(mod_root: Path) -> str:
     desc_path = mod_root / "modDesc.xml"
@@ -76,8 +133,18 @@ def validate(mod_root: Path) -> str:
     if not version:
         version = desc.findtext("./version")
     icon_filename = desc.findtext("iconFilename")
-    if icon_filename != "icon.dds":
-        raise RuntimeError(f"modDesc must declare iconFilename=\"icon.dds\": {desc_path}")
+    expected_icon = (
+        "icon_FS25_AgriSystems_SprayHygiene.dds"
+        if mod_root.name == "Spray_Hygiene"
+        else "icon_FS25_AgriSystems_FarmBiosecurity.dds"
+    )
+    if icon_filename != expected_icon:
+        raise RuntimeError(f"modDesc must declare iconFilename=\"{expected_icon}\": {desc_path}")
+    desc_version = int(desc.get("descVersion", "0"))
+    if desc_version != 116:
+        raise RuntimeError(f"FS25 TestRunner 0.9.24 requires descVersion=116, found {desc_version}: {desc_path}")
+    if not re.fullmatch(r"[1-9][0-9]*\\.[0-9]+\\.[0-9]+\\.[0-9]+", version or ""):
+        raise RuntimeError(f"Invalid mod version {version!r}; expected a.b.c.d with a >= 1: {desc_path}")
     for node in desc.findall("./extraSourceFiles/sourceFile"):
         filename = node.get("filename")
         if not filename:
@@ -208,7 +275,12 @@ def build(output: Path, clean: bool) -> list[Path]:
                     ignore=shutil.ignore_patterns(".gitkeep", "__pycache__", "*.pyc"),
                 )
         icon_kind = "spray" if folder == "Spray_Hygiene" else "biosecurity"
-        (stage / "icon.dds").write_bytes(make_icon(icon_kind))
+        icon_filename = (
+            "icon_FS25_AgriSystems_SprayHygiene.dds"
+            if folder == "Spray_Hygiene"
+            else "icon_FS25_AgriSystems_FarmBiosecurity.dds"
+        )
+        (stage / icon_filename).write_bytes(make_icon(icon_kind))
 
         archive = output / archive_name
         if archive.exists():
