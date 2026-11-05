@@ -139,7 +139,18 @@ function Mod:loadMap()
 end
 
 function Mod:loadMapFinished()
-    self:loadSettingsFromSavegame()
+    -- The savegame directory is finalized when the current mission starts.
+    -- Loading earlier can silently miss existing settings on newer FS25 builds.
+    if g_messageCenter ~= nil and MessageType ~= nil and MessageType.CURRENT_MISSION_START ~= nil then
+        g_messageCenter:subscribeOneshot(
+            MessageType.CURRENT_MISSION_START,
+            function()
+                Mod:loadSettingsFromSavegame()
+            end
+        )
+    else
+        log("WARNING: mission-start message unavailable; savegame settings could not be scheduled for loading.")
+    end
 end
 
 function Mod:deleteMap()
