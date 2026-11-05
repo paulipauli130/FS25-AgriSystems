@@ -23,5 +23,6 @@
         <text name="ags_setting_calibration_enabled" text="Calibration degradation"/><text name="ags_setting_wear_rate" text="Wear rate"/>
         <text name="ags_settings_host_only" text="Only the host can change these settings"/>
         <text name="ags_settings_session_only" text="Setting applies until this game session ends"/>
+        <text name="ags_settings_saved_on_save" text="Settings are saved with the current savegame"/>
     </texts>
 </l10n>
