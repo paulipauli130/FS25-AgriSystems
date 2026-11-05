@@ -143,7 +143,7 @@ def validate(mod_root: Path) -> str:
     desc_version = int(desc.get("descVersion", "0"))
     if desc_version != 116:
         raise RuntimeError(f"FS25 TestRunner 0.9.24 requires descVersion=116, found {desc_version}: {desc_path}")
-    if not re.fullmatch(r"[1-9][0-9]*\\.[0-9]+\\.[0-9]+\\.[0-9]+", version or ""):
+    if not re.fullmatch(r"[1-9][0-9]*\.[0-9]+\.[0-9]+\.[0-9]+", version or ""):
         raise RuntimeError(f"Invalid mod version {version!r}; expected a.b.c.d with a >= 1: {desc_path}")
     for node in desc.findall("./extraSourceFiles/sourceFile"):
         filename = node.get("filename")
