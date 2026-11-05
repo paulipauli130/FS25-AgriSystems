@@ -28,8 +28,11 @@ local function getConfig()
 end
 
 local function setBinaryOption(element, value)
-    if element ~= nil and type(element.setIsChecked) == "function" then
-        element:setIsChecked(value == true, true)
+    if element ~= nil and type(element.setState) == "function" then
+        local state = value == true and BinaryOptionElement.STATE_RIGHT or BinaryOptionElement.STATE_LEFT
+        -- In FS25 setIsChecked forwards its second argument as forceEvent.
+        -- Set the state directly, skip the slider animation and do not fire callbacks.
+        element:setState(state, false, true)
     end
 end
 
