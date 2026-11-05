@@ -8,46 +8,47 @@
             <Text profile="fs25_menuHeaderTitle" id="txtHeader" text="$l10n_ags_menu_title" size="650px 32px"/>
         </GuiElement>
 
-        <GuiElement profile="fs25_statisticsHeaderBox" position="0px -90px">
+        <!-- Two-column layout keeps status and settings inside the visible menu frame. -->
+        <GuiElement profile="fs25_statisticsHeaderBox" position="0px -90px" size="450px 500px">
             <Text profile="dialogTitle" text="$l10n_ags_menu_vehicle" position="0px -24px"/>
-            <Text profile="fs25_textDefault" id="txtVehicleName" position="0px -68px" size="900px 32px"/>
+            <Text profile="fs25_textDefault" id="txtVehicleName" position="0px -68px" size="420px 32px"/>
 
-            <ThreePartBitmap profile="fs25_lineSeparatorTop" position="0px -112px" width="960px"/>
-            <Text profile="fs25_textDefault" text="$l10n_ags_menu_condition" position="0px -142px" size="430px 30px"/>
-            <Text profile="fs25_textDefault" id="txtCondition" position="480px -142px" size="430px 30px"/>
+            <ThreePartBitmap profile="fs25_lineSeparatorTop" position="0px -112px" width="430px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_menu_condition" position="0px -142px" size="215px 30px"/>
+            <Text profile="fs25_textDefault" id="txtCondition" position="225px -142px" size="205px 30px"/>
 
-            <Text profile="fs25_textDefault" text="$l10n_ags_menu_wear" position="0px -188px" size="430px 30px"/>
-            <Text profile="fs25_textDefault" id="txtWear" position="480px -188px" size="430px 30px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_menu_wear" position="0px -188px" size="215px 30px"/>
+            <Text profile="fs25_textDefault" id="txtWear" position="225px -188px" size="205px 30px"/>
 
-            <ThreePartBitmap profile="fs25_lineSeparatorTop" position="0px -228px" width="960px"/>
-            <Text profile="fs25_textDefault" text="$l10n_ags_menu_calibration" position="0px -258px" size="430px 30px"/>
-            <Text profile="fs25_textDefault" id="txtCalibration" position="480px -258px" size="430px 30px"/>
+            <ThreePartBitmap profile="fs25_lineSeparatorTop" position="0px -228px" width="430px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_menu_calibration" position="0px -258px" size="215px 30px"/>
+            <Text profile="fs25_textDefault" id="txtCalibration" position="225px -258px" size="205px 30px"/>
 
-            <Text profile="fs25_textDefault" text="$l10n_ags_menu_blockage" position="0px -304px" size="430px 30px"/>
-            <Text profile="fs25_textDefault" id="txtBlockage" position="480px -304px" size="430px 30px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_menu_blockage" position="0px -304px" size="215px 44px" textMaxNumLines="2"/>
+            <Text profile="fs25_textDefault" id="txtBlockage" position="225px -304px" size="205px 44px"/>
 
-            <ThreePartBitmap profile="fs25_lineSeparatorTop" position="0px -344px" width="960px"/>
-            <Text profile="fs25_textDefault" text="$l10n_ags_menu_residues" position="0px -374px" size="430px 30px"/>
-            <Text profile="fs25_textDefault" id="txtResidues" position="480px -374px" size="430px 30px"/>
+            <ThreePartBitmap profile="fs25_lineSeparatorTop" position="0px -354px" width="430px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_menu_residues" position="0px -384px" size="215px 44px" textMaxNumLines="2"/>
+            <Text profile="fs25_textDefault" id="txtResidues" position="225px -384px" size="205px 44px"/>
 
-            <Text profile="fs25_textDefault" id="txtStatus" position="0px -430px" size="950px 65px" textMaxNumLines="3"/>
+            <Text profile="fs25_textDefault" id="txtStatus" position="0px -445px" size="430px 45px" textMaxNumLines="2"/>
         </GuiElement>
 
-        <GuiElement profile="fs25_statisticsHeaderBox" position="0px -590px">
+        <GuiElement profile="fs25_statisticsHeaderBox" position="475px -90px" size="460px 500px">
             <Text profile="dialogTitle" text="$l10n_ags_settings_title" position="0px -24px"/>
-            <Text profile="fs25_textDefault" text="$l10n_ags_setting_mod_enabled" position="0px -78px" size="520px 42px"/>
-            <BinaryOption profile="fs25_binaryOption" id="optModEnabled" onClick="onClickToggleMod" position="610px -70px" size="300px 48px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_mod_enabled" position="0px -78px" size="245px 42px"/>
+            <BinaryOption profile="fs25_binaryOption" id="optModEnabled" onClick="onClickToggleMod" position="255px -70px" size="185px 48px"/>
 
-            <Text profile="fs25_textDefault" text="$l10n_ags_setting_wear_enabled" position="0px -138px" size="520px 42px"/>
-            <BinaryOption profile="fs25_binaryOption" id="optWearEnabled" onClick="onClickToggleWear" position="610px -130px" size="300px 48px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_wear_enabled" position="0px -138px" size="245px 42px"/>
+            <BinaryOption profile="fs25_binaryOption" id="optWearEnabled" onClick="onClickToggleWear" position="255px -130px" size="185px 48px"/>
 
-            <Text profile="fs25_textDefault" text="$l10n_ags_setting_calibration_enabled" position="0px -198px" size="520px 42px"/>
-            <BinaryOption profile="fs25_binaryOption" id="optCalibrationEnabled" onClick="onClickToggleCalibration" position="610px -190px" size="300px 48px"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_calibration_enabled" position="0px -198px" size="245px 42px"/>
+            <BinaryOption profile="fs25_binaryOption" id="optCalibrationEnabled" onClick="onClickToggleCalibration" position="255px -190px" size="185px 48px"/>
 
-            <Text profile="fs25_textDefault" text="$l10n_ags_setting_wear_rate" position="0px -258px" size="520px 42px"/>
-            <MultiTextOption profile="fs25_multiTextOption" id="optWearRate" onClick="onClickWearRate" position="610px -250px" size="300px 48px" texts="0,5x|1,0x|1,5x|2,0x|2,5x|3,0x"/>
+            <Text profile="fs25_textDefault" text="$l10n_ags_setting_wear_rate" position="0px -258px" size="245px 42px"/>
+            <MultiTextOption profile="fs25_multiTextOption" id="optWearRate" onClick="onClickWearRate" position="255px -250px" size="185px 48px" texts="0,5x|1,0x|1,5x|2,0x|2,5x|3,0x"/>
 
-            <Text profile="fs25_textDefault" id="txtSettingsStatus" position="0px -320px" size="900px 50px" textMaxNumLines="2"/>
+            <Text profile="fs25_textDefault" id="txtSettingsStatus" position="0px -330px" size="430px 50px" textMaxNumLines="2"/>
         </GuiElement>
     </GuiElement>
 </GUI>
