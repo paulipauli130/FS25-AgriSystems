@@ -231,6 +231,18 @@ def validate(mod_root: Path) -> str:
             )
         if "self.spec_agriSystemsSprayer" in sprayer_text:
             raise RuntimeError("Sprayer specialization still uses the unqualified spec table")
+        required_sync_markers = (
+            'SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", Spec)',
+            'SpecializationUtil.registerEventListener(vehicleType, "onReadUpdateStream", Spec)',
+            'self:getNextDirtyFlag()',
+            'self:raiseDirtyFlags(spec.dirtyFlag)',
+            'function Spec:onWriteUpdateStream(streamId, connection, dirtyMask)',
+            'function Spec:onReadUpdateStream(streamId, timestamp, connection)',
+            'bit32.band(dirtyMask, spec.dirtyFlag)',
+        )
+        missing_sync_markers = [marker for marker in required_sync_markers if marker not in sprayer_text]
+        if missing_sync_markers:
+            raise RuntimeError("Sprayer incremental synchronization is incomplete: " + "; ".join(missing_sync_markers))
         menu_script = mod_root / "scripts" / "gui" / "AgriSystemsSprayHygieneMenuPage.lua"
         if not menu_script.is_file():
             raise RuntimeError(f"Missing sprayer menu page script: {menu_script}")
