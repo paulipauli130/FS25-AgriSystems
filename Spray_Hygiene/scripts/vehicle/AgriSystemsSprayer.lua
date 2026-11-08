@@ -23,12 +23,14 @@ local function writeState(streamId, spec)
     local groups = {}
     for groupId, blockage in pairs(spec.condition.nozzleBlockage) do
         local index = tonumber(groupId)
-        if index ~= nil and index >= 1 and index <= MAX_NOZZLE_GROUPS
-            and #groups < MAX_NOZZLE_GROUPS then
+        if index ~= nil and index >= 1 and index <= MAX_NOZZLE_GROUPS then
             table.insert(groups, {index = math.floor(index), blockage = blockage})
         end
     end
     table.sort(groups, function(a, b) return a.index < b.index end)
+    while #groups > MAX_NOZZLE_GROUPS do
+        table.remove(groups)
+    end
 
     streamWriteUInt8(streamId, #groups)
     for _, group in ipairs(groups) do
@@ -39,13 +41,11 @@ local function writeState(streamId, spec)
     local residues = {}
     for compartment, entries in pairs(spec.cleaning.residues) do
         for productClass, amount in pairs(entries) do
-            if #residues < MAX_RESIDUE_ENTRIES then
-                table.insert(residues, {
+            table.insert(residues, {
                     compartment = compartment,
                     productClass = productClass,
                     amount = amount
                 })
-            end
         end
     end
     table.sort(residues, function(a, b)
@@ -54,6 +54,9 @@ local function writeState(streamId, spec)
         end
         return a.compartment < b.compartment
     end)
+    while #residues > MAX_RESIDUE_ENTRIES do
+        table.remove(residues)
+    end
 
     streamWriteUInt8(streamId, #residues)
     for _, residue in ipairs(residues) do
@@ -266,11 +269,9 @@ function Spec:onWriteUpdateStream(streamId, connection, dirtyMask)
     end
 
     local spec = self[SPEC_TABLE_NAME]
-    if spec == nil or spec.dirtyFlag == nil then
-        return
-    end
-
-    if streamWriteBool(streamId, bit32.band(dirtyMask, spec.dirtyFlag) ~= 0) then
+    local hasDirtyState = spec ~= nil and spec.dirtyFlag ~= nil
+        and bit32.band(dirtyMask, spec.dirtyFlag) ~= 0
+    if streamWriteBool(streamId, hasDirtyState) and spec ~= nil then
         writeState(streamId, spec)
     end
 end
@@ -281,8 +282,9 @@ function Spec:onReadUpdateStream(streamId, timestamp, connection)
         return
     end
 
+    local hasUpdate = streamReadBool(streamId)
     local spec = self[SPEC_TABLE_NAME]
-    if spec ~= nil and streamReadBool(streamId) then
+    if hasUpdate and spec ~= nil then
         readState(streamId, spec)
     end
 end
