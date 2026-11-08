@@ -2,7 +2,7 @@
 
 ## Current status
 
-Both independent mods have pure gameplay models, bootstraps, standalone Lua model test suites and runtime-only packaging. Spray & Hygiene has early Sprayer specialization, per-vehicle save/load and initial server-to-client snapshot. Farm Biosecurity has husbandry specialization, subtype cohorts, per-placeable persistence, hourly progression and initial snapshot. Public GDN API review informed registration and savegame paths. Engine-facing code remains untested in the actual game. No public release is available.
+Both independent mods have pure gameplay models, bootstraps, standalone Lua model test suites and runtime-only packaging. Spray & Hygiene has a Sprayer specialization, per-vehicle save/load, savegame-specific host settings, an initial server-to-client snapshot and incremental dirty-state update-stream callbacks. Farm Biosecurity has disease, quarantine, hygiene and score models, a husbandry specialization, subtype cohorts, per-placeable persistence, hourly progression and an initial state snapshot. Engine-facing code remains untested in actual FS25 gameplay. No public release is available.
 
 ## Phase 1 — Research and specifications
 - [x] Project structure, conventions and technical specifications.
@@ -23,11 +23,11 @@ Both independent mods have pure gameplay models, bootstraps, standalone Lua mode
 ## Phase 3 — Spray & Hygiene
 - [x] Bootstrap, configuration and four pure gameplay models.
 - [x] Server-gated state container.
-- [x] Sprayer-only specialization and read-only native callback observer.
+- [x] Sprayer-only specialization and server-side operating-time wear observer.
 - [x] Per-vehicle XML schema/save/load code (runtime reload untested).
 - [x] Initial server-to-client snapshot.
-- [ ] Runtime-load, save/reload and log validation.
-- [ ] Incremental dirty-state replication.
+- [x] Incremental dirty-state update-stream callbacks (source implemented; runtime test pending).
+- [ ] Runtime-load, save/reload and multiplayer log validation.
 - [ ] Connect condition/coverage to measured spraying work.
 - [ ] Cleaning actions, costs and UI.
 - [ ] Wind provider/drift integration.
@@ -50,7 +50,8 @@ Both independent mods have pure gameplay models, bootstraps, standalone Lua mode
 
 ## Phase 5 — Validation and release
 - [x] Execute pure Lua model tests in GitHub Actions.
-- [x] Run PowerShell packaging script in GitHub Actions and generate both mod ZIP artifacts.\n- [ ] Manually inspect package contents and test installation in FS25.
+- [x] Run PowerShell packaging script in GitHub Actions and generate both mod ZIP artifacts.
+- [ ] Manually inspect package contents and test installation in FS25.
 - [ ] Test each mod separately in the actual FS25 patch.
 - [ ] GIANTS TestRunner matching installed patch.
 - [ ] Single-player save migration/regression.

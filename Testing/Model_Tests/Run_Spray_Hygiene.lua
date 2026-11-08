@@ -17,6 +17,20 @@ near(condition.wear,1)
 near(condition.calibration,99.5)
 assert(root.SprayerCondition.getCoverageFactor(condition,0.5)<1)
 
+local operatingCondition=root.SprayerCondition.applyOperatingTime(
+    root.SprayerCondition.createState(),3600000,0.75,0.5
+)
+near(operatingCondition.condition,99.25)
+near(operatingCondition.wear,0.75)
+near(operatingCondition.calibration,99.625)
+
+local zeroWear=root.SprayerCondition.applyOperatingTime(
+    operatingCondition,3600000,0,0
+)
+near(zeroWear.condition,operatingCondition.condition)
+near(zeroWear.wear,operatingCondition.wear)
+near(zeroWear.calibration,operatingCondition.calibration)
+
 local cleaning=root.SprayerCleaning.createState()
 cleaning=root.SprayerCleaning.addResidue(cleaning,"tank","herbicide",0.8)
 cleaning=root.SprayerCleaning.cleanCompartment(cleaning,"tank",0.5)

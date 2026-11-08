@@ -2,30 +2,28 @@
 <modDesc descVersion="116">
     <author>Paul</author>
     <iconFilename>icon_FS25_AgriSystems_SprayHygiene.dds</iconFilename>
-    <version>1.0.0.0</version>
+    <version>1.0.1.0</version>
     <title>
         <en>AgriSystems Spray &amp; Hygiene</en>
         <de>AgriSystems Spritzen &amp; Hygiene</de>
     </title>
     <description>
-        <en><![CDATA[AgriSystems Spray & Hygiene adds equipment condition, operating wear and calibration tracking to compatible sprayers. The in-game menu displays live sprayer data and host settings.
+        <en><![CDATA[AgriSystems Spray & Hygiene adds equipment condition, operating wear and calibration tracking to compatible sprayers. The in-game menu displays sprayer data and host settings.
 
-Changelog 1.0.0.0:
-- Added savegame-specific persistence for host settings.
-- Improved the in-game status and settings layout.
-- Fixed the native menu icon resource and binary option state refresh.
+Changelog 1.0.1.0:
+- Added incremental server-to-client synchronization for sprayer condition and cleaning state.
+- Improved bounded state snapshots for multiplayer updates.
 ]]></en>
-        <de><![CDATA[AgriSystems Spritzen & Hygiene ergänzt kompatible Spritzgeräte um Zustands-, Verschleiß- und Kalibrierungsmodelle. Das Spielmenü zeigt aktuelle Gerätedaten und Host-Einstellungen.
+        <de><![CDATA[AgriSystems Spritzen & Hygiene ergänzt kompatible Spritzgeräte um Zustands-, Verschleiß- und Kalibrierungsmodelle. Das Spielmenü zeigt Gerätedaten und Host-Einstellungen.
 
-Changelog 1.0.0.0:
-- Host-Einstellungen werden jetzt im jeweiligen Spielstand gespeichert.
-- Menü für Gerätestatus und Einstellungen überarbeitet.
-- Menü-Icon und Aktualisierung der AN/AUS-Auswahl korrigiert.
+Changelog 1.0.1.0:
+- Ergänzt inkrementelle Synchronisierung von Gerätezustand und Reinigungsdaten vom Server zu Clients.
+- Begrenzt und vereinheitlicht die Zustandsdaten für Multiplayer-Updates.
 ]]></de>
     </description>
     <multiplayer supported="true"/>
     <l10n filenamePrefix="translations/l10n"/>
-<extraSourceFiles>
+    <extraSourceFiles>
         <sourceFile filename="scripts/register/AgriSystemsSprayerRegistration.lua"/>
         <sourceFile filename="scripts/core/Config.lua"/>
         <sourceFile filename="scripts/core/SprayerCondition.lua"/>
