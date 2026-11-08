@@ -15,6 +15,92 @@ local function safeNumber(value, minimum, maximum, fallback)
     return math.max(minimum, math.min(maximum, value))
 end
 
+local function writeState(streamId, spec)
+    streamWriteFloat32(streamId, spec.condition.condition)
+    streamWriteFloat32(streamId, spec.condition.wear)
+    streamWriteFloat32(streamId, spec.condition.calibration)
+
+    local groups = {}
+    for groupId, blockage in pairs(spec.condition.nozzleBlockage) do
+        local index = tonumber(groupId)
+        if index ~= nil and index >= 1 and index <= MAX_NOZZLE_GROUPS
+            and #groups < MAX_NOZZLE_GROUPS then
+            table.insert(groups, {index = math.floor(index), blockage = blockage})
+        end
+    end
+    table.sort(groups, function(a, b) return a.index < b.index end)
+
+    streamWriteUInt8(streamId, #groups)
+    for _, group in ipairs(groups) do
+        streamWriteUInt8(streamId, group.index)
+        streamWriteFloat32(streamId, group.blockage)
+    end
+
+    local residues = {}
+    for compartment, entries in pairs(spec.cleaning.residues) do
+        for productClass, amount in pairs(entries) do
+            if #residues < MAX_RESIDUE_ENTRIES then
+                table.insert(residues, {
+                    compartment = compartment,
+                    productClass = productClass,
+                    amount = amount
+                })
+            end
+        end
+    end
+    table.sort(residues, function(a, b)
+        if a.compartment == b.compartment then
+            return a.productClass < b.productClass
+        end
+        return a.compartment < b.compartment
+    end)
+
+    streamWriteUInt8(streamId, #residues)
+    for _, residue in ipairs(residues) do
+        streamWriteString(streamId, residue.compartment)
+        streamWriteString(streamId, residue.productClass)
+        streamWriteFloat32(streamId, residue.amount)
+    end
+end
+
+local function readState(streamId, spec)
+    local condition = {
+        condition = streamReadFloat32(streamId),
+        wear = streamReadFloat32(streamId),
+        calibration = streamReadFloat32(streamId),
+        nozzleBlockage = {}
+    }
+
+    local groupCount = math.min(streamReadUInt8(streamId), MAX_NOZZLE_GROUPS)
+    for _ = 1, groupCount do
+        local index = streamReadUInt8(streamId)
+        local blockage = streamReadFloat32(streamId)
+        if index >= 1 and index <= MAX_NOZZLE_GROUPS then
+            condition.nozzleBlockage[tostring(index)] = blockage
+        end
+    end
+    spec.condition = AgriSystemsSprayHygiene.SprayerCondition.validateState(condition)
+
+    local cleaning = {residues = {tank = {}, lines = {}, filters = {}}}
+    local residueCount = math.min(streamReadUInt8(streamId), MAX_RESIDUE_ENTRIES)
+    for _ = 1, residueCount do
+        local compartment = streamReadString(streamId)
+        local productClass = streamReadString(streamId)
+        local amount = streamReadFloat32(streamId)
+        if cleaning.residues[compartment] ~= nil
+            and type(productClass) == "string" and productClass ~= "" then
+            cleaning.residues[compartment][productClass] = safeNumber(amount, 0, 1, 0)
+        end
+    end
+    spec.cleaning = AgriSystemsSprayHygiene.SprayerCleaning.validateState(cleaning)
+end
+
+local function markStateDirty(vehicle, spec)
+    if spec.dirtyFlag ~= nil then
+        vehicle:raiseDirtyFlags(spec.dirtyFlag)
+    end
+end
+
 function Spec.prerequisitesPresent(specializations)
     return SpecializationUtil.hasSpecialization(Sprayer, specializations)
 end
@@ -40,6 +126,8 @@ function Spec.registerEventListeners(vehicleType)
     SpecializationUtil.registerEventListener(vehicleType, "onEndWorkAreaProcessing", Spec)
     SpecializationUtil.registerEventListener(vehicleType, "onWriteStream", Spec)
     SpecializationUtil.registerEventListener(vehicleType, "onReadStream", Spec)
+    SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", Spec)
+    SpecializationUtil.registerEventListener(vehicleType, "onReadUpdateStream", Spec)
 end
 
 function Spec:onLoad(savegame)
@@ -49,6 +137,7 @@ function Spec:onLoad(savegame)
     spec.cleaning = AgriSystemsSprayHygiene.SprayerCleaning.createState()
     spec.successfulWorkCycles = 0
     spec.lastWorkUpdateMs = 0
+    spec.dirtyFlag = type(self.getNextDirtyFlag) == "function" and self:getNextDirtyFlag() or nil
 
     Logging.info(string.format(
         "[AgriSystems Spray & Hygiene][DIAG] specialization onLoad: vehicle=%s typeName=%s specKey=%s nativeSprayerSpec=%s",
@@ -119,65 +208,41 @@ function Spec:onEndWorkAreaProcessing(dt, hasProcessed)
         or spraySpec.workAreaParameters.isActive ~= true or hasProcessed ~= true then
         return
     end
+
     spec.successfulWorkCycles = spec.successfulWorkCycles + 1
     if config.wearEnabled == false then return end
+
     local elapsedMs = safeNumber(dt, 0, 60000, 0)
     if elapsedMs <= 0 then return end
     spec.lastWorkUpdateMs = spec.lastWorkUpdateMs + elapsedMs
     if spec.lastWorkUpdateMs < 1000 then return end
+
     local updateMs = math.min(spec.lastWorkUpdateMs, 10000)
     spec.lastWorkUpdateMs = spec.lastWorkUpdateMs - updateMs
     local rate = safeNumber(config.engineering and config.engineering.wearPerHour, 0, 10, 0.75)
         * safeNumber(config.wearRateMultiplier, 0, 3, 1)
     local calibrationFactor = config.calibrationEnabled ~= false and 0.5 or 0
-    spec.condition = AgriSystemsSprayHygiene.SprayerCondition.applyOperatingTime(
+    local updatedCondition = AgriSystemsSprayHygiene.SprayerCondition.applyOperatingTime(
         spec.condition, updateMs, rate, calibrationFactor
     )
+
+    if updatedCondition.condition ~= spec.condition.condition
+        or updatedCondition.wear ~= spec.condition.wear
+        or updatedCondition.calibration ~= spec.condition.calibration then
+        spec.condition = updatedCondition
+        markStateDirty(self, spec)
+    end
 end
 
-
--- Initial server-to-client snapshot. Clients receive state but never author it.
+-- Initial server-to-client snapshot for newly connected clients.
 function Spec:onWriteStream(streamId, connection)
     if not self.isServer then
         return
     end
 
     local spec = self[SPEC_TABLE_NAME]
-    streamWriteFloat32(streamId, spec.condition.condition)
-    streamWriteFloat32(streamId, spec.condition.wear)
-    streamWriteFloat32(streamId, spec.condition.calibration)
-
-    local groups = {}
-    for groupId, blockage in pairs(spec.condition.nozzleBlockage) do
-        local index = tonumber(groupId)
-        if index ~= nil and index >= 1 and index <= MAX_NOZZLE_GROUPS
-            and #groups < MAX_NOZZLE_GROUPS then
-            table.insert(groups, {index = math.floor(index), blockage = blockage})
-        end
-    end
-    streamWriteUInt8(streamId, #groups)
-    for _, group in ipairs(groups) do
-        streamWriteUInt8(streamId, group.index)
-        streamWriteFloat32(streamId, group.blockage)
-    end
-
-    local residues = {}
-    for compartment, entries in pairs(spec.cleaning.residues) do
-        for productClass, amount in pairs(entries) do
-            if #residues < MAX_RESIDUE_ENTRIES then
-                table.insert(residues, {
-                    compartment = compartment,
-                    productClass = productClass,
-                    amount = amount
-                })
-            end
-        end
-    end
-    streamWriteUInt8(streamId, #residues)
-    for _, residue in ipairs(residues) do
-        streamWriteString(streamId, residue.compartment)
-        streamWriteString(streamId, residue.productClass)
-        streamWriteFloat32(streamId, residue.amount)
+    if spec ~= nil then
+        writeState(streamId, spec)
     end
 end
 
@@ -187,35 +252,39 @@ function Spec:onReadStream(streamId, connection)
     end
 
     local spec = self[SPEC_TABLE_NAME]
-    local condition = {
-        condition = streamReadFloat32(streamId),
-        wear = streamReadFloat32(streamId),
-        calibration = streamReadFloat32(streamId),
-        nozzleBlockage = {}
-    }
-
-    local groupCount = math.min(streamReadUInt8(streamId), MAX_NOZZLE_GROUPS)
-    for _ = 1, groupCount do
-        local index = streamReadUInt8(streamId)
-        local blockage = streamReadFloat32(streamId)
-        if index >= 1 and index <= MAX_NOZZLE_GROUPS then
-            condition.nozzleBlockage[tostring(index)] = blockage
-        end
+    if spec ~= nil then
+        readState(streamId, spec)
     end
-    spec.condition = AgriSystemsSprayHygiene.SprayerCondition.validateState(condition)
+end
 
-    local cleaning = {residues = {tank = {}, lines = {}, filters = {}}}
-    local residueCount = math.min(streamReadUInt8(streamId), MAX_RESIDUE_ENTRIES)
-    for _ = 1, residueCount do
-        local compartment = streamReadString(streamId)
-        local productClass = streamReadString(streamId)
-        local amount = streamReadFloat32(streamId)
-        if cleaning.residues[compartment] ~= nil
-            and type(productClass) == "string" and productClass ~= "" then
-            cleaning.residues[compartment][productClass] = safeNumber(amount, 0, 1, 0)
-        end
+-- Incremental server-to-client synchronization. The vehicle dirty mask controls
+-- when the bounded state snapshot is sent; no state is sent every frame.
+function Spec:onWriteUpdateStream(streamId, connection, dirtyMask)
+    if connection == nil or type(connection.getIsServer) ~= "function"
+        or connection:getIsServer() then
+        return
     end
-    spec.cleaning = AgriSystemsSprayHygiene.SprayerCleaning.validateState(cleaning)
+
+    local spec = self[SPEC_TABLE_NAME]
+    if spec == nil or spec.dirtyFlag == nil then
+        return
+    end
+
+    if streamWriteBool(streamId, bit32.band(dirtyMask, spec.dirtyFlag) ~= 0) then
+        writeState(streamId, spec)
+    end
+end
+
+function Spec:onReadUpdateStream(streamId, timestamp, connection)
+    if connection == nil or type(connection.getIsServer) ~= "function"
+        or not connection:getIsServer() then
+        return
+    end
+
+    local spec = self[SPEC_TABLE_NAME]
+    if spec ~= nil and streamReadBool(streamId) then
+        readState(streamId, spec)
+    end
 end
 
 function Spec:saveToXMLFile(xmlFile, key, usedModNames)
