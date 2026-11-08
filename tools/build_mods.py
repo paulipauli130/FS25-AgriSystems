@@ -235,7 +235,7 @@ def validate(mod_root: Path) -> str:
             'SpecializationUtil.registerEventListener(vehicleType, "onWriteUpdateStream", Spec)',
             'SpecializationUtil.registerEventListener(vehicleType, "onReadUpdateStream", Spec)',
             'self:getNextDirtyFlag()',
-            'self:raiseDirtyFlags(spec.dirtyFlag)',
+            'vehicle:raiseDirtyFlags(spec.dirtyFlag)',
             'function Spec:onWriteUpdateStream(streamId, connection, dirtyMask)',
             'function Spec:onReadUpdateStream(streamId, timestamp, connection)',
             'bit32.band(dirtyMask, spec.dirtyFlag)',
