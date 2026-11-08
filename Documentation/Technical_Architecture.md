@@ -7,7 +7,7 @@ AgriSystems consists of two independently installable FS25 script mods: Spray & 
 - Target FS25 PC/Mac; console script-mod support is not promised.
 - Server authoritative for all shared simulation, validation, persistence and random seeds.
 - Client requests actions; server validates sender/farm/object/permissions/distance/resources/state.
-- Initial snapshot on connection; compact dirty-state events afterward.
+- Initial snapshot on connection; compact dirty-mask update streams afterward.
 - Savegame XML is authoritative for simulation settings/state. Local modSettings are client UI preferences only.
 - Each mod has unique specialization/event/XML namespaces and independent versioning.
 
@@ -27,12 +27,16 @@ AgriSystems consists of two independently installable FS25 script mods: Spray & 
 Each mod owns a versioned XML root. Persist only mod-owned stable IDs and gameplay state; rebuild runtime object/cluster mappings on load. Validate ranges and schema versions; ignore unknown keys; migrate conservatively. Orphan records are bounded and safely pruned. Uninstall must not damage vanilla save data.
 
 ## 5. Events and security
-Use bounded primitive payloads and valid network object references. Never trust client-submitted simulation values. Server calculates and validates results. Avoid full-state broadcasts per tick. Late join receives complete initial snapshot; later changes are deltas.
+- Vehicle state updates use FS25 specialization dirty flags and update-stream callbacks, not custom client-authored state events.
+- Server changes state and raises its specialization dirty flag; clients only deserialize and validate the bounded payload.
+- Initial vehicle snapshots remain separate from incremental updates so late joiners receive the current state.
+- Never trust client-submitted simulation values. Server calculates and validates results. Avoid full-state broadcasts per tick.
 
 ## 6. Performance
 No global per-frame scans. Event-driven callbacks, bounded intervals, cached type checks, dirty-state replication, bounded records/history. Group-level animal model in v1. Farmland-level contamination in v1.
 
 ## 7. Runtime gates
+- Dirty-flag allocation and update-stream callback behavior in actual FS25 multiplayer.
 - Wind vector sign and actual drift direction.
 - Dedicated-server weather authority, listener lifecycle and client synchronization.
 - Sprayer callback timing with Precision Farming, AI, external tanks and other mods.
@@ -45,8 +49,8 @@ Run GIANTS TestRunner matching the installed patch, then actual single-player an
 
 ## 9. Implementation status
 - Research and both technical specifications: complete at source-review level.
-- Spray & Hygiene: initial manifest/bootstrap/configuration source committed; no gameplay specialization or gameplay behavior yet; runtime load not yet verified.
-- Farm Biosecurity: specification complete; implementation not started.
+- Spray & Hygiene: specialization, server-side wear observer, savegame settings and initial/incremental state synchronization implemented in source; runtime load, save/reload and multiplayer behavior not yet verified.
+- Farm Biosecurity: gameplay models, specialization, persistence foundation and initial snapshot implemented; runtime behavior not yet verified.
 - GIANTS TestRunner and in-game SP/MP/dedicated-server validation: pending.
 
 The codebase must not mark a feature complete until the relevant current-patch runtime tests pass.
