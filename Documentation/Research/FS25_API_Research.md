@@ -22,6 +22,16 @@ This document records source-level findings and runtime verification requirement
 - V1 must not override `getSprayerUsage` or `processSprayerArea`, mutate native usage/work-area parameters, or deduct fill a second time.
 - Callback order and compatibility with PF, AI and external tanks require runtime verification.
 
+### Vehicle dirty-state synchronization
+- FS25 vehicle specializations register `onWriteUpdateStream` and `onReadUpdateStream` as event listeners.
+- The server allocates a specialization dirty bit with `self:getNextDirtyFlag()` during `onLoad`.
+- When authoritative state changes, `self:raiseDirtyFlags(spec.dirtyFlag)` marks the vehicle for replication.
+- `onWriteUpdateStream(streamId, connection, dirtyMask)` checks `bit32.band(dirtyMask, spec.dirtyFlag)` and writes a change marker plus the bounded payload only when dirty.
+- `onReadUpdateStream(streamId, timestamp, connection)` reads the marker and applies the payload on clients.
+- `onWriteStream`/`onReadStream` remain the initial state snapshot for newly connected clients.
+- GDN source reference: https://gdn.giants-software.com/documentation_scripting_fs25.php?category=78&class=672&version=script
+- Runtime callback order, dirty-flag behavior, dedicated-server routing and late-join behavior remain unverified in the installed game.
+
 ### Animal groups
 - Source: `animals/husbandry/cluster/AnimalCluster.lua`, `AnimalClusterSystem.lua`, `AnimalClusterUpdateEvent.lua`.
 - Engine cluster IDs are runtime-only, regenerated on load and subject to split/merge/clone changes.
@@ -35,7 +45,6 @@ This document records source-level findings and runtime verification requirement
 ## Registration and mod loading
 - GDN documents specialization registration and type validation/finalization as separate lifecycle stages.
 - Registration/injection must be namespaced and idempotent, and restricted to types with the required base specialization.
-- The initial Spray & Hygiene bootstrap uses a script-only mod descriptor and a mod event listener. It deliberately does not register a vehicle specialization yet.
 
 ## Runtime-only gates
 1. Confirm modDesc and bootstrap load on the exact target game patch.
@@ -47,7 +56,6 @@ This document records source-level findings and runtime verification requirement
 
 ## Research status
 Source-level research and design specifications are complete. Runtime validation is pending and must be recorded against the exact installed FS25 patch and GIANTS TestRunner version.
-
 
 ## Additional public GDN verification — Script v1.20.0.0
 
